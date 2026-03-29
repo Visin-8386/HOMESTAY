@@ -1,0 +1,91 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "Homestay",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  
+  "home": "Home",
+  "favorites": "Favorites",
+  "bookings": "Bookings",
+  "profile": "Profile",
+  
+  "search": "Search",
+  "searchHomestays": "Search homestays...",
+  "searchResults": "Search results",
+  
+  "login": "Login",
+  "register": "Register",
+  "logout": "Logout",
+  "email": "Email",
+  "password": "Password",
+  "forgotPassword": "Forgot password?",
+  "dontHaveAccount": "Don't have an account?",
+  "alreadyHaveAccount": "Already have an account?",
+  
+  "price": "Price",
+  "pricePerNight": "/night",
+  "rating": "Rating",
+  "reviews": "reviews",
+  "guests": "Guests",
+  "bedrooms": "Bedrooms",
+  "bathrooms": "Bathrooms",
+  
+  "checkIn": "Check in",
+  "checkOut": "Check out",
+  "numberOfGuests": "Number of guests",
+  
+  "bookNow": "Book now",
+  "bookingDetails": "Booking details",
+  "myBookings": "My bookings",
+  "bookingConfirmed": "Booking confirmed",
+  "bookingPending": "Pending",
+  "bookingCancelled": "Cancelled",
+  
+  "amenities": "Amenities",
+  "description": "Description",
+  "location": "Location",
+  "host": "Host",
+  
+  "addToFavorites": "Add to favorites",
+  "removeFromFavorites": "Remove from favorites",
+  "share": "Share",
+  "compare": "Compare",
+  
+  "viewOnMap": "View on map",
+  "directions": "Directions",
+  
+  "writeReview": "Write a review",
+  "submitReview": "Submit review",
+  "reviewSubmitted": "Review submitted",
+  
+  "settings": "Settings",
+  "language": "Language",
+  "theme": "Theme",
+  "lightMode": "Light",
+  "darkMode": "Dark",
+  
+  "notifications": "Notifications",
+  "messages": "Messages",
+  "chat": "Chat",
+  
+  "error": "Error",
+  "success": "Success",
+  "loading": "Loading...",
+  "noData": "No data",
+  "retry": "Retry",
+  
+  "cancel": "Cancel",
+  "save": "Save",
+  "delete": "Delete",
+  "edit": "Edit",
+  "add": "Add",
+  "apply": "Apply",
+  "reset": "Reset",
+  
+  "yes": "Yes",
+  "no": "No",
+  "ok": "OK",
+  "confirm": "Confirm"
+}

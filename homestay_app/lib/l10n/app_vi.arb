@@ -1,0 +1,91 @@
+{
+  "@@locale": "vi",
+  
+  "appTitle": "Homestay",
+  "@appTitle": {
+    "description": "The application title"
+  },
+  
+  "home": "Trang chủ",
+  "favorites": "Yêu thích",
+  "bookings": "Đặt phòng",
+  "profile": "Tài khoản",
+  
+  "search": "Tìm kiếm",
+  "searchHomestays": "Tìm homestay...",
+  "searchResults": "Kết quả tìm kiếm",
+  
+  "login": "Đăng nhập",
+  "register": "Đăng ký",
+  "logout": "Đăng xuất",
+  "email": "Email",
+  "password": "Mật khẩu",
+  "forgotPassword": "Quên mật khẩu?",
+  "dontHaveAccount": "Chưa có tài khoản?",
+  "alreadyHaveAccount": "Đã có tài khoản?",
+  
+  "price": "Giá",
+  "pricePerNight": "đ/đêm",
+  "rating": "Đánh giá",
+  "reviews": "đánh giá",
+  "guests": "Khách",
+  "bedrooms": "Phòng ngủ",
+  "bathrooms": "Phòng tắm",
+  
+  "checkIn": "Nhận phòng",
+  "checkOut": "Trả phòng",
+  "numberOfGuests": "Số khách",
+  
+  "bookNow": "Đặt ngay",
+  "bookingDetails": "Chi tiết đặt phòng",
+  "myBookings": "Đặt phòng của tôi",
+  "bookingConfirmed": "Đặt phòng thành công",
+  "bookingPending": "Chờ xác nhận",
+  "bookingCancelled": "Đã hủy",
+  
+  "amenities": "Tiện nghi",
+  "description": "Mô tả",
+  "location": "Địa điểm",
+  "host": "Chủ nhà",
+  
+  "addToFavorites": "Thêm yêu thích",
+  "removeFromFavorites": "Xóa yêu thích",
+  "share": "Chia sẻ",
+  "compare": "So sánh",
+  
+  "viewOnMap": "Xem trên bản đồ",
+  "directions": "Chỉ đường",
+  
+  "writeReview": "Viết đánh giá",
+  "submitReview": "Gửi đánh giá",
+  "reviewSubmitted": "Đã gửi đánh giá",
+  
+  "settings": "Cài đặt",
+  "language": "Ngôn ngữ",
+  "theme": "Giao diện",
+  "lightMode": "Sáng",
+  "darkMode": "Tối",
+  
+  "notifications": "Thông báo",
+  "messages": "Tin nhắn",
+  "chat": "Trò chuyện",
+  
+  "error": "Lỗi",
+  "success": "Thành công",
+  "loading": "Đang tải...",
+  "noData": "Không có dữ liệu",
+  "retry": "Thử lại",
+  
+  "cancel": "Hủy",
+  "save": "Lưu",
+  "delete": "Xóa",
+  "edit": "Sửa",
+  "add": "Thêm",
+  "apply": "Áp dụng",
+  "reset": "Đặt lại",
+  
+  "yes": "Có",
+  "no": "Không",
+  "ok": "OK",
+  "confirm": "Xác nhận"
+}
