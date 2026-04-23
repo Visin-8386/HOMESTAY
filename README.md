@@ -2,7 +2,7 @@
 
 # HOMESTAY PLATFORM
 
-He thong dat phong Homestay da nen tang: Flutter Mobile + .NET API + Web Admin
+Multi-platform homestay booking system: Flutter Mobile + .NET API + Web Admin.
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](homestay_app)
 [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](homestay_app)
@@ -15,141 +15,143 @@ He thong dat phong Homestay da nen tang: Flutter Mobile + .NET API + Web Admin
 
 ---
 
-## Muc luc
+## Table of Contents
 
-1. [Tong quan](#tong-quan)
-2. [Diem noi bat da hoan thanh](#diem-noi-bat-da-hoan-thanh)
-3. [Kien truc he thong](#kien-truc-he-thong)
-4. [Cau truc thu muc](#cau-truc-thu-muc)
-5. [Tinh nang chinh](#tinh-nang-chinh)
-6. [Hinh anh thuc te du an](#hinh-anh-thuc-te-du-an)
-7. [Yeu cau moi truong](#yeu-cau-moi-truong)
-8. [Cai dat nhanh](#cai-dat-nhanh)
-9. [Chay du an local](#chay-du-an-local)
-10. [Cau hinh cho Flutter](#cau-hinh-cho-flutter)
-11. [API va Realtime](#api-va-realtime)
-12. [Database va Migration](#database-va-migration)
+1. [Overview](#overview)
+2. [Key Deliverables](#key-deliverables)
+3. [System Architecture](#system-architecture)
+4. [Project Structure](#project-structure)
+5. [Core Features](#core-features)
+6. [Real Project Screenshots](#real-project-screenshots)
+7. [Requirements](#requirements)
+8. [Quick Start](#quick-start)
+9. [Run Locally](#run-locally)
+10. [Flutter Configuration](#flutter-configuration)
+11. [API and Realtime](#api-and-realtime)
+12. [Database and Migration](#database-and-migration)
 13. [Docker (WebHS)](#docker-webhs)
-14. [Bao mat va secrets](#bao-mat-va-secrets)
+14. [Security and Secrets](#security-and-secrets)
 15. [Troubleshooting](#troubleshooting)
-16. [Roadmap de xuat](#roadmap-de-xuat)
-17. [Tai lieu lien quan](#tai-lieu-lien-quan)
+16. [Roadmap](#roadmap)
+17. [Related Documentation](#related-documentation)
 
 ---
 
-## Tong quan
+## Overview
 
-Day la monorepo gom 3 khoi chinh:
+This repository contains a full homestay booking platform with three main parts:
 
-- `homestay_app`: ung dung Flutter cho nguoi dung/host/admin.
-- `Nhom1`: backend API phuc vu mobile app, co JWT, Swagger, SignalR, Redis cache fallback.
-- `WebHS`: backend MVC/web admin + external auth + cac dich vu business nang cao.
+- `homestay_app`: Flutter mobile app for guests, hosts, and admins.
+- `Nhom1`: .NET 8 API backend for the mobile app, including JWT, Swagger, SignalR, and Redis fallback.
+- `WebHS`: ASP.NET Core web/admin backend with external auth and business services.
 
-He thong huong toi quy trinh dat phong full flow:
+The platform supports the complete booking lifecycle:
 
-- Dang ky/dang nhap + phan quyen role
-- Tim kiem homestay + booking + thanh toan
-- Danh gia, thong bao, chat va AI support
-- Quan tri noi dung, nguoi dung, khuyen mai
+- registration and login
+- role-based access control
+- homestay search and discovery
+- booking and payment flow
+- review and feedback handling
+- notifications, chat, AI assistance, and realtime calling
 
 ---
 
-## Diem noi bat da hoan thanh
+## Key Deliverables
 
-Bang duoi day tra loi truc tiep 3 cau hoi: noi bat gi, da lam duoc gi, va lam the nao de dat duoc.
+This section explains what has been completed and how it was built.
 
-| Hang muc noi bat | Da lam duoc gi | Lam the nao |
+| Highlight | What was delivered | How it was implemented |
 |---|---|---|
-| Kien truc da nen tang | Hoan thien mo hinh Flutter Mobile + Nhom1 API + WebHS, cho phep van hanh dong thoi app mobile va web/admin | Tach ro layer giao dien, API va van hanh; chuan hoa entrypoint va bootstrap tai `homestay_app/lib/main.dart`, `Nhom1/Program.cs`, `WebHS/Program.cs` |
-| Full flow dat phong | Da bao phu duoc chuoi nghiep vu tu tim kiem -> booking -> thanh toan -> danh gia | Thiet ke endpoint theo module (`/api/homestays`, `/api/bookings`, `/api/payments`, `/api/reviews`) va dong bo voi man hinh Flutter |
-| Phan quyen theo vai tro | Da phan vai User/Host/Admin o ca UI va backend | Kiem soat role trong API authentication/authorization va route tach rieng cho host/admin trong Flutter |
-| Realtime call/chat | Da trien khai kenh goi realtime voi SignalR + WebRTC signaling | Map hub route `/hubs/call`, khoi tao ket noi tu app va dong bo luong Offer/Answer/ICE |
-| Van hanh API cho mobile | Da mo Swagger de test nhanh, xac thuc JWT, va cach ly service layer | Su dung .NET middleware pipeline, auth scheme Bearer, va service-based architecture trong Nhom1 |
-| On dinh cache va key management | Da co fallback khi Redis khong san sang de tranh dung he thong trong moi truong dev | Cau hinh best-effort Redis, neu that bai thi chuyen sang in-memory cache va DataProtection mac dinh |
-| Web/admin co kha nang mo rong | Da co external auth, hosted background jobs, geocoding, payment integration tren WebHS | Dang ky service qua DI, tach module theo controller/service, va bo tri docker-compose cho deploy nhanh |
-| Tai lieu hoa nghiep vu | Da co tai lieu BFS day du cho BA/Dev/QA/UAT | Xay dung bo Business Rules, Acceptance Criteria, UAT scenarios tai `docs/BUSINESS_FUNCTIONAL_SPEC.md` |
+| Full-stack architecture | Flutter mobile app, mobile API, and web/admin backend working as a complete ecosystem | Clear separation of UI, API, and operations with dedicated entry points in `homestay_app/lib/main.dart`, `Nhom1/Program.cs`, and `WebHS/Program.cs` |
+| End-to-end booking flow | Search, booking, payment, review, and booking management are covered by the product flow | Module-based API design with endpoints such as `/api/homestays`, `/api/bookings`, `/api/payments`, and `/api/reviews` |
+| Role-based access | Different experiences for User, Host, and Admin on both UI and backend | Backend authorization and separate role-driven routes/screens in Flutter |
+| Realtime communication | Realtime call and signaling pipeline is available | SignalR hub at `/hubs/call` with Offer/Answer/ICE flow integrated in the app |
+| API observability | Developers can test endpoints quickly and safely | Swagger/OpenAPI with JWT Bearer auth plus clean service-layer separation |
+| Resilient caching | Dev environments still work when Redis is unavailable | Best-effort Redis with fallback to in-memory distributed cache and DataProtection defaults |
+| Extensible web/admin side | WebHS supports external auth, hosted jobs, geocoding, notifications, and payment-related services | Dependency injection, service registration, and Docker Compose support |
+| Business documentation | Business requirements are documented for BA, Dev, QA, and UAT | Full functional specification in `docs/BUSINESS_FUNCTIONAL_SPEC.md` |
 
-### Ket qua thuc te co the demo ngay
+### What can be demoed immediately
 
-1. Dang nhap va phan quyen user/host/admin tren app.
-2. Tim kiem homestay, tao booking, theo doi trang thai booking.
-3. Goi API qua Swagger de verify endpoint va auth.
-4. Kich hoat goi realtime thong qua hub `/hubs/call`.
+1. Register and log in as a guest, host, or admin.
+2. Search homestays, create bookings, and track booking status.
+3. Open Swagger to verify endpoints and JWT authentication.
+4. Trigger realtime communication through the `/hubs/call` hub.
 
-### Cach team da trien khai
+### How the team delivered it
 
-1. Chia theo module nghiep vu: auth, homestay, booking, payment, review, notification.
-2. Chia theo vai tro van hanh: mobile app, mobile API backend, web/admin backend.
-3. Chuan hoa config va moi truong (env, appsettings, launch profiles, docker compose).
-4. Dat nen tang test/bao tri bang tai lieu hoa va checklist van hanh.
+1. The platform was split by business module: auth, homestay, booking, payment, review, notification, chat.
+2. Responsibilities were separated by runtime: mobile app, API backend, and web/admin backend.
+3. Configuration was standardized through `.env`, `appsettings`, launch profiles, and Docker Compose.
+4. Documentation and business logic were formalized to support testing and maintenance.
 
 ---
 
-## Hinh anh thuc te du an
+## Real Project Screenshots
 
-Bo anh duoi day da duoc chon loc tu bao cao de the hien dung cac phan can thiet nhat cua du an.
+The following screenshots were selected from the report to show the most important parts of the project.
 
-### 1) Phan tich nghiep vu va quy trinh
+### 1) Business analysis and process design
 
-![Use case dat phong](homestay_app/assets/images/readme/selected/01-usecase-datphong.png)
+![Booking use case](homestay_app/assets/images/readme/selected/01-usecase-datphong.png)
 
-Noi dung: So do use case dat phong, mo ta tu khach hang yeu cau dat phong, kiem tra phong, xu ly coc, den duyet don.
+Description: Booking use-case diagram showing the booking request, room checking, deposit processing, and approval flow.
 
-![Swimlane dat phong](homestay_app/assets/images/readme/selected/02-swimlane-datphong.png)
+![Booking swimlane](homestay_app/assets/images/readme/selected/02-swimlane-datphong.png)
 
-Noi dung: So do swimlane dat phong, the hien luong xu ly giua Khach hang, He thong va Nhan vien/Host.
+Description: Swimlane diagram showing how the customer, system, and host/staff interact during the booking process.
 
-### 2) Giao dien xac thuc tai khoan
+### 2) Authentication screens
 
-![Man hinh dang nhap](homestay_app/assets/images/readme/selected/03-mobile-login.jpg)
+![Login screen](homestay_app/assets/images/readme/selected/03-mobile-login.jpg)
 
-Noi dung: Dang nhap email/mat khau, Google Sign-In va sinh trac hoc.
+Description: Login screen with email/password, Google sign-in, and biometric sign-in.
 
-![Man hinh dang ky](homestay_app/assets/images/readme/selected/04-mobile-register.jpg)
+![Register screen](homestay_app/assets/images/readme/selected/04-mobile-register.jpg)
 
-Noi dung: Dang ky tai khoan moi, chon vai tro su dung va xac nhan mat khau.
+Description: Registration screen with account creation, role selection, and password confirmation.
 
-### 3) Giao dien kham pha va dat phong
+### 3) Discovery and booking screens
 
-![Man hinh trang chu](homestay_app/assets/images/readme/selected/05-mobile-home.jpg)
+![Home screen](homestay_app/assets/images/readme/selected/05-mobile-home.jpg)
 
-Noi dung: Trang chu kham pha homestay, tim kiem va danh sach de xuat.
+Description: Home screen with homestay discovery, search, and recommendations.
 
-![Man hinh don dat cua toi](homestay_app/assets/images/readme/selected/06-mobile-my-bookings.jpg)
+![My bookings screen](homestay_app/assets/images/readme/selected/06-mobile-my-bookings.jpg)
 
-Noi dung: Quan ly don dat phong theo trang thai va thao tac danh gia sau luu tru.
+Description: Booking management screen showing booking statuses and post-stay actions.
 
-### 4) Giao dien quan ly theo vai tro
+### 4) Role-based management screens
 
-![Dashboard host](homestay_app/assets/images/readme/selected/07-mobile-host-dashboard.jpg)
+![Host dashboard](homestay_app/assets/images/readme/selected/07-mobile-host-dashboard.jpg)
 
-Noi dung: Dashboard Host voi tong quan homestay, don dat phong, doanh thu va hanh dong nhanh.
+Description: Host dashboard with homestay overview, bookings, revenue, and quick actions.
 
-![Dashboard admin](homestay_app/assets/images/readme/selected/08-mobile-admin-dashboard.jpg)
+![Admin dashboard](homestay_app/assets/images/readme/selected/08-mobile-admin-dashboard.jpg)
 
-Noi dung: Dashboard Admin quan ly nguoi dung, homestay, khuyen mai, don dat phong va thong ke.
+Description: Admin dashboard for managing users, homestays, promotions, bookings, and statistics.
 
-### 5) Tinh nang nang cao
+### 5) Advanced features
 
-![Bao mat sinh trac hoc](homestay_app/assets/images/readme/selected/09-mobile-security-biometrics.jpeg)
+![Biometric security](homestay_app/assets/images/readme/selected/09-mobile-security-biometrics.jpeg)
 
-Noi dung: Cai dat bao mat tai khoan, bat/tat sinh trac hoc va xac thuc hai yeu to.
+Description: Security settings for biometric login and two-factor authentication.
 
-![AI chat assistant](homestay_app/assets/images/readme/selected/10-mobile-ai-chat.jpeg)
+![AI assistant](homestay_app/assets/images/readme/selected/10-mobile-ai-chat.jpeg)
 
-Noi dung: Tro ly AI Gemini ho tro tim homestay, tu van dat phong va giai dap nhanh.
+Description: Gemini AI assistant for homestay search, booking support, and quick Q&A.
 
-![Danh sach tin nhan](homestay_app/assets/images/readme/selected/11-mobile-chat-list.jpeg)
+![Chat list](homestay_app/assets/images/readme/selected/11-mobile-chat-list.jpeg)
 
-Noi dung: Nhan tin giua khach va host, theo doi hoi thoai va trang thai tin nhan.
+Description: Messaging list for guest-host communication with conversation tracking.
 
 ![Video homestay](homestay_app/assets/images/readme/selected/12-mobile-video-homestay.jpg)
 
-Noi dung: Tich hop video gioi thieu diem den/homestay trong ung dung.
+Description: In-app homestay/travel video content for richer discovery.
 
 ---
 
-## Kien truc he thong
+## System Architecture
 
 ```mermaid
 flowchart LR
@@ -162,76 +164,76 @@ flowchart LR
     D --> G[External Services\nGoogle/Facebook/PayPal/Gemini]
 ```
 
-Nguyen tac thuc te hien tai:
+Current architecture notes:
 
-- `Nhom1` la backend chinh cho app Flutter.
-- `WebHS` dung cho web/admin va cac tich hop web.
-- Ca hai backend dang chia se cung database `WebHSDb`.
+- `Nhom1` is the main backend for the Flutter app.
+- `WebHS` handles web/admin workflows and web-oriented integrations.
+- Both backends share the same `WebHSDb` database.
 
 ---
 
-## Cau truc thu muc
+## Project Structure
 
 ```text
 HOMESTAY/
 |- homestay_app/     # Flutter mobile app
 |- Nhom1/            # ASP.NET Core API for mobile
 |- WebHS/            # ASP.NET Core MVC + web/admin
-`- README.md         # file nay
+`- README.md         # this file
 ```
 
-Noi dung quan trong:
+Important entry points:
 
-- Flutter entrypoint: `homestay_app/lib/main.dart`
-- Flutter routes: `homestay_app/lib/routes.dart`
+- Flutter app bootstrap: `homestay_app/lib/main.dart`
+- Flutter routing: `homestay_app/lib/routes.dart`
 - Flutter API config: `homestay_app/lib/config/api_config.dart`
 - Nhom1 bootstrap: `Nhom1/Program.cs`
 - WebHS bootstrap: `WebHS/Program.cs`
 
 ---
 
-## Tinh nang chinh
+## Core Features
 
-### Mobile App (Flutter)
+### Flutter Mobile App
 
-- Auth: login/register, social login, OTP/bao mat.
-- Role-based UI: User, Host, Admin.
-- Homestay: listing, search, detail, amenity, map.
-- Booking: tao booking, theo doi trang thai, lich su.
-- Payment: quy trinh dat coc/thanh toan.
-- Realtime call/chat: SignalR + WebRTC.
-- AI va tien ich: chatbot, dich ngon ngu, TTS/STT, YouTube, weather.
+- Authentication: login, register, social login, OTP, biometric security
+- Role-based UI: User, Host, Admin
+- Homestay discovery: listing, search, detail, amenities, map
+- Booking: create booking, track status, history
+- Payment: deposit and payment flow
+- Realtime call/chat: SignalR + WebRTC
+- AI and utilities: Gemini assistant, translation, TTS/STT, YouTube, weather
 
 ### Nhom1 API (.NET 8)
 
-- JWT authentication va authorization.
-- Swagger cho test API.
-- SignalR hub cho call realtime (`/hubs/call`).
-- Redis cache + DataProtection (co fallback memory neu Redis down).
-- Service layer ro rang cho Auth/Homestay/Booking/Payment/Review.
+- JWT authentication and authorization
+- Swagger for endpoint testing
+- SignalR hub for realtime calling (`/hubs/call`)
+- Redis cache with DataProtection fallback
+- Clear service layer for Auth, Homestay, Booking, Payment, Review
 
 ### WebHS (.NET 8 MVC)
 
-- MVC views + admin workflows.
-- External auth (Google/Facebook) + JWT.
-- Hosted background services.
-- Geocoding, SEO, Notification, Payment integrations.
-- Docker compose support.
+- MVC views and admin workflows
+- External authentication via Google and Facebook
+- Hosted background services
+- Geocoding, SEO, notifications, and payment-related integrations
+- Docker Compose support
 
 ---
 
-## Yeu cau moi truong
+## Requirements
 
-Can cai dat truoc:
+Installed tools:
 
 - Flutter SDK 3.x
 - Dart SDK 3.x
 - .NET SDK 8.0+
-- SQL Server (local hoac server)
-- Redis (khuyen nghi, khong bat buoc cho dev)
-- Android Studio/Xcode (neu chay mobile)
+- SQL Server local or remote
+- Redis recommended for development
+- Android Studio or Xcode for mobile builds
 
-Kiem tra nhanh:
+Quick checks:
 
 ```bash
 flutter --version
@@ -241,9 +243,9 @@ dotnet --version
 
 ---
 
-## Cai dat nhanh
+## Quick Start
 
-### 1) Clone va restore
+### 1) Restore dependencies
 
 ```bash
 # Flutter app
@@ -259,29 +261,29 @@ cd ../WebHS
 dotnet restore
 ```
 
-### 2) Tao bien moi truong Flutter
+### 2) Create the Flutter environment file
 
 ```bash
 cd ../homestay_app
 copy .env.example .env
 ```
 
-Sau do sua file `.env` voi gia tri thuc te.
+Then update `.env` with the actual values for your environment.
 
 ---
 
-## Chay du an local
+## Run Locally
 
-Khuyen nghi mo 3 terminal rieng.
+Open three terminals if possible.
 
-### A. Chay Nhom1 API
+### A. Run Nhom1 API
 
 ```bash
 cd Nhom1
 dotnet run
 ```
 
-Port development mac dinh (theo launchSettings):
+Default development ports:
 
 - HTTP: `http://localhost:5189`
 - HTTPS: `https://localhost:7097`
@@ -290,39 +292,39 @@ Swagger:
 
 - `https://localhost:7097/swagger`
 
-### B. Chay WebHS
+### B. Run WebHS
 
 ```bash
 cd WebHS
 dotnet run
 ```
 
-Port development mac dinh:
+Default development ports:
 
 - HTTP: `http://localhost:5000`
 - HTTPS: `https://localhost:7264`
 
-### C. Chay Flutter
+### C. Run Flutter
 
 ```bash
 cd homestay_app
 flutter run
 ```
 
-Neu chay Android emulator, uu tien API URL qua `10.0.2.2`.
+If you are using an Android emulator, prefer `10.0.2.2` instead of `localhost` for the API base URL.
 
 ---
 
-## Cau hinh cho Flutter
+## Flutter Configuration
 
-File chinh: `homestay_app/lib/config/api_config.dart`
+Main config file: `homestay_app/lib/config/api_config.dart`
 
-Logic base URL:
+Base URL logic:
 
-- Doc `API_BASE_URL` tu `.env`
-- Neu khong co -> fallback `http://10.0.2.2:5189`
+- Read `API_BASE_URL` from `.env`
+- Fallback to `http://10.0.2.2:5189` if missing
 
-`.env` mau:
+Example `.env` values:
 
 ```env
 API_BASE_URL=http://10.0.2.2:5189
@@ -330,16 +332,16 @@ GOOGLE_MAPS_API_KEY=YOUR_KEY
 GEMINI_API_KEY=YOUR_KEY
 ```
 
-Neu test tren dien thoai that qua Conveyor/public tunnel:
+When testing on a real device through a tunnel/public URL:
 
-- Cap nhat `API_BASE_URL` moi
-- Restart app de ap dung bien moi truong
+- Update `API_BASE_URL`
+- Restart the app so the environment change is loaded
 
 ---
 
-## API va Realtime
+## API and Realtime
 
-### API core
+### Core API endpoints
 
 - Auth: `/api/auth/*`
 - Homestays: `/api/homestays`
@@ -355,119 +357,116 @@ Neu test tren dien thoai that qua Conveyor/public tunnel:
 
 ---
 
-## Database va Migration
+## Database and Migration
 
-Connection string hien tai dang tro ve SQL Server local `WebHSDb`.
+The current connection string points to the local SQL Server database `WebHSDb`.
 
-Kiem tra trong:
+Check the following files:
 
 - `Nhom1/appsettings.json`
 - `WebHS/appsettings.json`
 
-Lenh migration mau:
+Sample EF Core update command:
 
 ```bash
-# Vi du tai Nhom1
 cd Nhom1
 dotnet ef database update
 ```
 
-Khuyen nghi:
+Recommended practice:
 
-- Tach DB cho moi environment (Dev/Staging/Prod).
-- Khong dung chung DB production khi test local.
+- Use a separate database per environment: Dev, Staging, and Prod
+- Avoid sharing production data with local testing
 
 ---
 
 ## Docker (WebHS)
 
-`WebHS` co san `docker-compose.yml`.
+`WebHS` includes a `docker-compose.yml` file.
 
-Chay nhanh:
+Run it with:
 
 ```bash
 cd WebHS
 docker compose up --build
 ```
 
-Mac dinh map port:
+Default mappings:
 
-- App: `8080` va `8443`
+- App: `8080` and `8443`
 - SQL Server container: `1433`
 
 ---
 
-## Bao mat va secrets
+## Security and Secrets
 
-Trang thai hien tai trong repo co nhieu keys/secrets trong file config. Can xu ly ngay truoc khi public hoac deploy.
+The repository currently contains several keys and secrets in configuration files. These should be rotated before any public release or production deployment.
 
-Checklist bat buoc:
+Checklist:
 
-1. Rotate toan bo API keys, OAuth secrets, SMTP password, PayPal secrets.
-2. Dua secrets vao User Secrets / Environment Variables / Secret Manager.
-3. Khong commit file `.env` that.
-4. Tach `appsettings.Development.json` va `appsettings.Production.json` ro rang.
-5. Bat HTTPS, CORS policy theo whitelist domain production.
+1. Rotate all API keys, OAuth secrets, SMTP passwords, and PayPal credentials.
+2. Move secrets to User Secrets, environment variables, or a secret manager.
+3. Do not commit a real `.env` file.
+4. Separate `appsettings.Development.json` from `appsettings.Production.json`.
+5. Enforce HTTPS and a production CORS whitelist.
 
 ---
 
 ## Troubleshooting
 
-### Flutter goi API fail
+### Flutter cannot call the API
 
-- Kiem tra `API_BASE_URL` trong `.env`.
-- Neu emulator Android: dung `10.0.2.2` thay vi `localhost`.
-- Kiem tra backend co dang chay dung port.
+- Check `API_BASE_URL` in `.env`
+- On Android emulator, use `10.0.2.2` instead of `localhost`
+- Make sure the backend is running on the expected port
 
-### SignalR khong ket noi
+### SignalR does not connect
 
-- Dam bao backend map hub `/hubs/call`.
-- Dam bao token JWT hop le.
-- Kiem tra URL base khong bi sai protocol http/https.
+- Confirm the backend maps `/hubs/call`
+- Ensure the JWT token is valid
+- Verify that the base URL uses the correct HTTP/HTTPS protocol
 
-### Loi SQL connection
+### SQL connection issues
 
-- Kiem tra SQL Server instance `localhost\\MSSQLSERVER01`.
-- Kiem tra quyen login va certificate settings.
+- Check the SQL Server instance `localhost\\MSSQLSERVER01`
+- Verify login permissions and certificate settings
 
-### Redis khong chay
+### Redis is unavailable
 
-- `Nhom1` co fallback sang in-memory cache, app van co the chay dev.
+- `Nhom1` falls back to in-memory cache, so the app can still run in development
 
 ---
 
-## Roadmap de xuat
+## Roadmap
 
-- Chuan hoa API gateway va auth giua `Nhom1` va `WebHS`.
-- Tach monorepo scripts thanh 1 command bootstrap.
-- Bo sung test tu dong:
+- Standardize API gateway and authentication between `Nhom1` and `WebHS`
+- Add a single bootstrap command for the monorepo
+- Add automated tests:
   - Flutter widget/integration tests
   - API integration tests
-  - Security scanning (SAST + secrets scan)
-- CI/CD:
-  - Build + Test + Lint
-  - Deploy environment theo branch
+  - Security scanning (SAST and secret scanning)
+- Add CI/CD pipelines for build, test, lint, and environment-based deployment
 
 ---
 
-## Tai lieu lien quan
+## Related Documentation
 
-- Mobile readme chi tiet: `homestay_app/README.md`
-- TURN note: `Nhom1/docs/turn.md`
+- Detailed mobile README: `homestay_app/README.md`
+- TURN notes: `Nhom1/docs/turn.md`
 - Host role analysis: `WebHS/Documentation/IsHost_vs_Role_Analysis.md`
-- Business functional spec (full): `docs/BUSINESS_FUNCTIONAL_SPEC.md`
+- Full business specification: `docs/BUSINESS_FUNCTIONAL_SPEC.md`
 
 ---
 
-## Lien he va dong gop
+## Contact and Contribution
 
-Neu can mo rong tai lieu, de xuat them cac section sau:
+If you want to expand the documentation, the next useful additions would be:
 
-- API contract theo tung module
-- Sequence diagram cho booking/payment/refund
-- Incident runbook cho production
+- API contract per module
+- Sequence diagrams for booking, payment, and refund
+- Production incident runbook
 
-Co the tao PR theo convention:
+Suggested commit message style:
 
 - `docs: update architecture`
 - `docs: add deployment guide`
