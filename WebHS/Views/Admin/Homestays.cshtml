@@ -1,0 +1,1076 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.AdminHomestayListViewModel
+
+@{
+    ViewData["Title"] = "Quản Lý Homestay";
+    Layout = "_Layout_New";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-homestay.css" asp-append-version="true" />
+    <style>
+        /* Modern Admin Dashboard Styles */
+        .admin-dashboard {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: calc(100vh - 120px);
+            padding: 2rem 0;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: float 6s ease-in-out infinite;
+        }        @@keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-cards {
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .main-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            border: none;
+            overflow: hidden;
+            animation: slideInUp 0.6s ease-out;
+        }        @@keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card-header-modern {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 2px solid #dee2e6;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0 !important;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input-group {
+            position: relative;
+        }
+
+        .search-input-group input {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            transform: scale(1.02);
+        }
+
+        .btn-modern {
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-modern:hover::before {
+            left: 100%;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-primary-modern {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success-modern {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-warning-modern {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: white;
+        }
+
+        .btn-danger-modern {
+            background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+            color: white;
+        }
+
+        .btn-info-modern {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+            color: white;
+        }        .table-modern {
+            background: #ffffff;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border-collapse: separate;
+            border-spacing: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Remove any blur effects */
+            filter: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        .table-modern thead th {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 1px solid #dee2e6;
+            padding: 1.2rem 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            color: #495057;
+            white-space: nowrap;
+            text-align: center;
+            vertical-align: middle;
+            /* Ensure crisp text rendering */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .table-modern tbody tr {
+            transition: all 0.2s ease;
+            border: none;
+            background: #ffffff;
+        }
+
+        .table-modern tbody tr:hover {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            transform: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .table-modern tbody td {
+            padding: 1rem 0.8rem;
+            border: 1px solid #e9ecef;
+            vertical-align: middle;
+            color: #212529;
+            font-weight: 500;
+            font-size: 0.875rem;
+            /* Ensure crisp text rendering */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            /* Remove any blur effects */
+            filter: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }        /* Column width adjustments for better balance */
+        .table-modern tbody td:nth-child(1) { /* ID */
+            text-align: center;
+            width: 5%;
+            min-width: 60px;
+        }
+
+        .table-modern tbody td:nth-child(2) { /* Image */
+            text-align: center;
+            width: 8%;
+            min-width: 100px;
+        }
+
+        .table-modern tbody td:nth-child(3) { /* Name */
+            text-align: left;
+            width: 18%;
+            min-width: 200px;
+            max-width: 250px;
+            word-wrap: break-word;
+        }
+
+        .table-modern tbody td:nth-child(4) { /* Host */
+            text-align: left;
+            width: 15%;
+            min-width: 180px;
+            max-width: 220px;
+            word-wrap: break-word;
+        }
+
+        .table-modern tbody td:nth-child(5) { /* Location */
+            text-align: center;
+            width: 12%;
+            min-width: 150px;
+        }
+
+        .table-modern tbody td:nth-child(6) { /* Price */
+            text-align: center;
+            width: 10%;
+            min-width: 120px;
+        }
+
+        .table-modern tbody td:nth-child(7) { /* Video */
+            text-align: center;
+            width: 6%;
+            min-width: 80px;
+        }
+
+        .table-modern tbody td:nth-child(8) { /* Status */
+            text-align: center;
+            width: 10%;
+            min-width: 130px;
+        }
+
+        .table-modern tbody td:nth-child(9) { /* Date */
+            text-align: center;
+            width: 8%;
+            min-width: 100px;
+        }
+
+        .table-modern tbody td:nth-child(10) { /* Actions */
+            text-align: center;
+            width: 8%;
+            min-width: 120px;
+        }.homestay-image {
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+
+        .homestay-image:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .status-badge {
+            border-radius: 15px;
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
+
+        .status-approved {
+            background: #28a745;
+            color: white;
+        }
+
+        .status-pending {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .status-rejected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-inactive {
+            background: #6c757d;
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }        /* Text clarity improvements */
+        .fw-bold {
+            font-weight: 600 !important;
+            color: #212529 !important;
+            /* Ensure crisp text */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+            font-size: 0.8rem;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .text-primary {
+            color: #0d6efd !important;
+            font-weight: 600;
+        }
+
+        .text-success {
+            color: #198754 !important;
+            font-weight: 600;
+        }
+
+        /* Remove blur effects that cause text to appear fuzzy */
+        .main-card,
+        .table-modern,
+        .card-header-modern,
+        .table-responsive {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            filter: none !important;
+        }
+
+        /* Status badges - clear and readable */
+        .status-badge {
+            border-radius: 15px;
+            padding: 0.4rem 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            display: inline-block;
+            /* Ensure crisp text */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .pagination-modern .page-link {
+            border-radius: 10px;
+            margin: 0 0.25rem;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-modern .page-link:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .pagination-modern .page-item.active .page-link {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+        }
+
+        .modal-modern .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-modern .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+        }
+
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 3rem;
+            animation: spin 1s linear infinite;
+        }        @@keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @@keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .dropdown-modern .dropdown-menu {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+            padding: 0.5rem 0;
+        }
+
+        .dropdown-modern .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-modern .dropdown-item:hover {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            color: #667eea;
+            transform: translateX(5px);
+        }
+    </style>
+}
+
+<div class="admin-dashboard">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="page-header text-center">
+            <h1><i class="fas fa-home me-3"></i>Quản Lý Homestay</h1>
+            <p class="lead mb-0">Quản lý và theo dõi tất cả homestay trong hệ thống</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-cards">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="stat-number text-primary">@Model.Homestays.Count()</div>
+                        <div class="stat-label">Tổng Homestay</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-number text-success">@Model.Homestays.Count(h => h.IsApproved && h.IsActive)</div>
+                        <div class="stat-label">Đã Duyệt</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-number text-warning">@Model.Homestays.Count(h => !h.IsApproved && h.IsActive)</div>
+                        <div class="stat-label">Chờ Duyệt</div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon text-danger">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <div class="stat-number text-danger">@Model.Homestays.Count(h => !h.IsActive)</div>
+                        <div class="stat-label">Không Hoạt Động</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="main-card">
+            <div class="card-header-modern">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h3 class="mb-0"><i class="fas fa-list-alt me-2"></i>Danh Sách Homestay</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <!-- Search and Actions -->
+                        <div class="d-flex justify-content-end gap-2 flex-wrap">
+                            <div class="search-input-group">
+                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Tìm tên homestay, chủ nhà..." value="@ViewBag.Search">
+                            </div>
+                            <button type="button" class="btn btn-primary-modern btn-modern" onclick="performSearch()">
+                                <i class="fas fa-search me-2"></i>Tìm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Row -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a href="@Url.Action("CreateHomestay")" class="btn btn-success-modern btn-modern">
+                                    <i class="fas fa-plus me-2"></i>Tạo Homestay
+                                </a>
+                                <a href="@Url.Action("ExportHomestaysToExcel", new { status = ViewBag.Status, search = ViewBag.Search })" class="btn btn-info-modern btn-modern">
+                                    <i class="fas fa-file-excel me-2"></i>Xuất Excel
+                                </a>
+                            </div>
+                            
+                            <div class="dropdown dropdown-modern">
+                                <button class="btn btn-warning-modern btn-modern dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-filter me-2"></i>Trạng thái: @(ViewBag.Status ?? "Tất cả")
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="@Url.Action("Homestays", new { status = "", search = ViewBag.Search })">
+                                        <i class="fas fa-list me-2"></i>Tất cả
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Homestays", new { status = "pending", search = ViewBag.Search })">
+                                        <i class="fas fa-clock me-2"></i>Chờ duyệt
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Homestays", new { status = "approved", search = ViewBag.Search })">
+                                        <i class="fas fa-check me-2"></i>Đã duyệt
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Homestays", new { status = "rejected", search = ViewBag.Search })">
+                                        <i class="fas fa-times me-2"></i>Đã từ chối
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="@Url.Action("Homestays", new { status = "inactive", search = ViewBag.Search })">
+                                        <i class="fas fa-ban me-2"></i>Không hoạt động
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>            <div class="card-body p-0">                <div class="table-responsive">
+                    <table class="table table-modern mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 5%;"><i class="fas fa-hashtag me-1"></i>ID</th>
+                                <th style="width: 8%;"><i class="fas fa-image me-1"></i>Ảnh</th>
+                                <th style="width: 18%;"><i class="fas fa-home me-1"></i>Tên Homestay</th>
+                                <th style="width: 15%;"><i class="fas fa-user me-1"></i>Chủ nhà</th>
+                                <th style="width: 12%;"><i class="fas fa-map-marker-alt me-1"></i>Địa điểm</th>
+                                <th style="width: 10%;"><i class="fas fa-money-bill-wave me-1"></i>Giá/đêm</th>
+                                <th style="width: 6%;"><i class="fab fa-youtube me-1"></i>Video</th>
+                                <th style="width: 10%;"><i class="fas fa-info-circle me-1"></i>Trạng thái</th>
+                                <th style="width: 8%;"><i class="fas fa-calendar me-1"></i>Ngày tạo</th>
+                                <th style="width: 8%;"><i class="fas fa-cogs me-1"></i>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var homestay in Model.Homestays)
+                            {
+                                <tr class="fade-in">
+                                    <td>
+                                        <span class="badge bg-primary text-white" style="font-size: 0.8rem;">@homestay.Id</span>
+                                    </td>
+                                    <td>
+                                        @if(homestay.Images.Any())
+                                        {
+                                            <img src="@homestay.Images.First().ImageUrl" alt="@homestay.Name" class="homestay-image" style="width: 70px; height: 50px;">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-secondary d-flex align-items-center justify-content-center homestay-image" style="width: 70px; height: 50px;">
+                                                <i class="fas fa-home text-white"></i>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td style="text-align: left;">
+                                        <div class="fw-bold text-primary" style="font-size: 0.9rem; margin-bottom: 0.2rem;">@homestay.Name</div>
+                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="fas fa-users me-1"></i>@homestay.MaxGuests khách •
+                                            <i class="fas fa-bed me-1"></i>@homestay.Bedrooms phòng
+                                        </small>
+                                    </td>
+                                    <td style="text-align: left;">
+                                        <div class="fw-bold" style="font-size: 0.85rem; margin-bottom: 0.2rem;">@homestay.Host.FirstName @homestay.Host.LastName</div>
+                                        <small class="text-muted" style="font-size: 0.75rem;">
+                                            <i class="fas fa-envelope me-1"></i>@homestay.Host.Email
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 0.85rem;">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            @homestay.City, @homestay.State
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold text-success" style="font-size: 0.9rem;">
+                                            @homestay.PricePerNight.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(homestay.YouTubeVideoId))
+                                        {
+                                            <a href="https://www.youtube.com/watch?v=@homestay.YouTubeVideoId" target="_blank" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.5rem;">
+                                                <i class="fab fa-youtube"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                <i class="fas fa-video-slash"></i>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(homestay.IsApproved && homestay.IsActive)
+                                        {
+                                            <span class="status-badge status-approved">
+                                                <i class="fas fa-check me-1"></i>Đã duyệt
+                                            </span>
+                                        }
+                                        else if(!homestay.IsApproved && homestay.IsActive)
+                                        {
+                                            <span class="status-badge status-pending">
+                                                <i class="fas fa-clock me-1"></i>Chờ duyệt
+                                            </span>
+                                        }
+                                        else if(!homestay.IsActive)
+                                        {
+                                            <span class="status-badge status-inactive">
+                                                <i class="fas fa-ban me-1"></i>Tạm ngưng
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge status-rejected">
+                                                <i class="fas fa-times me-1"></i>Từ chối
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold" style="font-size: 0.85rem;">@homestay.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                        <small class="text-muted" style="font-size: 0.75rem;">@homestay.CreatedAt.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="@Url.Action("HomestayDetails", "Admin", new { id = homestay.Id })" class="action-btn btn-info-modern" target="_blank" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            
+                                            <a href="@Url.Action("EditHomestay", new { id = homestay.Id })" class="action-btn btn-primary-modern" title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                            @if(!homestay.IsApproved && homestay.IsActive)
+                                            {
+                                                <button type="button" class="action-btn btn-success-modern" onclick="approveHomestay(@homestay.Id)" title="Duyệt">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="button" class="action-btn btn-danger-modern" onclick="rejectHomestay(@homestay.Id)" title="Từ chối">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                            
+                                            @if(homestay.IsActive)
+                                            {
+                                                <button type="button" class="action-btn btn-warning-modern" onclick="deactivateHomestay(@homestay.Id)" title="Tạm ngưng">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="action-btn btn-success-modern" onclick="activateHomestay(@homestay.Id)" title="Kích hoạt">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card-footer bg-white border-0 pt-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="text-muted">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Hiển thị @Model.Homestays.Count() homestay
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-modern mb-0">
+                            @if(Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Homestays", new { page = Model.CurrentPage - 1, status = ViewBag.Status })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for(int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Homestays", new { page = i, status = ViewBag.Status })">@i</a>
+                                </li>
+                            }
+
+                            @if(Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Homestays", new { page = Model.CurrentPage + 1, status = ViewBag.Status })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner">
+        <i class="fas fa-spinner"></i>
+    </div>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div class="modal fade modal-modern" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-times-circle me-2"></i>Lý do từ chối
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectForm">
+                    <input type="hidden" id="rejectHomestayId" name="homestayId">
+                    <div class="mb-3">
+                        <label for="rejectReason" class="form-label fw-bold">
+                            <i class="fas fa-comment-alt me-2"></i>Lý do từ chối *
+                        </label>
+                        <textarea class="form-control" id="rejectReason" name="reason" rows="4" required 
+                                  placeholder="Vui lòng nhập lý do từ chối..." style="border-radius: 10px;"></textarea>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Lý do từ chối sẽ được gửi đến chủ nhà qua email.
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary btn-modern" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Hủy
+                </button>
+                <button type="button" class="btn btn-danger-modern btn-modern" onclick="submitReject()">
+                    <i class="fas fa-ban me-2"></i>Từ chối
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-homestay.js" asp-append-version="true"></script>
+    <script>
+        // Enhanced search functionality
+        function performSearch() {
+            showLoading();
+            var searchTerm = $('#searchInput').val();
+            var currentStatus = '@ViewBag.Status';
+            
+            var url = '@Url.Action("Homestays")?search=' + encodeURIComponent(searchTerm);
+            if (currentStatus) url += '&status=' + currentStatus;
+            
+            window.location.href = url;
+        }
+        
+        // Enhanced UI interactions
+        $(document).ready(function() {
+            // Auto-focus search input
+            $('#searchInput').focus();
+            
+            // Enhanced search with debouncing
+            let searchTimeout;
+            $('#searchInput').on('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    if ($('#searchInput').val().length >= 3 || $('#searchInput').val().length === 0) {
+                        performSearch();
+                    }
+                }, 1000);
+            });
+            
+            // Search on Enter key
+            $('#searchInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    clearTimeout(searchTimeout);
+                    performSearch();
+                }
+            });
+
+            // Add fade-in animation to table rows
+            $('.table tbody tr').each(function(index) {
+                $(this).css('animation-delay', (index * 0.1) + 's');
+                $(this).addClass('fade-in');
+            });
+
+            // Enhanced tooltips
+            $('[data-bs-toggle="tooltip"]').tooltip();
+        });
+
+        function showLoading() {
+            $('#loadingOverlay').fadeIn(300);
+        }
+
+        function hideLoading() {
+            $('#loadingOverlay').fadeOut(300);
+        }
+
+        function showSuccessNotification(message) {
+            // Create a toast notification
+            const toast = $(`
+                <div class="toast-notification success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(toast);
+            toast.addClass('show');
+            
+            setTimeout(() => {
+                toast.removeClass('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function showErrorNotification(message) {
+            const toast = $(`
+                <div class="toast-notification error">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(toast);
+            toast.addClass('show');
+            
+            setTimeout(() => {
+                toast.removeClass('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        function approveHomestay(id) {
+            if (confirm('🎉 Bạn có chắc chắn muốn duyệt homestay này?')) {
+                showLoading();
+                $.post('@Url.Action("ApproveHomestay")', { id: id }, function(data) {
+                    hideLoading();
+                    if (data.success) {
+                        showSuccessNotification(data.message || '✅ Homestay đã được duyệt thành công!');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showErrorNotification('❌ Có lỗi xảy ra: ' + (data.message || 'Lỗi không xác định'));
+                    }
+                }).fail(function() {
+                    hideLoading();
+                    showErrorNotification('❌ Có lỗi xảy ra khi kết nối đến server');
+                });
+            }
+        }
+
+        function rejectHomestay(id) {
+            $('#rejectHomestayId').val(id);
+            $('#rejectReason').val('');
+            $('#rejectModal').modal('show');
+        }
+
+        function submitReject() {
+            var id = $('#rejectHomestayId').val();
+            var reason = $('#rejectReason').val();
+            
+            if (!reason.trim()) {
+                showErrorNotification('⚠️ Vui lòng nhập lý do từ chối');
+                return;
+            }
+
+            showLoading();
+            $.post('@Url.Action("RejectHomestay")', { id: id, reason: reason }, function(data) {
+                hideLoading();
+                if (data.success) {
+                    $('#rejectModal').modal('hide');
+                    showSuccessNotification(data.message || '✅ Homestay đã bị từ chối thành công!');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showErrorNotification('❌ Có lỗi xảy ra: ' + (data.message || 'Lỗi không xác định'));
+                }
+            }).fail(function() {
+                hideLoading();
+                showErrorNotification('❌ Có lỗi xảy ra khi kết nối đến server');
+            });
+        }
+
+        function deactivateHomestay(id) {
+            if (confirm('⚠️ Bạn có chắc chắn muốn vô hiệu hóa homestay này?')) {
+                showLoading();
+                $.post('@Url.Action("DeactivateHomestay")', { id: id }, function(data) {
+                    hideLoading();
+                    if (data.success) {
+                        showSuccessNotification('✅ Homestay đã được vô hiệu hóa!');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showErrorNotification('❌ Có lỗi xảy ra: ' + data.message);
+                    }
+                }).fail(function() {
+                    hideLoading();
+                    showErrorNotification('❌ Có lỗi xảy ra khi kết nối đến server');
+                });
+            }
+        }
+
+        function activateHomestay(id) {
+            if (confirm('✅ Bạn có chắc chắn muốn kích hoạt lại homestay này?')) {
+                showLoading();
+                $.post('@Url.Action("ActivateHomestay")', { id: id }, function(data) {
+                    hideLoading();
+                    if (data.success) {
+                        showSuccessNotification('✅ Homestay đã được kích hoạt!');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showErrorNotification('❌ Có lỗi xảy ra: ' + data.message);
+                    }
+                }).fail(function() {
+                    hideLoading();
+                    showErrorNotification('❌ Có lỗi xảy ra khi kết nối đến server');
+                });
+            }
+        }
+    </script>
+
+    <style>
+        /* Toast Notifications */
+        .toast-notification {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            background: white;
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: 0;
+            border-left: 4px solid;
+            min-width: 300px;
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        .toast-notification.success {
+            border-left-color: #28a745;
+            color: #155724;
+        }
+
+        .toast-notification.error {
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+    </style>
+}
+
+

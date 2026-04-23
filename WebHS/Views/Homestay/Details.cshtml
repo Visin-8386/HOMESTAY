@@ -1,0 +1,2256 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.HomestayDetailViewModel
+@{
+    ViewData["Title"] = Model.Homestay.Name;
+    
+    // Set up structured data for this homestay
+    ViewData["StructuredDataType"] = "homestay";
+    ViewData["StructuredData"] = new {
+        Id = Model.Homestay.Id,
+        Name = Model.Homestay.Name,
+        Description = Model.Homestay.Description,
+        Address = Model.Homestay.Address,
+        City = Model.Homestay.City,
+        PricePerNight = Model.Homestay.PricePerNight,
+        Latitude = Model.Homestay.Latitude,
+        Longitude = Model.Homestay.Longitude,
+        Bedrooms = Model.Homestay.Bedrooms,
+        MaxGuests = Model.Homestay.MaxGuests,
+        AverageRating = Model.AverageRating,
+        TotalReviews = Model.ReviewBookings?.Count() ?? 0,
+        Amenities = Model.Amenities?.Select(a => a.Name).ToList(),
+        Images = Model.Images?.Select(i => i.ImageUrl).ToList(),
+        PhoneNumber = Model.Homestay.Host?.PhoneNumber
+    };
+    
+    // Set up breadcrumbs
+    ViewData["Breadcrumbs"] = new List<WebHS.Services.BreadcrumbItem> {
+        new() { Name = "Trang chủ", Url = Url.Action("Index", "Home") ?? "" },
+        new() { Name = "Homestay", Url = Url.Action("Index", "Homestay") ?? "" },
+        new() { Name = Model.Homestay.Name, Url = Url.Action("Details", "Homestay", new { id = Model.Homestay.Id }) ?? "" }
+    };
+}
+
+<div class="container-fluid">    <!-- Image Gallery -->
+    <div class="row mb-4">
+        <div class="col-12">
+            @if (Model.Images != null && Model.Images.Any())
+            {
+                <div id="homestayCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">                        @for (int i = 0; i < Model.Images.Count; i++)
+                        {
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@Model.Images[i].ImageUrl" class="d-block w-100" alt="@Model.Homestay.Name" style="height: 400px; object-fit: cover;">
+                            </div>
+                        }
+                    </div>
+                    @if (Model.Images.Count > 1)
+                    {
+                        <button class="carousel-control-prev" type="button" data-bs-target="#homestayCarousel" data-bs-slide="prev" aria-label="Hình ảnh trước" title="Xem hình ảnh trước">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#homestayCarousel" data-bs-slide="next" aria-label="Hình ảnh tiếp theo" title="Xem hình ảnh tiếp theo">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    }
+                </div>
+            }
+            else
+            {
+                <img src="/images/default-homestay.jpg" class="w-100" alt="@Model.Homestay.Name" style="height: 400px; object-fit: cover;">
+            }
+        </div>
+    </div>    <div class="container" style="margin-top: 20px; padding-top: 20px;">
+        <div class="row">
+            <!-- Left Column - Homestay Info -->
+            <div class="col-lg-8">
+                <div class="mb-4">
+                    <h1 class="fw-bold">@Model.Homestay.Name</h1>
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3">
+                            @if (Model.AverageRating > 0)
+                            {
+                                <span class="badge bg-warning text-dark me-2">
+                                    <i class="fas fa-star"></i> @Model.AverageRating.ToString("F1")
+                                </span>
+                            }
+                            <span class="text-muted">(@Model.ReviewCount đánh giá)</span>
+                        </div>
+                        <div>
+                            <i class="fas fa-map-marker-alt text-primary me-1"></i>
+                            <span>@Model.Homestay.Address, @Model.Homestay.City, @Model.Homestay.State</span>
+                        </div>
+                    </div>
+
+                    <!-- Location Map -->
+                    <div class="mt-3">
+                        <h5>📍 Vị trí</h5>
+                        <div id="locationMap" style="height: 300px; border: 1px solid #ddd; border-radius: 5px;"></div>
+                        <small class="text-muted mt-2 d-block">
+                            💡 Bạn có thể zoom và di chuyển bản đồ để xem vị trí chi tiết
+                        </small>
+                    </div>
+
+                    <!-- Weather Widget -->
+                    <div class="mt-4" id="weatherWidget">
+                        <h5>🌤️ Thời tiết hiện tại</h5>
+                        <div class="card border-primary">
+                            <div class="card-body p-3">
+                                <div id="weatherLoading" class="text-center">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                        <span class="visually-hidden">Đang tải...</span>
+                                    </div>
+                                    <span class="ms-2">Đang lấy thông tin thời tiết...</span>
+                                </div>
+                                <div id="weatherContent" style="display: none;">
+                                    <div class="row align-items-center">
+                                        <div class="col-auto">
+                                            <img id="weatherIcon" src="" alt="Weather" width="64" height="64">
+                                        </div>
+                                        <div class="col">
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span id="weatherTemp" class="h4 mb-0 text-primary"></span>
+                                                <span id="weatherDesc" class="ms-3 text-muted"></span>
+                                            </div>
+                                            <div class="row text-sm">
+                                                <div class="col-6">
+                                                    <i class="fas fa-tint text-muted"></i>
+                                                    <span id="weatherHumidity" class="ms-1"></span>
+                                                </div>
+                                                <div class="col-6">
+                                                    <i class="fas fa-wind text-muted"></i>
+                                                    <span id="weatherWind" class="ms-1"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="weatherError" style="display: none;" class="text-muted text-center">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    Không thể tải thông tin thời tiết
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather by Selected Date -->
+                <div class="card mb-4" id="selectedDateWeatherCard" style="display: none;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i class="fas fa-calendar-day text-primary me-2"></i>
+                            <h5 class="mb-0">Thời tiết ngày được chọn</h5>
+                        </div>
+                        <div id="selectedDateWeatherLoading" class="text-center">
+                            <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <span class="ms-2">Đang dự báo thời tiết...</span>
+                        </div>
+                        <div id="selectedDateWeatherContent" style="display: none;">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <img id="selectedDateWeatherIcon" src="" alt="Weather" width="64" height="64">
+                                </div>
+                                <div class="col">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span id="selectedDateWeatherTemp" class="h4 mb-0 text-primary"></span>
+                                        <span id="selectedDateWeatherDesc" class="ms-3 text-muted"></span>
+                                    </div>
+                                    <div class="row text-sm">
+                                        <div class="col-6">
+                                            <i class="fas fa-tint text-muted"></i>
+                                            <span id="selectedDateWeatherHumidity" class="ms-1"></span>
+                                        </div>
+                                        <div class="col-6">
+                                            <i class="fas fa-wind text-muted"></i>
+                                            <span id="selectedDateWeatherWind" class="ms-1"></span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            <span id="selectedDateDisplay"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="selectedDateWeatherError" style="display: none;" class="text-muted text-center">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Không thể tải dự báo thời tiết cho ngày này
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Host Info -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Chủ nhà: @Model.HostName</h5>
+                        <div class="d-flex align-items-center">
+                            <img src="@(!string.IsNullOrEmpty(Model.HostAvatar) ? Model.HostAvatar : "/images/default-avatar.jpg")" 
+                                 class="rounded-circle me-3" width="60" height="60" alt="@Model.HostName">
+                            <div>
+                                <p class="mb-1">Tham gia từ @(Model.Homestay.Host?.CreatedAt.ToString("MM/yyyy") ?? "N/A")</p>
+                                <p class="mb-0 text-muted">@(Model.Homestay.Host?.Email ?? "N/A")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <h5>Mô tả</h5>
+                    <p>@Model.Homestay.Description</p>
+                </div>
+
+                <!-- Amenities -->
+                <div class="mb-4">
+                    <h5>Tiện nghi</h5>
+                    @if (Model.Amenities != null && Model.Amenities.Any())
+                    {
+                        <div class="row">
+                            @foreach (var amenity in Model.Amenities)
+                            {
+                                <div class="col-md-6 mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>@amenity.Name
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có thông tin tiện nghi</p>
+                    }
+                </div>                <!-- YouTube Videos Section -->
+                <div class="mb-4" id="youtube-videos-section">
+                    @if (!string.IsNullOrEmpty(Model.Homestay.YouTubeVideoId))
+                    {
+                        <!-- Custom YouTube Video (Priority) -->
+                        <div class="custom-video-section mb-4">
+                            <h5 class="mb-3">
+                                <i class="fab fa-youtube text-danger me-2"></i>
+                                Video khám phá
+                            </h5>
+                            <div class="ratio ratio-16x9 mb-3">
+                                <iframe src="https://www.youtube.com/embed/@Model.Homestay.YouTubeVideoId?rel=0&modestbranding=1" 
+                                        title="Video khám phá" 
+                                        allowfullscreen
+                                        class="rounded">
+                                </iframe>
+                            </div>
+                            <div class="text-center">
+                                <small class="text-muted"><i class="fas fa-video me-1"></i> Video được cung cấp bởi chủ homestay</small>
+                            </div>                        </div>
+                        <hr class="my-4">
+                    }
+                    <!-- Auto-generated videos will be loaded here -->
+                    <div id="auto-youtube-videos">
+                        <!-- Automatic YouTube videos will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Video Modal -->
+                <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="videoModalLabel">Video</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body p-0">
+                                <div class="ratio ratio-16x9">
+                                    <iframe src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rules -->
+                @if (!string.IsNullOrEmpty(Model.Homestay.Rules))
+                {
+                    <div class="mb-4">
+                        <h5>Nội quy</h5>
+                        <p>@Model.Homestay.Rules</p>
+                    </div>
+                }
+
+                <!-- Reviews -->
+                <div class="mb-4">
+                    <h5>Đánh giá (@Model.ReviewCount)</h5>                    @if (Model.ReviewBookings?.Any() == true)
+                    {
+                        foreach (var booking in Model.ReviewBookings)
+                        {
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <h6 class="mb-1">@booking.User.FirstName @booking.User.LastName</h6>
+                                            <div class="text-warning">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="fas fa-star @(i <= booking.ReviewRating ? "" : "text-muted")"></i>
+                                                }
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">@booking.ReviewCreatedAt?.ToString("dd/MM/yyyy")</small>
+                                    </div>
+                                    <p class="mb-0">@booking.ReviewComment</p>                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có đánh giá nào</p>
+                    }
+                </div>
+            </div><!-- Right Column - Booking Form -->
+            <div class="col-lg-4">
+                <div class="card shadow-lg position-sticky" style="top: 20px;">
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <h4 class="text-primary">@Model.Homestay.PricePerNight.ToString("N0") VNĐ <small class="text-muted">/đêm</small></h4>
+                        </div>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <form asp-controller="Booking" asp-action="Create" method="post">
+                                <input type="hidden" name="HomestayId" value="@Model.Homestay.Id" />
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Ngày nhận phòng</label>
+                                    <input type="date" name="CheckInDate" id="checkInDate" class="form-control" required min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                    <div class="form-text">Hệ thống sẽ tự động chặn những ngày đã được đặt</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Ngày trả phòng</label>
+                                    <input type="date" name="CheckOutDate" id="checkOutDate" class="form-control" required min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")">
+                                </div>
+                                
+                                <!-- Visual Calendar Widget -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold">Lịch trống / đã đặt</label>
+                                    <div id="visualCalendar" class="visual-calendar">
+                                        <div class="calendar-header">
+                                            <button type="button" id="prevMonth" class="btn btn-sm btn-outline-secondary" aria-label="Tháng trước" title="Xem tháng trước">‹</button>
+                                            <span id="currentMonth" class="fw-semibold"></span>
+                                            <button type="button" id="nextMonth" class="btn btn-sm btn-outline-secondary" aria-label="Tháng sau" title="Xem tháng sau">›</button>
+                                        </div>
+                                        <div class="calendar-grid" id="calendarGrid">
+                                            <!-- Calendar will be generated here -->
+                                        </div>
+                                    </div>
+                                    <div class="booked-dates-legend mt-2">
+                                        <div class="legend-item">
+                                            <div class="legend-color legend-available"></div>
+                                            <span>Ngày có thể đặt</span>
+                                        </div>
+                                        <div class="legend-item">
+                                            <div class="legend-color legend-booked"></div>
+                                            <span>Ngày đã được đặt</span>
+                                        </div>                                        <div class="legend-item">
+                                            <div class="legend-color legend-selected"></div>
+                                            <span>Ngày đã chọn</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Selected dates display -->
+                                <div id="selectedDatesInfo" class="mb-3" style="display: none;">
+                                    <div class="card bg-light">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title mb-2">
+                                                <i class="fas fa-calendar-check text-primary me-2"></i>Ngày đã chọn
+                                            </h6>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div>
+                                                    <strong>Nhận phòng:</strong> <span id="displayCheckIn">--</span><br>
+                                                    <strong>Trả phòng:</strong> <span id="displayCheckOut">--</span><br>
+                                                    <strong>Số đêm:</strong> <span id="displayNights">0</span> đêm
+                                                </div>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" id="clearDatesBtn" title="Hủy chọn ngày">
+                                                    <i class="fas fa-times"></i> Hủy chọn
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Số khách</label>
+                                    <select name="NumberOfGuests" class="form-select" required>
+                                        @for (int i = 1; i <= Model.Homestay.MaxGuests; i++)
+                                        {
+                                            <option value="@i">@i khách</option>
+                                        }
+                                    </select>
+                                </div>                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Mã khuyến mãi (nếu có)</label>
+                                    <div class="input-group">
+                                        <select name="PromotionCode" id="promotionSelect" class="form-select">
+                                            <option value="">Chọn khuyến mãi</option>
+                                        </select>
+                                        <input type="text" name="PromotionCodeManual" id="promotionCode" class="form-control" placeholder="Hoặc nhập mã khuyến mãi" style="display: none;">
+                                        <button type="button" class="btn btn-outline-secondary" id="toggleManualInput">Nhập thủ công</button>
+                                        <button type="button" class="btn btn-outline-primary" id="applyPromotion">Áp dụng</button>
+                                    </div>
+                                    <small id="promotionFeedback" class="form-text"></small>
+                                    <div id="promotionDetails" class="mt-2" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            <span id="promotionDescription"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Ghi chú</label>
+                                    <textarea name="Notes" class="form-control" rows="3" placeholder="Ghi chú thêm..."></textarea>
+                                </div>
+
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Chi tiết giá</h5>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span>Giá theo ngày x <span id="numberOfNights">0</span> đêm</span>
+                                            <span id="subTotal">0 VNĐ</span>
+                                        </div>                                        <div class="d-flex justify-content-between mb-2" id="discountRow" style="display: none;">
+                                            <span>Giảm giá</span>
+                                            <span id="discount" class="text-success">-0 VNĐ</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between fw-bold">
+                                            <span>Tổng cộng</span>
+                                            <span id="totalPrice">0 VNĐ</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg" id="bookingButton">
+                                        <i class="fas fa-calendar-check me-2"></i>Đặt phòng
+                                    </button>
+                                </div>
+                                  <!-- Message Host Button -->
+                                <div class="d-grid mt-2">
+                                    <button type="button" class="btn btn-outline-primary" 
+                                            data-host-id="@Model.Homestay.HostId" 
+                                            data-homestay-id="@Model.Homestay.Id"
+                                            onclick="startHostConversation(this.dataset.hostId, this.dataset.homestayId)">
+                                        <i class="fas fa-comments me-2"></i>Nhắn tin với chủ nhà
+                                    </button>
+                                </div>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="text-center">
+                                <p class="text-muted mb-3">Vui lòng đăng nhập để đặt phòng</p>
+                                <a asp-controller="Account" asp-action="Login" class="btn btn-primary w-100">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </a>
+                                
+                                <!-- Show message button for non-authenticated users too -->
+                                <div class="d-grid mt-2">
+                                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary">
+                                        <i class="fas fa-comments me-2"></i>Nhắn tin với chủ nhà
+                                    </a>
+                                </div>
+                            </div>
+                        }
+
+                        <hr>
+                        
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-users me-1"></i>Tối đa @Model.Homestay.MaxGuests khách<br>
+                                <i class="fas fa-bed me-1"></i>@Model.Homestay.Bedrooms phòng ngủ<br>
+                                <i class="fas fa-bath me-1"></i>@Model.Homestay.Bathrooms phòng tắm
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Leaflet JS -->    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let bookedDates = [];
+        let currentDate = new Date();
+        let selectedCheckIn = null;
+        let selectedCheckOut = null;
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDateSelectionDisplay();
+            initializeClearDatesButton();
+        });
+
+        // Initialize the selected dates display
+        function initializeDateSelectionDisplay() {
+            updateSelectedDatesDisplay();
+        }
+
+        // Initialize clear dates button
+        function initializeClearDatesButton() {
+            const clearBtn = document.getElementById('clearDatesBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    clearSelectedDates();
+                });
+            }
+        }
+
+        // Clear selected dates
+        function clearSelectedDates() {
+            selectedCheckIn = null;
+            selectedCheckOut = null;
+            
+            // Clear form inputs
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+            if (checkInInput) checkInInput.value = '';
+            if (checkOutInput) checkOutInput.value = '';
+            
+            // Update displays
+            updateSelectedDatesDisplay();
+            clearPriceCalculation();
+            
+            // Regenerate calendar to remove selections
+            generateCalendar();
+            
+            console.log('🗑️ Cleared all selected dates');
+        }
+
+        // Update the selected dates display
+        function updateSelectedDatesDisplay() {
+            const infoDiv = document.getElementById('selectedDatesInfo');
+            const checkInDisplay = document.getElementById('displayCheckIn');
+            const checkOutDisplay = document.getElementById('displayCheckOut');
+            const nightsDisplay = document.getElementById('displayNights');
+            
+            if (!infoDiv) return;
+            
+            if (selectedCheckIn && selectedCheckOut) {
+                // Both dates selected - show full info
+                const checkInDate = new Date(selectedCheckIn);
+                const checkOutDate = new Date(selectedCheckOut);
+                const nights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                
+                if (checkInDisplay) checkInDisplay.textContent = checkInDate.toLocaleDateString('vi-VN');
+                if (checkOutDisplay) checkOutDisplay.textContent = checkOutDate.toLocaleDateString('vi-VN');
+                if (nightsDisplay) nightsDisplay.textContent = nights;
+                
+                infoDiv.style.display = 'block';
+            } else if (selectedCheckIn) {
+                // Only check-in selected
+                const checkInDate = new Date(selectedCheckIn);
+                if (checkInDisplay) checkInDisplay.textContent = checkInDate.toLocaleDateString('vi-VN');
+                if (checkOutDisplay) checkOutDisplay.textContent = '--';
+                if (nightsDisplay) nightsDisplay.textContent = '0';
+                
+                infoDiv.style.display = 'block';
+            } else {
+                // No dates selected
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        // Clear price calculation display
+        function clearPriceCalculation() {
+            const numberOfNightsEl = document.getElementById('numberOfNights');
+            const subTotalEl = document.getElementById('subTotal');
+            const discountEl = document.getElementById('discount');
+            const discountRow = document.getElementById('discountRow');
+            const totalPriceEl = document.getElementById('totalPrice');
+            
+            if (numberOfNightsEl) numberOfNightsEl.textContent = '0';
+            if (subTotalEl) subTotalEl.textContent = '0 VNĐ';
+            if (discountEl) discountEl.textContent = '-0 VNĐ';
+            if (discountRow) discountRow.style.display = 'none';
+            if (totalPriceEl) totalPriceEl.textContent = '0 VNĐ';
+        }
+          // Load booked dates from API
+        function loadBookedDates() {
+            const url = `/Booking/GetBookedDates/@Model.Homestay.Id`;
+            const debugText = document.getElementById('debugInfo') || { textContent: '' };
+            
+            console.log('🔄 Loading booked dates from:', url);
+            
+            fetch(url)
+                .then(response => {
+                    console.log('📡 API Response Status:', response.status);
+                    if (debugText.textContent !== undefined) {
+                        debugText.textContent += `\nAPI Status: ${response.status}`;
+                        debugText.textContent += `\nAPI Headers: ${response.headers.get('content-type')}`;
+                    }
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text(); // Get raw text first
+                }).then(text => {
+                    if (debugText.textContent !== undefined) {
+                        debugText.textContent += `\nRaw Response: ${text}`;
+                    }                    try {
+                        const data = JSON.parse(text);
+                        if (debugText.textContent !== undefined) {
+                            debugText.textContent += `\nParsed JSON: ${JSON.stringify(data, null, 2)}`;
+                        }
+                          // Update bookedDates array with data from API
+                        if (Array.isArray(data)) {
+                            bookedDates = data;
+                            console.log('✅ Updated bookedDates array:', bookedDates);
+                            console.log('📊 Array length:', bookedDates.length);
+                            if (bookedDates.length > 0) {
+                                console.log('🎯 Sample dates:', bookedDates.slice(0, 3));
+                            }
+                        } else if (data.bookedDates && Array.isArray(data.bookedDates)) {
+                            bookedDates = data.bookedDates;
+                            console.log('✅ Updated bookedDates array from property:', bookedDates);
+                        } else {
+                            console.warn('⚠️ API response is not an array:', data);
+                        }
+                        
+                        if (debugText.textContent !== undefined) {
+                            debugText.textContent += `\nUpdated bookedDates Array: ${JSON.stringify(bookedDates, null, 2)}`;
+                        }
+                        
+                        // Regenerate calendar with new booked dates
+                        generateCalendar();
+                        
+                        // Also check what's in database
+                        return fetch('/Booking/EnsureTestBookings/@Model.Homestay.Id', { method: 'GET' });
+                    } catch (e) {
+                        if (debugText.textContent !== undefined) {
+                            debugText.textContent += `\nJSON Parse Error: ${e.message}`;
+                        }
+                        throw e;
+                    }
+                })
+                .then(response => response.json())
+                .then(dbData => {
+                    if (debugText.textContent !== undefined) {
+                        debugText.textContent += `\n\n=== DATABASE CHECK ===`;
+                        debugText.textContent += `\nDB Response: ${JSON.stringify(dbData, null, 2)}`;
+                        if (dbData.existingBookings) {
+                            debugText.textContent += `\nExisting Bookings Count: ${dbData.existingBookings.length}`;
+                            dbData.existingBookings.forEach(booking => {
+                                debugText.textContent += `\n- ${booking.CheckIn} to ${booking.CheckOut} (${booking.Status})`;
+                            });
+                        }
+                        if (dbData.bookedDatesFromService) {
+                            debugText.textContent += `\nBooked Dates from Service: ${JSON.stringify(dbData.bookedDatesFromService)}`;
+                        }
+                    }
+                })
+                .catch(error => {
+                    if (debugText.textContent !== undefined) {
+                        debugText.textContent += `\nAPI Error: ${error.message}`;
+                    }
+                    console.error('Error loading booked dates:', error);
+                });
+        }
+        
+        function debugCalendar() {
+            const debugOutput = document.getElementById('debugOutput');
+            const debugText = document.getElementById('debugText');
+            debugOutput.style.display = 'block';
+            debugText.textContent = `Calendar Debug:
+Current Date: ${currentDate}
+Booked Dates: ${JSON.stringify(bookedDates, null, 2)}
+Selected Check-in: ${selectedCheckIn}
+Selected Check-out: ${selectedCheckOut}`;
+            generateCalendar();        }
+        
+        function addTestBooking() {
+            const debugOutput = document.getElementById('debugOutput');
+            const debugText = document.getElementById('debugText');
+            debugOutput.style.display = 'block';
+            debugText.textContent = 'Adding June test booking...';
+            
+            fetch('/Booking/CreateJuneTestBooking/@Model.Homestay.Id', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    debugText.textContent += `\nJune test booking result: ${JSON.stringify(data, null, 2)}`;
+                    if (data.success) {
+                        loadBookedDates(); // Reload booked dates
+                    }
+                })
+                .catch(error => {
+                    debugText.textContent += `\nError adding test booking: ${error.message}`;
+                });        }
+        
+        function testColors() {
+            const debugOutput = document.getElementById('debugOutput');
+            const debugText = document.getElementById('debugText');
+            debugOutput.style.display = 'block';
+            debugText.textContent = 'Testing calendar colors manually...';
+            
+            // Force color some dates for visual testing
+            const grid = document.getElementById('calendarGrid');
+            const days = grid.querySelectorAll('.calendar-day');
+            
+            days.forEach((day, index) => {
+                if (day.textContent === '18' || day.textContent === '19' || day.textContent === '20') {
+                    day.style.backgroundColor = '#dc3545';
+                    day.style.color = 'white';
+                    day.classList.add('booked');
+                    debugText.textContent += `\nForced red color on day ${day.textContent}`;
+                }            });
+            
+            debugText.textContent += `\nProcessed ${days.length} calendar days`;
+        }
+        
+        function createRealBookings() {
+            const debugOutput = document.getElementById('debugOutput');
+            const debugText = document.getElementById('debugText');
+            debugOutput.style.display = 'block';
+            debugText.textContent = 'Creating real test bookings in database...';
+            
+            fetch('/Booking/EnsureTestBookings/@Model.Homestay.Id', { method: 'GET' })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('📊 EnsureTestBookings response:', data);
+                    debugText.textContent += `\nAPI Response: ${JSON.stringify(data, null, 2)}`;
+                    
+                    if (data.success) {
+                        debugText.textContent += `\n✅ ${data.message}`;
+                        
+                        // Reload booked dates from server
+                        loadBookedDates();
+                        debugText.textContent += '\n🔄 Reloading calendar...';
+                    } else {
+                        debugText.textContent += `\n❌ Error: ${data.message}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('💥 Error creating test bookings:', error);
+                    debugText.textContent += `\n💥 Error: ${error.message}`;
+                });
+        }
+        function forceData() {
+            const debugOutput = document.getElementById('debugOutput');
+            const debugText = document.getElementById('debugText');
+            debugOutput.style.display = 'block';
+            debugText.textContent = 'Forcing test data...';
+            
+            // Force booked dates with current month dates
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth(); // 0-based month
+            
+            // Create some test dates for current month
+            bookedDates = [
+                `${year}-${String(month + 1).padStart(2, '0')}-18`, // June 18, 2025
+                `${year}-${String(month + 1).padStart(2, '0')}-19`, // June 19, 2025
+                `${year}-${String(month + 1).padStart(2, '0')}-20`, // June 20, 2025
+                `${year}-${String(month + 1).padStart(2, '0')}-22`, // June 22, 2025
+                `${year}-${String(month + 1).padStart(2, '0')}-23`  // June 23, 2025
+            ];
+            
+            debugText.textContent += `\nGenerated dates for ${year}-${String(month + 1).padStart(2, '0')}:`;
+            debugText.textContent += `\nForced bookedDates: ${JSON.stringify(bookedDates)}`;
+            
+            // Force style directly on DOM elements
+            const calendarCells = document.querySelectorAll('.calendar-day');
+            let forcedCount = 0;
+            
+            calendarCells.forEach(cell => {
+                const day = parseInt(cell.textContent);
+                if ([18, 19, 20, 22, 23].includes(day) && !isNaN(day)) {
+                    cell.classList.remove('available');
+                    cell.classList.add('booked');
+                    cell.style.backgroundColor = '#dc3545 !important';
+                    cell.style.color = 'white !important';
+                    cell.style.cursor = 'not-allowed !important';
+                    cell.style.border = '2px solid #dc3545 !important';
+                    cell.textContent = day; // Make sure day is still visible
+                    forcedCount++;
+                    debugText.textContent += `\nForced styling on day ${day}`;
+                }
+            });
+            
+            debugText.textContent += `\nForced styling on ${forcedCount} cells`;
+            
+            // Regenerate calendar with forced data
+            generateCalendar();
+            debugText.textContent += '\nCalendar regenerated with forced data';
+        }
+        
+        // Comprehensive debug function
+        function comprehensiveDebug() {
+            const debugOutput = document.getElementById('debugOutput');
+            const debugText = document.getElementById('debugText');
+            debugOutput.style.display = 'block';
+            debugText.textContent = '=== COMPREHENSIVE DEBUG ===\n';
+            
+            // 1. Check variables
+            debugText.textContent += `\n1. VARIABLES CHECK:`;
+            debugText.textContent += `\n   bookedDates: ${JSON.stringify(bookedDates)}`;
+            debugText.textContent += `\n   bookedDates type: ${typeof bookedDates}`;
+            debugText.textContent += `\n   bookedDates is array: ${Array.isArray(bookedDates)}`;
+            debugText.textContent += `\n   bookedDates length: ${bookedDates ? bookedDates.length : 'undefined'}`;
+            debugText.textContent += `\n   currentDate: ${currentDate}`;
+              // 2. Test API directly
+            debugText.textContent += `\n\n2. API TEST:`;
+            fetch('/Booking/GetBookedDates?homestayId=@Model.Homestay.Id')
+                .then(response => {
+                    debugText.textContent += `\n   API Status: ${response.status}`;
+                    return response.json();
+                })
+                .then(data => {
+                    debugText.textContent += `\n   API Data: ${JSON.stringify(data)}`;
+                    
+                    // 3. Test date format consistency
+                    debugText.textContent += `\n\n3. DATE FORMAT TEST:`;
+                    const testDate = new Date(2025, 5, 18); // June 18, 2025
+                    const testDateStr = testDate.toISOString().split('T')[0];
+                    debugText.textContent += `\n   Test date: ${testDate}`;
+                    debugText.textContent += `\n   Test date string: ${testDateStr}`;
+                    debugText.textContent += `\n   Is in API data: ${Array.isArray(data) ? data.includes(testDateStr) : 'API data not array'}`;
+                    
+                    // 4. Check DOM elements
+                    debugText.textContent += `\n\n4. DOM ELEMENTS CHECK:`;
+                    const calendarGrid = document.getElementById('calendarGrid');
+                    const calendarCells = document.querySelectorAll('.calendar-day');
+                    debugText.textContent += `\n   Calendar grid exists: ${!!calendarGrid}`;
+                    debugText.textContent += `\n   Calendar cells count: ${calendarCells.length}`;
+                    
+                    // Find specific test dates in DOM
+                    let foundCells = 0;
+                    calendarCells.forEach(cell => {
+                        const day = parseInt(cell.textContent);
+                        if ([18, 19, 20].includes(day) && !isNaN(day)) {
+                            foundCells++;
+                            debugText.textContent += `\n   Day ${day}: classes="${cell.className}", style="${cell.style.cssText}"`;
+                        }
+                    });
+                    debugText.textContent += `\n   Found ${foundCells} test day cells`;
+                    
+                    // 5. Force test
+                    debugText.textContent += `\n\n5. FORCE TEST:`;
+                    bookedDates = [testDateStr, '2025-06-19', '2025-06-20'];
+                    debugText.textContent += `\n   Forcing bookedDates: ${JSON.stringify(bookedDates)}`;
+                    generateCalendar();
+                    debugText.textContent += `\n   Calendar regenerated`;
+                    
+                    // 6. Verify after force
+                    setTimeout(() => {
+                        const newCells = document.querySelectorAll('.calendar-day');
+                        let bookedCellsFound = 0;
+                        newCells.forEach(cell => {
+                            if (cell.classList.contains('booked')) {
+                                bookedCellsFound++;
+                                debugText.textContent += `\n   Found booked cell: day=${cell.textContent}, classes="${cell.className}"`;
+                            }
+                        });
+                        debugText.textContent += `\n\n6. VERIFICATION: Found ${bookedCellsFound} booked cells after force`;
+                    }, 100);
+                })
+                .catch(error => {
+                    debugText.textContent += `\n   API Error: ${error.message}`;
+                });
+        }
+
+        // Load booked dates when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM Content Loaded - Starting initialization...');
+            console.log('🔍 Checking elements...');
+            console.log('Calendar element:', document.getElementById('visualCalendar'));
+            console.log('Map element:', document.getElementById('locationMap'));
+            console.log('Weather element:', document.getElementById('weatherWidget'));              // Initialize homestay features
+            setTimeout(function() {
+                console.log('⏰ Starting delayed initialization...');
+                initializeCalendar();
+                loadBookedDates();                initializeLocationMap(); // Initialize the map
+                loadWeather(); // Load weather data
+                initializeDateInputs(); // Initialize date input event listeners
+                loadPromotions(); // Load available promotions
+                loadYouTubeVideos(); // Initialize YouTube videos
+            }, 100); // 100ms delay
+            // Google Analytics tracking
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'homestay_view', {
+                    'event_category': 'Homestay',
+                    'event_label': @Html.Raw(Json.Serialize(Model.Homestay.Name ?? "")),
+                    'homestay_id': '@Model.Homestay.Id',
+                    'price_per_night': @Model.Homestay.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    'city': @Html.Raw(Json.Serialize(Model.Homestay.City ?? ""))
+                });
+            }
+            
+            // Track with Google Tag Manager
+            if (typeof gtmTrack !== 'undefined') {
+                gtmTrack.homestayView({
+                    'id': '@Model.Homestay.Id',
+                    'name': @Html.Raw(Json.Serialize(Model.Homestay.Name ?? "")),
+                    'city': @Html.Raw(Json.Serialize(Model.Homestay.City ?? "")),
+                    'price': @Model.Homestay.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                });
+            }            
+            console.log('✅ Initialization complete');
+        });
+        
+        // Load weather data
+        function loadWeather() {
+            console.log('🌤️ Loading weather data for homestay location...');
+            
+            // Get coordinates from homestay data
+            const latitude = @(Model.Homestay.Latitude != 0 ? Model.Homestay.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture) : "0");
+            const longitude = @(Model.Homestay.Longitude != 0 ? Model.Homestay.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture) : "0");
+            const city = @Html.Raw(Json.Serialize(Model.Homestay.City ?? ""));
+            
+            if (latitude && longitude && latitude !== null && longitude !== null) {
+                // Use coordinates if available
+                fetch(`/api/Weather/coordinates?latitude=${latitude}&longitude=${longitude}`)
+                    .then(response => response.json())
+                    .then(data => handleWeatherData(data))
+                    .catch(error => {
+                        console.error('Error loading weather by coordinates:', error);
+                        // Fallback to city name
+                        if (city) loadWeatherByCity(city);
+                        else showWeatherError();
+                    });
+            } else if (city) {
+                // Use city name as fallback
+                loadWeatherByCity(city);
+            } else {
+                showWeatherError();
+            }
+        }
+        
+        function loadWeatherByCity(city) {
+            fetch(`/api/Weather/city/${encodeURIComponent(city)}`)
+                .then(response => response.json())
+                .then(data => handleWeatherData(data))
+                .catch(error => {
+                    console.error('Error loading weather by city:', error);
+                    showWeatherError();
+                });
+        }
+          function handleWeatherData(response) {
+            console.log('🌤️ Handling weather data:', response);
+            const loadingEl = document.getElementById('weatherLoading');
+            const contentEl = document.getElementById('weatherContent');
+            const errorEl = document.getElementById('weatherError');
+            
+            loadingEl.style.display = 'none';
+            
+            if (response.success && response.data) {
+                const weather = response.data;
+                
+                // Update weather display
+                document.getElementById('weatherIcon').src = weather.iconUrl;
+                document.getElementById('weatherTemp').textContent = weather.temperatureDisplay;
+                document.getElementById('weatherDesc').textContent = weather.description;
+                document.getElementById('weatherHumidity').textContent = weather.humidityDisplay;
+                document.getElementById('weatherWind').textContent = weather.windSpeedDisplay;
+                
+                contentEl.style.display = 'block';
+                console.log('✅ Weather data loaded successfully:', weather);
+            } else {
+                showWeatherError();
+                console.warn('⚠️ Weather data not available:', response.message);
+            }
+        }
+        
+        function showWeatherError() {
+            document.getElementById('weatherLoading').style.display = 'none';
+            document.getElementById('weatherError').style.display = 'block';
+        }          // Initialize calendar controls
+        function initializeCalendar() {
+            console.log('📅 Initializing calendar...');
+            
+            try {
+                const calendarGrid = document.getElementById('calendarGrid');
+                const currentMonth = document.getElementById('currentMonth');
+                const prevMonth = document.getElementById('prevMonth');
+                const nextMonth = document.getElementById('nextMonth');
+                
+                console.log('Calendar grid element:', calendarGrid);
+                console.log('Month label element:', currentMonth);
+                console.log('Prev month button:', prevMonth);
+                console.log('Next month button:', nextMonth);
+                
+                if (!calendarGrid || !currentMonth || !prevMonth || !nextMonth) {
+                    console.error('❌ Some calendar elements not found!');
+                    return;
+                }
+                
+                // Generate initial calendar (will be updated when booked dates load)
+                generateCalendar();
+                
+                prevMonth.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                    generateCalendar();
+                });
+                
+                nextMonth.addEventListener('click', function() {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    generateCalendar();
+                });
+                
+                console.log('✅ Calendar initialized');
+            } catch (error) {
+                console.error('❌ Error initializing calendar:', error);
+            }
+        }
+        
+        // Generate visual calendar
+        function generateCalendar() {
+            console.log('🎨 Starting calendar generation...');
+            console.log('🎨 Current bookedDates array:', bookedDates);
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('currentMonth');
+            
+            if (!grid || !monthLabel) {
+                console.error('❌ Calendar elements not found:', { grid: !!grid, monthLabel: !!monthLabel });
+                return;
+            }
+            
+            console.log(`📅 Generating calendar with ${bookedDates.length} booked dates:`, bookedDates);          // Don't force test data - let API provide real data
+            console.log(`📊 Received ${bookedDates.length} booked dates from API`);
+            if (bookedDates.length === 0) {
+                console.log('ℹ️ No booked dates found - all dates will be available');
+            }
+            
+            // Additional debug after setting test data
+            console.log('🎯 Final bookedDates before processing:', bookedDates);
+            console.log('🎯 bookedDates type:', typeof bookedDates);
+            console.log('🎯 bookedDates is array:', Array.isArray(bookedDates));
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Set month label
+            monthLabel.textContent = new Date(year, month).toLocaleDateString('vi-VN', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+            // Clear grid
+            grid.innerHTML = '';
+            
+            // Add day headers
+            const dayHeaders = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+            
+            // Get first day of month and days in month
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startDayOfWeek = firstDay.getDay();
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < startDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-day empty';
+                grid.appendChild(emptyCell);
+            }
+              // Add days of month
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to start of day
+            let bookedDatesFound = 0;
+            
+            console.log(`🗓️ Processing ${daysInMonth} days for ${year}-${month + 1}...`);
+            console.log(`📅 Today is: ${today.toDateString()} (${today.toISOString().split('T')[0]})`);
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day';
+                cell.textContent = day;
+                
+                const cellDate = new Date(year, month, day);
+                cellDate.setHours(0, 0, 0, 0); // Reset time to start of day
+                const dateStr = cellDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format in local timezone                // Debug log for each date - more detailed
+                const isBookedCheck = bookedDates.includes(dateStr);
+                if (day <= 5 || isBookedCheck) { // Log first few days and any booked dates
+                    console.log(`🔍 Day ${day}: cellDate=${cellDate.toDateString()}, dateStr="${dateStr}", isBooked=${isBookedCheck}`);
+                    console.log(`   Available bookedDates: ${JSON.stringify(bookedDates)}`);
+                    console.log(`   String comparison: "${dateStr}" in [${bookedDates.map(d => `"${d}"`).join(', ')}]`);
+                }
+                
+                // Style the cell based on date status
+                if (cellDate < today) {
+                    cell.classList.add('past');
+                    console.log(`⚫ Day ${day} (${dateStr}) marked as PAST - cellDate: ${cellDate.toDateString()}, today: ${today.toDateString()}`);
+                } else if (bookedDates.includes(dateStr)) {
+                    cell.classList.add('booked');
+                    cell.style.backgroundColor = '#dc3545'; // Force red color
+                    cell.style.color = 'white';
+                    cell.style.cursor = 'not-allowed';
+                    bookedDatesFound++;
+                    console.log(`🔴 Day ${day} (${dateStr}) marked as BOOKED - Applied red styling`);
+                } else {
+                    cell.classList.add('available');
+                    cell.addEventListener('click', () => selectDate(dateStr, cell));
+                    console.log(`🟢 Day ${day} (${dateStr}) marked as AVAILABLE`);
+                }
+                
+                // Add click handler for weather forecast (for all future dates)
+                if (cellDate >= today) {
+                    cell.addEventListener('click', () => showWeatherForDate(dateStr, cell));
+                    cell.style.cursor = 'pointer';
+                    cell.title = `Xem thời tiết ngày ${dateStr}`;
+                }
+                
+                // Mark selected dates
+                if (selectedCheckIn === dateStr) {
+                    cell.classList.add('selected-checkin');
+                }
+                if (selectedCheckOut === dateStr) {
+                    cell.classList.add('selected-checkout');
+                }
+                
+                // Mark date range
+                if (selectedCheckIn && selectedCheckOut) {
+                    const checkIn = new Date(selectedCheckIn);
+                    const checkOut = new Date(selectedCheckOut);
+                    if (cellDate > checkIn && cellDate < checkOut) {
+                        cell.classList.add('in-range');
+                    }
+                }
+                
+                cell.setAttribute('data-date', dateStr);
+                grid.appendChild(cell);
+            }
+            
+            console.log(`✅ Calendar generated: ${daysInMonth} days total, ${bookedDatesFound} booked dates highlighted in RED`);
+            
+            if (bookedDates.length > 0 && bookedDatesFound === 0) {
+                console.warn('⚠️ WARNING: Booked dates exist but none were highlighted! Check date format consistency.');
+                console.log('Sample booked date:', bookedDates[0]);
+                console.log('Sample calendar date:', new Date(year, month, 1).toISOString().split('T')[0]);
+            }
+        }
+        
+        // Handle date selection
+        function selectDate(dateStr, cell) {
+            if (bookedDates.includes(dateStr)) {
+                alert('Ngày này đã được đặt. Vui lòng chọn ngày khác.');
+                return;
+            }
+              if (!selectedCheckIn || (selectedCheckIn && selectedCheckOut)) {
+                // Select check-in date
+                selectedCheckIn = dateStr;
+                selectedCheckOut = null;
+                document.getElementById('checkInDate').value = dateStr;
+                document.getElementById('checkOutDate').value = '';
+                onDateSelectionChanged();
+            } else if (selectedCheckIn && !selectedCheckOut) {
+                // Select check-out date
+                const checkInDate = new Date(selectedCheckIn);
+                const checkOutDate = new Date(dateStr);
+                
+                if (checkOutDate <= checkInDate) {
+                    alert('Ngày trả phòng phải sau ngày nhận phòng.');
+                    return;
+                }
+                
+                // Check if any date in between is booked
+                const dateRange = getDateRange(selectedCheckIn, dateStr);
+                const hasBookedDateInRange = dateRange.some(date => bookedDates.includes(date));
+                
+                if (hasBookedDateInRange) {
+                    alert('Có ngày đã được đặt trong khoảng thời gian đã chọn. Vui lòng chọn lại.');
+                    return;
+                }
+                
+                selectedCheckOut = dateStr;
+                document.getElementById('checkOutDate').value = dateStr;
+                onDateSelectionChanged();
+                
+                // Calculate price
+                calculatePrice();
+            }
+            
+            // Regenerate calendar to update styling
+            generateCalendar();
+        }
+          // Handle date selection changes
+        function onDateSelectionChanged() {
+            // Update selected dates display
+            updateSelectedDatesDisplay();
+            
+            // Update weather forecast for selected date
+            if (selectedCheckIn) {
+                showWeatherForDate(selectedCheckIn);
+            }
+            
+            // Update promotion list based on new dates
+            loadPromotions();
+            
+            // Calculate price if both dates are selected
+            if (selectedCheckIn && selectedCheckOut) {
+                calculatePrice();
+            } else {
+                // Clear price if dates incomplete
+                clearPriceCalculation();
+            }
+        }
+        
+        // Get date range between two dates (excluding checkout date)
+        function getDateRange(startDate, endDate) {
+            const dates = [];
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+                dates.push(d.toISOString().split('T')[0]);
+            }
+            
+            return dates;
+        }
+        
+        // Update date inputs to disable booked dates
+        function updateDateInputs() {
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+              // Add event listeners to sync with calendar
+            checkInInput.addEventListener('change', function() {
+                selectedCheckIn = this.value;
+                selectedCheckOut = null;
+                checkOutInput.value = '';
+                generateCalendar();
+                validateAndUpdateDates();
+                onDateSelectionChanged();
+            });
+            
+            checkOutInput.addEventListener('change', function() {
+                if (selectedCheckIn) {
+                    selectedCheckOut = this.value;
+                    generateCalendar();
+                    validateCheckOutDate();
+                    onDateSelectionChanged();
+                }
+            });
+        }
+          // Validate and update dates
+        function validateAndUpdateDates() {
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+            selectedCheckIn = checkInInput.value; // Use global variable
+            
+            // Check if check-in date is booked
+            if (bookedDates.includes(selectedCheckIn)) {
+                alert('Ngày này đã được đặt. Vui lòng chọn ngày khác.');
+                checkInInput.value = '';
+                selectedCheckIn = null;
+                generateCalendar();
+                return;
+            }
+            
+            // Auto-update checkout date
+            if (selectedCheckIn) {
+                const checkinDate = new Date(selectedCheckIn);
+                const checkoutDate = new Date(checkinDate);
+                checkoutDate.setDate(checkoutDate.getDate() + 1);
+                
+                checkOutInput.min = checkoutDate.toISOString().split('T')[0];
+                
+                if (checkOutInput.value <= selectedCheckIn) {
+                    checkOutInput.value = checkoutDate.toISOString().split('T')[0];
+                    selectedCheckOut = checkOutInput.value;
+                }
+                
+                // Check if the auto-selected checkout date is also booked
+                const autoCheckOut = checkoutDate.toISOString().split('T')[0];
+                if (bookedDates.includes(autoCheckOut)) {
+                    // Find next available date
+                    let nextAvailable = new Date(checkoutDate);
+                    while (bookedDates.includes(nextAvailable.toISOString().split('T')[0])) {
+                        nextAvailable.setDate(nextAvailable.getDate() + 1);
+                    }
+                    checkOutInput.value = nextAvailable.toISOString().split('T')[0];
+                    selectedCheckOut = checkOutInput.value;
+                }
+                
+                generateCalendar();
+            }
+        }
+          // Validate checkout date
+        function validateCheckOutDate() {
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+            selectedCheckOut = checkOutInput.value; // Use global variable
+            selectedCheckIn = checkInInput.value; // Use global variable
+            
+            if (!selectedCheckIn) {
+                alert('Vui lòng chọn ngày nhận phòng trước.');
+                checkOutInput.value = '';
+                selectedCheckOut = null;
+                generateCalendar();
+                return;
+            }
+            
+            // ADDED: Validate minimum stay requirement (at least 1 night)
+            const checkInDate = new Date(selectedCheckIn);
+            const checkOutDate = new Date(selectedCheckOut);
+            const numberOfNights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+            
+            if (numberOfNights < 1) {
+                alert('Thời gian lưu trú tối thiểu là 1 đêm.');
+                checkOutInput.value = '';
+                selectedCheckOut = null;
+                generateCalendar();
+                return;
+            }
+            
+            // FIXED: Don't block checkout dates - guests leave on checkout day
+            // Instead, check if any date in the stay period (excluding checkout) is booked
+            if (checkOutDate <= checkInDate) {
+                alert('Ngày trả phòng phải sau ngày nhận phòng.');
+                checkOutInput.value = '';
+                selectedCheckOut = null;
+                generateCalendar();
+                return;
+            }
+            // Check if any date between check-in and check-out (excluding checkout) is booked
+            const dateRange = getDateRange(selectedCheckIn, selectedCheckOut);
+            const hasBookedDateInRange = dateRange.some(date => bookedDates.includes(date));
+            
+            if (hasBookedDateInRange) {
+                alert('Có ngày đã được đặt trong khoảng thời gian đã chọn. Vui lòng chọn lại.');
+                checkOutInput.value = '';
+                selectedCheckOut = null;
+                generateCalendar();
+                return;
+            }
+              calculatePrice();
+            generateCalendar();
+        }
+        
+        // Initialize location map
+        function initializeLocationMap() {
+            console.log('🗺️ Initializing location map...');
+            let lat = @Model.Homestay.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            let lng = @Model.Homestay.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            
+            console.log('📍 Coordinates:', lat, lng);
+            
+            if (!lat || !lng || lat === 0 || lng === 0) {
+                console.log('⚠️ Invalid coordinates, using default location');
+                // Use default location (Ho Chi Minh City)
+                lat = 10.8231;
+                lng = 106.6297;
+            }
+            
+            let locationMap = null;
+            let marker = null;
+            
+            try {
+                // Create map instance
+                locationMap = L.map('locationMap').setView([lat, lng], 15);
+                
+                // Add OpenStreetMap tiles
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(locationMap);
+                
+                // Add marker for homestay
+                marker = L.marker([lat, lng]).addTo(locationMap);
+                
+                console.log('✅ Map initialized successfully');
+            } catch (error) {
+                console.error('❌ Error initializing map:', error);
+                return; // Exit if map initialization fails
+            }
+            // Create popup content
+            const popupContent = `
+                <div class="map-popup-content">
+                    <h6>` + @Html.Raw(Json.Serialize(Model.Homestay.Name ?? "")) + `</h6>                    <p><strong>📍 Địa chỉ:</strong><br/>` + @Html.Raw(Json.Serialize(Model.Homestay.Address ?? "")) + `</p>
+                    <p><strong>🏘️ Khu vực:</strong><br/>` + @Html.Raw(Json.Serialize(Model.Homestay.City ?? "")) + `, ` + @Html.Raw(Json.Serialize(Model.Homestay.State ?? "")) + `</p>
+                    <p><strong>🎯 Tọa độ:</strong><br/>Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}</p>
+                    <div style="margin-top: 8px;">
+                        <a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" class="btn btn-sm btn-primary">
+                            🗺️ Xem trên Google Maps
+                        </a>
+                    </div>
+                </div>
+            `;
+            
+            marker.bindPopup(popupContent).openPopup();
+            
+            // Add click event to map
+            locationMap.on('click', function(e) {
+                const clickedLat = e.latlng.lat;
+                const clickedLng = e.latlng.lng;
+                const url = `https://www.google.com/maps?q=${clickedLat},${clickedLng}`;
+                window.open(url, '_blank');
+            });
+        }
+        
+        // Show weather forecast for selected date
+        function showWeatherForDate(dateStr, cell) {
+            console.log('🌤️ Showing weather for date:', dateStr);
+            
+            const selectedDate = new Date(dateStr);
+            const today = new Date();
+            const daysDiff = Math.ceil((selectedDate - today) / (1000 * 60 * 60 * 24));
+            
+            // Show the weather card
+            const weatherCard = document.getElementById('selectedDateWeatherCard');
+            const loadingEl = document.getElementById('selectedDateWeatherLoading');
+            const contentEl = document.getElementById('selectedDateWeatherContent');
+            const errorEl = document.getElementById('selectedDateWeatherError');
+            const dateDisplayEl = document.getElementById('selectedDateDisplay');
+            
+            if (weatherCard) weatherCard.style.display = 'block';
+            if (loadingEl) loadingEl.style.display = 'block';
+            if (contentEl) contentEl.style.display = 'none';
+            if (errorEl) errorEl.style.display = 'none';            // Update date display
+            if (dateDisplayEl) {
+                const formattedDate = selectedDate.toLocaleDateString('vi-VN', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                dateDisplayEl.textContent = formattedDate;
+            }
+            
+            // Get coordinates from homestay data
+            const latitude = @(Model.Homestay.Latitude != 0 ? Model.Homestay.Latitude.ToString(System.Globalization.CultureInfo.InvariantCulture) : "0");
+            const longitude = @(Model.Homestay.Longitude != 0 ? Model.Homestay.Longitude.ToString(System.Globalization.CultureInfo.InvariantCulture) : "0");
+            const city = @Html.Raw(Json.Serialize(Model.Homestay.City ?? ""));
+            
+            // Generate mock weather for any selected date (simplified approach)
+            generateMockWeatherForDate(dateStr);
+        }
+        
+        // Generate mock weather for selected date
+        function generateMockWeatherForDate(dateStr) {
+            const loadingEl = document.getElementById('selectedDateWeatherLoading');
+            const contentEl = document.getElementById('selectedDateWeatherContent');
+            
+            if (loadingEl) loadingEl.style.display = 'none';
+            
+            // Generate predictable but varied mock data based on date
+            const date = new Date(dateStr);
+            const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const seed = dayOfYear + date.getFullYear();
+            
+            // Simple pseudo-random based on date
+            const pseudo = ((seed * 9301 + 49297) % 233280) / 233280;
+            const temp = Math.round(23 + pseudo * 8); // 23-31°C
+            const humidity = Math.round(60 + pseudo * 30); // 60-90%
+            const windSpeed = Math.round((1 + pseudo * 4) * 10) / 10; // 1-5 m/s
+            
+            const descriptions = ['Trời nắng đẹp', 'Có mây nhẹ', 'Nắng ít mây', 'Trời quang đãng', 'Mây rải rác'];
+            const icons = ['01d', '02d', '03d', '04d'];
+            
+            const description = descriptions[Math.floor(pseudo * descriptions.length)];
+            const icon = icons[Math.floor(pseudo * icons.length)];
+            
+            // Update display
+            const weatherIcon = document.getElementById('selectedDateWeatherIcon');
+            const weatherTemp = document.getElementById('selectedDateWeatherTemp');
+            const weatherDesc = document.getElementById('selectedDateWeatherDesc');
+            const weatherHumidity = document.getElementById('selectedDateWeatherHumidity');
+            const weatherWind = document.getElementById('selectedDateWeatherWind');
+            
+            if (weatherIcon) weatherIcon.src = 'https://openweathermap.org/img/wn/' + icon + '@@2x.png';
+            if (weatherTemp) weatherTemp.textContent = temp + '°C';
+            if (weatherDesc) weatherDesc.textContent = description;
+            if (weatherHumidity) weatherHumidity.textContent = humidity + '%';
+            if (weatherWind) weatherWind.textContent = windSpeed + ' m/s';
+            
+            if (contentEl) contentEl.style.display = 'block';
+            console.log('✅ Mock weather generated for selected date:', dateStr);
+        }
+          // Validate check-in date
+        function validateCheckInDate() {
+            const checkInInput = document.getElementById('checkInDate');
+            selectedCheckIn = checkInInput.value; // Use global variable
+            
+            if (!selectedCheckIn) return;
+            
+            // Check if check-in date is booked
+            if (bookedDates.includes(selectedCheckIn)) {
+                alert('Ngày này đã được đặt. Vui lòng chọn ngày khác.');
+                checkInInput.value = '';
+                selectedCheckIn = null;
+                generateCalendar();
+                return;
+            }
+            
+            validateAndUpdateDates();
+        }
+        
+        // Initialize date input event listeners
+        function initializeDateInputs() {
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+            
+            if (checkInInput) {
+                checkInInput.addEventListener('change', function() {
+                    validateCheckInDate();
+                    calculatePrice();
+                });
+            }
+            
+            if (checkOutInput) {
+                checkOutInput.addEventListener('change', function() {
+                    validateCheckOutDate();
+                    calculatePrice();
+                });
+            }
+              console.log('✅ Date input event listeners initialized');
+        }
+        
+        // Calculate price based on selected dates
+        function calculatePrice() {
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+            const numberOfNightsEl = document.getElementById('numberOfNights');
+            const subTotalEl = document.getElementById('subTotal');
+            const totalPriceEl = document.getElementById('totalPrice');
+            
+            if (!checkInInput?.value || !checkOutInput?.value) {
+                // Reset price display if dates are not selected
+                if (numberOfNightsEl) numberOfNightsEl.textContent = '0';
+                if (subTotalEl) subTotalEl.textContent = '0 VNĐ';
+                if (totalPriceEl) totalPriceEl.textContent = '0 VNĐ';
+                return;
+            }
+            
+            const checkInDate = new Date(checkInInput.value);
+            const checkOutDate = new Date(checkOutInput.value);
+            
+            if (checkOutDate <= checkInDate) {
+                // Invalid date range
+                if (numberOfNightsEl) numberOfNightsEl.textContent = '0';
+                if (subTotalEl) subTotalEl.textContent = '0 VNĐ';
+                if (totalPriceEl) totalPriceEl.textContent = '0 VNĐ';
+                return;
+            }
+            
+            // Get promotion code if any
+            const select = document.getElementById('promotionSelect');
+            const manualInput = document.getElementById('promotionCode');
+            let promotionCode = '';
+            
+            if (select.style.display !== 'none' && select.value) {
+                promotionCode = select.value;
+            } else if (manualInput.style.display !== 'none' && manualInput.value) {
+                promotionCode = manualInput.value.trim();
+            }
+            
+            // Call API to calculate price with promotion
+            const homestayId = @Model.Homestay.Id;
+            const checkIn = checkInInput.value;
+            const checkOut = checkOutInput.value;
+            
+            let url = `/Homestay/CalculatePrice?homestayId=${homestayId}&checkIn=${checkIn}&checkOut=${checkOut}`;
+            if (promotionCode) {
+                url += `&promotionCode=${encodeURIComponent(promotionCode)}`;
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updatePriceDisplay(data);
+                    } else {
+                        // Fallback to basic calculation
+                        const numberOfNights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                        const pricePerNight = @Model.Homestay.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        const subTotal = numberOfNights * pricePerNight;
+                        
+                        if (numberOfNightsEl) numberOfNightsEl.textContent = numberOfNights.toString();
+                        if (subTotalEl) subTotalEl.textContent = subTotal.toLocaleString('vi-VN') + ' VNĐ';
+                        if (totalPriceEl) totalPriceEl.textContent = subTotal.toLocaleString('vi-VN') + ' VNĐ';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error calculating price:', error);
+                    // Fallback to basic calculation
+                    const numberOfNights = Math.floor((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+                    const pricePerNight = @Model.Homestay.PricePerNight.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    const subTotal = numberOfNights * pricePerNight;
+                    
+                    if (numberOfNightsEl) numberOfNightsEl.textContent = numberOfNights.toString();
+                    if (subTotalEl) subTotalEl.textContent = subTotal.toLocaleString('vi-VN') + ' VNĐ';
+                    if (totalPriceEl) totalPriceEl.textContent = subTotal.toLocaleString('vi-VN') + ' VNĐ';
+                });
+            
+            console.log('💰 Price calculation initiated:', {
+                checkIn: checkInInput.value,
+                checkOut: checkOutInput.value,
+                promotionCode
+            });
+        }
+
+        // Load YouTube videos for this homestay location
+        async function loadYouTubeVideos() {
+            const autoVideosContainer = document.getElementById('auto-youtube-videos');
+            const hasCustomVideo = @Html.Raw(!string.IsNullOrEmpty(Model.Homestay.YouTubeVideoId) ? "true" : "false");
+            
+            console.log('🔍 Container found:', autoVideosContainer);
+            console.log('🎬 Has custom video:', hasCustomVideo);
+            
+            if (!autoVideosContainer) {
+                console.error('❌ Container #auto-youtube-videos not found!');
+                return;
+            }
+            
+            try {
+                const city = @Html.Raw(Json.Serialize(Model.Homestay.City ?? ""));
+                console.log('🚀 Loading YouTube videos for:', city);
+                
+                const response = await fetch(`/api/YouTube/homestay-videos/${encodeURIComponent(city)}`);
+                console.log('📡 API response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('📊 YouTube API response:', data);
+                
+                if (data.success && data.videos && data.videos.length > 0) {
+                    console.log('📹 Found', data.videos.length, 'videos for', city);
+                    console.log('📊 Video data:', data.videos);
+                    // Create HTML for YouTube videos
+                    const videosHtml = createYouTubeVideosHtml(data.videos, hasCustomVideo);
+                    console.log('📝 Generated HTML length:', videosHtml.length);
+                    autoVideosContainer.innerHTML = videosHtml;
+                    console.log('✅ Videos HTML rendered successfully');
+                    console.log('📋 Container content after render:', autoVideosContainer.innerHTML.substring(0, 200));
+                    
+                    // Track that videos were loaded
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'youtube_videos_loaded', {
+                            event_category: 'Homestay',
+                            event_label: city,
+                            videos_count: data.videos.length,
+                            has_custom_video: hasCustomVideo
+                        });
+                    }
+                } else {
+                    console.log('❌ No videos found or API error:', data);
+                    // Hide the section if no videos found and no custom video
+                    if (!hasCustomVideo) {
+                        document.getElementById('youtube-videos-section').style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error loading YouTube videos:', error);
+                // Hide only if no custom video available
+                if (!hasCustomVideo) {
+                    document.getElementById('youtube-videos-section').style.display = 'none';
+                }
+            }
+        }
+
+        function createYouTubeVideosHtml(videos, hasCustomVideo = false) {
+            const videosToShow = videos.slice(0, 6);
+            
+            const cityName = '@Html.Raw(Model.Homestay.City?.Replace("'", "\\'"))';
+            const titleText = hasCustomVideo ? 
+                `Video khám phá thêm về ${cityName}` : 
+                `Video giới thiệu về ${cityName}`;
+            
+            let html = `
+                <h5 class="mb-3">
+                    <i class="fab fa-youtube text-danger me-2"></i>
+                    ${titleText}
+                </h5>
+                <div class="row g-3">
+            `;
+            
+            videosToShow.forEach(video => {
+                html += `
+                    <div class="col-md-4">
+                        <div class="card h-100 youtube-video-card">
+                            <div class="video-thumbnail position-relative">
+                                <img src="${video.thumbnailUrl}" class="card-img-top" alt="${video.title}" 
+                                     style="height: 200px; object-fit: cover;">                                <div class="play-overlay">
+                                    <button class="btn btn-danger btn-lg rounded-circle" 
+                                            onclick="playVideo('${video.videoId}', '${video.title.replace(/'/g, "\\'")}')">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate" title="${video.title}">
+                                    ${video.title}
+                                </h6>
+                                <p class="card-text small text-muted mb-2">
+                                    ${video.shortDescription || video.description.substring(0, 100) + '...'}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>
+                                        ${video.channelTitle}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <div class="text-center mt-3">
+                    <small class="text-muted">
+                        <i class="fab fa-youtube text-danger me-1"></i>
+                        Video được cung cấp bởi YouTube
+                    </small>
+                </div>
+            `;
+            
+            return html;
+        }
+
+        // Play video in modal
+        function playVideo(videoId, title) {
+            const modal = document.getElementById('videoModal');
+            const iframe = modal.querySelector('iframe');
+            const modalTitle = modal.querySelector('.modal-title');
+            
+            modalTitle.textContent = title;
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`;
+            
+            const bootstrapModal = new bootstrap.Modal(modal);
+            bootstrapModal.show();
+            
+            // Clear iframe when modal is hidden
+            modal.addEventListener('hidden.bs.modal', function () {
+                iframe.src = '';
+            });
+            
+            // Track video play event
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'video_play', {
+                    event_category: 'YouTube',
+                    event_label: title,
+                    video_id: videoId
+                });
+            }
+        }
+        
+        // Format large numbers
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            }
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num.toString();
+        }
+
+        // Start conversation with host
+        function startHostConversation(hostId, homestayId) {
+            fetch('@Url.Action("StartHostConversation", "Messaging")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    hostId: hostId,
+                    homestayId: homestayId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirect to messaging page with conversation selected
+                    window.location.href = '/Messaging?conversationId=' + data.conversationId;
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi tạo cuộc trò chuyện');
+            });
+        }
+
+        // Promotion handling
+        let availablePromotions = [];        // Load available promotions
+        function loadPromotions() {
+            const homestayId = @Model.Homestay.Id;
+            
+            // Convert to Date objects if they are strings
+            let checkIn, checkOut;
+            if (selectedCheckIn) {
+                checkIn = typeof selectedCheckIn === 'string' ? new Date(selectedCheckIn) : selectedCheckIn;
+            } else {
+                checkIn = new Date();
+            }
+            
+            if (selectedCheckOut) {
+                checkOut = typeof selectedCheckOut === 'string' ? new Date(selectedCheckOut) : selectedCheckOut;
+            } else {
+                checkOut = new Date(Date.now() + 86400000); // +1 day
+            }
+            
+            fetch(`/Homestay/GetAvailablePromotions?homestayId=${homestayId}&checkIn=${checkIn.toISOString()}&checkOut=${checkOut.toISOString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error loading promotions:', data.error);
+                        return;
+                    }
+                    
+                    availablePromotions = data;
+                    populatePromotionDropdown();
+                })
+                .catch(error => {
+                    console.error('Error loading promotions:', error);
+                });
+        }
+        
+        // Populate promotion dropdown
+        function populatePromotionDropdown() {
+            const select = document.getElementById('promotionSelect');
+            select.innerHTML = '<option value="">Chọn khuyến mãi</option>';
+            
+            availablePromotions.forEach(promo => {
+                const option = document.createElement('option');
+                option.value = promo.code;
+                option.textContent = `${promo.name} - ${formatPromotionValue(promo)}`;
+                option.dataset.description = promo.description;
+                option.dataset.type = promo.type;
+                option.dataset.value = promo.value;
+                option.dataset.minAmount = promo.minAmount;
+                option.dataset.maxDiscount = promo.maxDiscount;
+                select.appendChild(option);
+            });
+        }
+        
+        // Format promotion value for display
+        function formatPromotionValue(promo) {
+            if (promo.type === 'Percentage') {
+                return `Giảm ${promo.value}%`;
+            } else {
+                return `Giảm ${promo.value.toLocaleString('vi-VN')}đ`;
+            }
+        }
+        
+        // Toggle manual input
+        document.getElementById('toggleManualInput').addEventListener('click', function() {
+            const select = document.getElementById('promotionSelect');
+            const input = document.getElementById('promotionCode');
+            const button = this;
+            
+            if (select.style.display === 'none') {
+                select.style.display = 'block';
+                input.style.display = 'none';
+                button.textContent = 'Nhập thủ công';
+                input.value = '';
+            } else {
+                select.style.display = 'none';
+                input.style.display = 'block';
+                button.textContent = 'Chọn từ danh sách';
+                select.value = '';
+            }
+            hidePromotionDetails();
+        });
+        
+        // Show promotion details
+        document.getElementById('promotionSelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                showPromotionDetails(selectedOption);
+            } else {
+                hidePromotionDetails();
+            }
+        });
+        
+        function showPromotionDetails(option) {
+            const details = document.getElementById('promotionDetails');
+            const description = document.getElementById('promotionDescription');
+            
+            let detailText = option.dataset.description || option.textContent;
+            if (option.dataset.minAmount) {
+                detailText += ` (Áp dụng cho đơn hàng từ ${parseFloat(option.dataset.minAmount).toLocaleString('vi-VN')}đ)`;
+            }
+            if (option.dataset.maxDiscount) {
+                detailText += ` (Tối đa ${parseFloat(option.dataset.maxDiscount).toLocaleString('vi-VN')}đ)`;
+            }
+            
+            description.textContent = detailText;
+            details.style.display = 'block';
+        }
+        
+        function hidePromotionDetails() {
+            document.getElementById('promotionDetails').style.display = 'none';
+        }
+        
+        // Handle apply promotion button
+        document.getElementById('applyPromotion').addEventListener('click', function() {
+            const select = document.getElementById('promotionSelect');
+            const manualInput = document.getElementById('promotionCode');
+            let promotionCode = '';
+            
+            if (select.style.display !== 'none' && select.value) {
+                promotionCode = select.value;
+            } else if (manualInput.style.display !== 'none' && manualInput.value) {
+                promotionCode = manualInput.value.trim();
+            }
+            
+            if (promotionCode) {
+                validateAndApplyPromotion(promotionCode);
+            } else {
+                showPromotionFeedback('Vui lòng chọn hoặc nhập mã khuyến mãi', 'error');
+            }
+        });
+        
+        // Validate and apply promotion
+        function validateAndApplyPromotion(code) {
+            // Check if it's from the dropdown
+            const promo = availablePromotions.find(p => p.code === code);
+            if (promo) {
+                showPromotionFeedback(`Áp dụng thành công: ${promo.name}`, 'success');
+                calculatePriceWithPromotion(code);
+                return;
+            }
+            
+            // If not in dropdown, validate via API
+            if (!selectedCheckIn || !selectedCheckOut) {
+                showPromotionFeedback('Vui lòng chọn ngày nhận và trả phòng trước', 'error');
+                return;
+            }
+            
+            const homestayId = @Model.Homestay.Id;
+            const checkIn = selectedCheckIn;
+            const checkOut = selectedCheckOut;
+              fetch(`/Homestay/CalculatePrice?homestayId=${homestayId}&checkIn=${checkIn}&checkOut=${checkOut}&promotionCode=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.promotionApplied) {
+                        showPromotionFeedback(`Áp dụng thành công! Giảm ${data.discountAmount.toLocaleString('vi-VN')} đ`, 'success');
+                        updatePriceDisplay(data);
+                    } else {
+                        showPromotionFeedback(data.message || 'Mã khuyến mãi không hợp lệ', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error validating promotion:', error);
+                    showPromotionFeedback('Có lỗi xảy ra khi kiểm tra mã khuyến mãi', 'error');
+                });
+        }
+        
+        // Calculate price with promotion (for dropdown selections)
+        function calculatePriceWithPromotion(code) {
+            if (!selectedCheckIn || !selectedCheckOut) {
+                showPromotionFeedback('Vui lòng chọn ngày nhận và trả phòng trước', 'error');
+                return;
+            }
+            
+            calculatePrice(); // This will include the promotion code
+        }
+        
+        // Show promotion feedback
+        function showPromotionFeedback(message, type) {
+            const feedback = document.getElementById('promotionFeedback');
+            feedback.textContent = message;
+            feedback.className = `form-text ${type === 'success' ? 'text-success' : 'text-danger'}`;
+        }
+        
+        // Update price display
+        function updatePriceDisplay(data) {
+            if (data.numberOfNights) {
+                document.getElementById('numberOfNights').textContent = data.numberOfNights;
+            }
+            if (data.subTotal) {
+                document.getElementById('subTotal').textContent = data.subTotal.toLocaleString('vi-VN') + ' VNĐ';
+            }
+            if (data.discountAmount && data.discountAmount > 0) {
+                document.getElementById('discount').textContent = '-' + data.discountAmount.toLocaleString('vi-VN') + ' VNĐ';
+                document.getElementById('discountRow').style.display = 'flex';
+            } else {
+                document.getElementById('discountRow').style.display = 'none';
+            }            if (data.totalAmount) {
+                document.getElementById('totalPrice').textContent = data.totalAmount.toLocaleString('vi-VN') + ' VNĐ';
+            }
+        }
+    </script>
+}
+
+@section Styles {
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Visual Calendar & Map styles - Moved from Scripts section -->
+    <style>
+        .visual-calendar {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            background-color: #fff;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+
+        .calendar-day-header {
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+        }
+
+        .calendar-day {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            cursor: pointer;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .calendar-day.empty {
+            border: none;
+            cursor: default;
+        }
+
+        .calendar-day.past {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .calendar-day.available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .calendar-day.available:hover {
+            background-color: #c3e6cb;
+            transform: scale(1.05);
+        }
+
+        .calendar-day.booked {
+            background-color: #dc3545 !important;
+            color: white !important;
+            cursor: not-allowed !important;
+            position: relative !important;
+            border: 2px solid #dc3545 !important;
+        }
+
+        .calendar-day.booked::after {
+            content: "✗" !important;
+            position: absolute !important;
+            top: 2px !important;
+            right: 2px !important;
+            font-size: 10px !important;
+            color: white !important;
+            z-index: 10 !important;
+        }
+
+        .calendar-day.selected-checkin {
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-day.selected-checkout {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+
+        .calendar-day.in-range {
+            background-color: #cce7ff;
+            color: #004085;
+        }
+
+        .booked-dates-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0.5rem;
+            background-color: #f8f9fa;
+            border-radius: 0.375rem;
+            font-size: 0.875em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        .legend-available { background-color: #d4edda; }
+        .legend-booked { background-color: #f8d7da; }
+        .legend-selected { background-color: #007bff; }
+
+        /* Map styles */
+        #locationMap {
+            cursor: grab;
+        }
+
+        #locationMap:active {
+            cursor: grabbing;
+        }
+
+        .leaflet-popup-content {
+            text-align: center;
+        }
+
+        .map-popup-content {
+            max-width: 250px;
+        }
+
+        .map-popup-content h6 {
+            margin-bottom: 8px;
+            color: #007bff;
+        }
+
+        .map-popup-content p {
+            margin-bottom: 4px;
+            font-size: 0.9em;
+        }
+    </style>
+
+    <!-- Custom Video Styles -->
+    <style>
+        .video-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+        }
+
+        .video-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: #007bff;
+        }
+
+        .video-thumbnail {
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover .video-thumbnail {
+            filter: brightness(0.9);
+        }
+
+        .video-play-overlay {
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .video-card:hover .video-play-overlay {
+            opacity: 1;
+        }
+
+        .video-card .card-title {
+            font-size: 0.9rem;
+            line-height: 1.2;
+            max-height: 2.4rem;
+            overflow: hidden;
+        }          #videosContainer .col-md-6 {
+            margin-bottom: 1rem;
+        }        /* Mobile responsive */
+        @@media (max-width: 768px) {
+            #videosContainer .col-md-6 {
+                margin-bottom: 0.5rem;
+            }
+
+            .video-card .card-body {
+                padding: 0.5rem !important;
+            }
+
+            /* Custom YouTube video mobile styles */
+            .custom-video-section h5 {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+            }
+
+            .custom-video-section .ratio {
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+
+            /* Auto-generated videos mobile styles */
+            .youtube-video-card {
+                margin-bottom: 1rem;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            .youtube-video-card .card-body {
+                padding: 0.75rem;
+            }
+
+            .youtube-video-card .card-title {
+                font-size: 0.9rem;
+                line-height: 1.3;
+                margin-bottom: 0.5rem;
+            }
+
+            .youtube-video-card .card-text {
+                font-size: 0.8rem;
+                color: #6c757d;
+            }
+
+            .play-button {
+                width: 50px;
+                height: 50px;
+                font-size: 18px;
+            }            /* Video section spacing */
+            #youtube-videos-section {
+                margin-bottom: 2rem;
+            }
+            
+            #youtube-videos-section h5 {
+                font-size: 1.1rem;
+            }        }
+
+        @@media (max-width: 576px) {
+            .custom-video-section .ratio {
+                border-radius: 6px;
+            }
+
+            .youtube-video-card .card-body {
+                padding: 0.5rem;
+            }
+
+            .youtube-video-card .card-title {
+                font-size: 0.85rem;
+                line-height: 1.2;
+            }
+
+            .play-button {
+                width: 45px;
+                height: 45px;
+                font-size: 16px;
+            }
+        }
+    </style>
+}

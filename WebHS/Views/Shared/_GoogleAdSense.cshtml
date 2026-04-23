@@ -1,0 +1,197 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@* Google AdSense Integration *@
+@{
+    var adSensePublisherId = Configuration["GoogleAdSense:PublisherId"];
+    var adSenseEnabled = Configuration.GetValue<bool>("GoogleAdSense:Enabled");
+    var autoAds = Configuration.GetValue<bool>("GoogleAdSense:AutoAds");
+}
+
+@if (adSenseEnabled && !string.IsNullOrEmpty(adSensePublisherId) && adSensePublisherId != "ca-pub-XXXXXXXXXXXXXXXX")
+{
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=@adSensePublisherId"
+            crossorigin="anonymous"></script>
+    
+    @if (autoAds)
+    {
+        <!-- Auto Ads -->
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({
+                google_ad_client: "@adSensePublisherId",
+                enable_page_level_ads: true
+            });
+        </script>
+    }
+
+    <!-- AdSense Helper Functions -->
+    <script>
+        // AdSense ad unit rendering helper
+        window.renderAdSenseAd = function(adSlot, adSize, elementId) {
+            const adElement = document.getElementById(elementId);
+            if (adElement && typeof adsbygoogle !== 'undefined') {
+                adElement.innerHTML = `
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="@adSensePublisherId"
+                         data-ad-slot="${adSlot}"
+                         data-ad-format="${adSize}"></ins>
+                `;
+                
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }
+        };
+
+        // Responsive ad unit
+        window.renderResponsiveAd = function(adSlot, elementId) {
+            const adElement = document.getElementById(elementId);
+            if (adElement && typeof adsbygoogle !== 'undefined') {
+                adElement.innerHTML = `
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="@adSensePublisherId"
+                         data-ad-slot="${adSlot}"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                `;
+                
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }
+        };
+
+        // In-article ad
+        window.renderInArticleAd = function(adSlot, elementId) {
+            const adElement = document.getElementById(elementId);
+            if (adElement && typeof adsbygoogle !== 'undefined') {
+                adElement.innerHTML = `
+                    <ins class="adsbygoogle"
+                         style="display:block; text-align:center;"
+                         data-ad-layout="in-article"
+                         data-ad-format="fluid"
+                         data-ad-client="@adSensePublisherId"
+                         data-ad-slot="${adSlot}"></ins>
+                `;
+                
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }
+        };
+
+        // Search result ads
+        window.renderSearchAd = function(adSlot, elementId) {
+            const adElement = document.getElementById(elementId);
+            if (adElement && typeof adsbygoogle !== 'undefined') {
+                adElement.innerHTML = `
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-format="autorelaxed"
+                         data-ad-client="@adSensePublisherId"
+                         data-ad-slot="${adSlot}"></ins>
+                `;
+                
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            }
+        };
+
+        // Ad performance tracking
+        window.trackAdPerformance = function(adSlot, action) {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'ad_interaction', {
+                    event_category: 'AdSense',
+                    event_label: adSlot,
+                    custom_parameter_1: action
+                });
+            }
+        };
+    </script>
+
+    <!-- AdSense Styling -->
+    <style>
+        .adsense-container {
+            margin: 20px 0;
+            text-align: center;
+            clear: both;
+        }
+        
+        .adsense-container ins {
+            margin: 0 auto;
+        }
+        
+        .ad-label {
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        /* Responsive ad containers */
+        .ad-banner {
+            min-height: 90px;
+            margin: 15px 0;
+        }
+        
+        .ad-sidebar {
+            min-height: 250px;
+            margin: 20px 0;
+        }
+        
+        .ad-footer {
+            min-height: 90px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Mobile optimization */
+        @@media (max-width: 768px) {
+            .ad-sidebar {
+                min-height: 200px;
+            }
+            
+            .adsense-container {
+                margin: 15px 0;
+            }
+        }
+    </style>
+}
+else
+{    <!-- Development mode - AdSense disabled -->
+    <script>
+        // Mock AdSense functions for development
+        window.renderAdSenseAd = function(adSlot, adSize, elementId) {
+            const adElement = document.getElementById(elementId);
+            if (adElement) {
+                // Hide the ad container completely in development mode
+                adElement.style.display = 'none';
+            }
+            console.log('AdSense disabled - Ad hidden:', {adSlot, adSize, elementId});
+        };
+        
+        window.renderResponsiveAd = function(adSlot, elementId) {
+            window.renderAdSenseAd(adSlot, 'responsive', elementId);
+        };
+        
+        window.renderInArticleAd = function(adSlot, elementId) {
+            window.renderAdSenseAd(adSlot, 'in-article', elementId);
+        };
+        
+        window.renderSearchAd = function(adSlot, elementId) {
+            window.renderAdSenseAd(adSlot, 'search', elementId);
+        };
+        
+        window.trackAdPerformance = function(adSlot, action) {
+            console.log('AdSense tracking disabled:', {adSlot, action});
+        };
+        
+        console.log('Google AdSense disabled in development mode');
+        
+        // Hide all AdSense containers
+        document.addEventListener('DOMContentLoaded', function() {
+            const adContainers = document.querySelectorAll('.adsense-container');
+            adContainers.forEach(container => {
+                container.style.display = 'none';
+            });
+        });
+    </script>
+}
+

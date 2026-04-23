@@ -1,0 +1,1005 @@
+@{
+    ViewData["Title"] = "Về Chúng Tôi - Đom Đóm Dream";
+    Layout = "_Layout_New";
+}
+
+<style>
+    /* ===== ABOUT PAGE MAGICAL STYLES ===== */
+    .about-hero {
+        min-height: 100vh;
+        background: linear-gradient(135deg, 
+            #667eea 0%, 
+            #764ba2 25%, 
+            #f093fb 50%, 
+            #f5576c 75%, 
+            #4facfe 100%);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:white;stop-opacity:0.1"/><stop offset="100%" style="stop-color:white;stop-opacity:0"/></radialGradient></defs><circle cx="20" cy="20" r="2" fill="url(%23g)"><animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="1.5" fill="url(%23g)"><animate attributeName="opacity" values="0;1;0" dur="4s" repeatCount="indefinite" begin="1s"/></circle><circle cx="40" cy="70" r="2.5" fill="url(%23g)"><animate attributeName="opacity" values="0;1;0" dur="2.5s" repeatCount="indefinite" begin="2s"/></circle><circle cx="70" cy="80" r="1" fill="url(%23g)"><animate attributeName="opacity" values="0;1;0" dur="3.5s" repeatCount="indefinite" begin="0.5s"/></circle><circle cx="10" cy="60" r="1.8" fill="url(%23g)"><animate attributeName="opacity" values="0;1;0" dur="4.2s" repeatCount="indefinite" begin="1.5s"/></circle></svg>') repeat;
+        animation: floatingFireflies 20s linear infinite;
+        z-index: 1;
+    }
+
+    @@keyframes floatingFireflies {
+        0% { transform: translateY(0) rotate(0deg); }
+        100% { transform: translateY(-100vh) rotate(360deg); }
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        padding: 2rem;
+    }
+
+    .hero-title {
+        font-size: 4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        animation: heroTitleGlow 3s ease-in-out infinite alternate;
+    }
+
+    @@keyframes heroTitleGlow {
+        from { text-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 30px rgba(255,255,255,0.5); }
+        to { text-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 50px rgba(255,255,255,0.8); }
+    }
+
+    .hero-subtitle {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        opacity: 0;
+        animation: fadeInUp 1s ease-out 0.5s forwards;
+    }
+
+    .hero-sparkles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+
+    .sparkle {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: white;
+        border-radius: 50%;
+        animation: sparkleFloat 4s ease-in-out infinite;
+    }
+
+    @@keyframes sparkleFloat {
+        0%, 100% { opacity: 0; transform: translateY(0) scale(0); }
+        50% { opacity: 1; transform: translateY(-20px) scale(1); }
+    }
+
+    .scroll-indicator {
+        position: absolute;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: white;
+        animation: bounce 2s infinite;
+    }
+
+    @@keyframes bounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+        40% { transform: translateX(-50%) translateY(-10px); }
+        60% { transform: translateX(-50%) translateY(-5px); }
+    }
+
+    /* Story Section Styles */
+    .story-container {
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        padding: 5rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .story-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        overflow: hidden;
+        transition: all 0.6s cubic-bezier(0.23, 1, 0.320, 1);
+        margin-bottom: 3rem;
+    }
+
+    .story-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 30px 80px rgba(0,0,0,0.15);
+    }
+
+    .story-image {
+        position: relative;
+        overflow: hidden;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .story-image img {
+        transition: transform 0.6s ease;
+        border-radius: 20px;
+    }
+
+    .story-card:hover .story-image img {
+        transform: scale(1.1);
+    }
+
+    .story-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(102,126,234,0.1), rgba(247,148,30,0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .story-card:hover .story-image::after {
+        opacity: 1;
+    }
+
+    /* Values Section */
+    .values-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 6rem 0;
+        position: relative;
+        color: white;
+    }
+
+    .values-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        animation: patternMove 20s linear infinite;
+    }
+
+    @@keyframes patternMove {
+        0% { transform: translateX(0) translateY(0); }
+        100% { transform: translateX(60px) translateY(60px); }
+    }
+
+    .value-card {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        transition: all 0.4s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .value-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.6s ease;
+    }
+
+    .value-card:hover::before {
+        left: 100%;
+    }
+
+    .value-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        background: rgba(255,255,255,0.2);
+    }
+
+    .value-icon {
+        font-size: 3rem;
+        margin-bottom: 1.5rem;
+        display: inline-block;
+        animation: iconFloat 3s ease-in-out infinite;
+    }
+
+    @@keyframes iconFloat {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    /* Team Section */
+    .team-section {
+        background: #f8f9fa;
+        padding: 6rem 0;
+    }
+
+    .team-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .team-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+
+    .team-card:hover::before {
+        transform: scaleX(1);
+    }
+
+    .team-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .team-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .team-avatar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, rgba(255,255,255,0.2), transparent);
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+    }
+
+    .team-card:hover .team-avatar::after {
+        transform: translateX(100%);
+    }
+
+    /* Contact CTA Section */
+    .contact-cta {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        padding: 5rem 0;
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .contact-cta::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: gradientShift 20s ease-in-out infinite;
+    }
+
+    @@keyframes gradientShift {
+        0%, 100% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.1); }
+    }
+
+    .cta-button {
+        background: rgba(255,255,255,0.2);
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 1rem 3rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cta-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.2);
+        transition: left 0.6s ease;
+    }
+
+    .cta-button:hover::before {
+        left: 100%;
+    }
+
+    .cta-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Scroll animations */
+    .fade-in-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s ease;
+    }
+
+    .fade-in-up.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .fade-in-left {
+        opacity: 0;
+        transform: translateX(-30px);
+        transition: all 0.6s ease;
+    }
+
+    .fade-in-left.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .fade-in-right {
+        opacity: 0;
+        transform: translateX(30px);
+        transition: all 0.6s ease;
+    }
+
+    .fade-in-right.visible {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    /* Mobile Responsive */
+    @@media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+        }
+        
+        .story-card {
+            margin-bottom: 2rem;
+        }
+        
+        .value-card {
+            margin-bottom: 2rem;
+        }
+        
+        .team-card {
+            margin-bottom: 2rem;
+        }
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<!-- Hero Section -->
+<section class="about-hero">
+    <div class="hero-sparkles" id="sparklesContainer"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">
+            ✨ Đom Đóm Dream ✨
+        </h1>
+        <p class="hero-subtitle">
+            Nơi mỗi chuyến đi trở thành kỷ niệm đẹp,<br>
+            nơi mỗi ngôi nhà trở thành mái ấm thứ hai.
+        </p>
+    </div>
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down fa-2x"></i>
+        <div>Cuộn xuống để khám phá</div>
+    </div>
+</section>
+
+<!-- Story Section -->
+<section class="story-container">
+    <div class="container">        <div class="text-center mb-5 fade-in-up">
+            <h2 class="display-4 mb-4">📖 Câu Chuyện Của Chúng Tôi</h2>
+            <p class="lead text-muted">Hành trình tạo nên những kết nối ý nghĩa</p>
+        </div>
+
+        <!-- Story Card 1 -->
+        <div class="story-card fade-in-left">
+            <div class="row align-items-center p-4">
+                <div class="col-lg-6">
+                    <div class="story-image">
+                        <img src="https://images.unsplash.com/photo-1571896349842-33c89424de2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Khởi nguồn" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-lg-6 p-4">
+                    <h3 class="h2 mb-4">🌟 Khởi Nguồn Đom Đóm</h3>
+                    <p class="text-muted mb-4">
+                        Trong một đêm hè đầy sao, khi những chú đom đóm nhấp nháy trong vườn, 
+                        ý tưởng về <strong>Đom Đóm Dream</strong> đã được sinh ra. Chúng tôi tin rằng 
+                        mỗi chuyến đi đều có thể mang lại ánh sáng nhỏ bé nhưng ý nghĩa, 
+                        giống như những chú đom đóm thắp sáng màn đêm.
+                    </p>
+                    <div class="d-flex align-items-center">
+                        <div class="badge bg-primary me-3">2020</div>
+                        <span class="text-muted">Năm thành lập</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Card 2 -->
+        <div class="story-card fade-in-right">
+            <div class="row align-items-center p-4">
+                <div class="col-lg-6 order-lg-2">
+                    <div class="story-image">
+                        <img src="https://images.unsplash.com/photo-1521747116042-5a810fda9664?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Cộng đồng" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-lg-6 order-lg-1 p-4">
+                    <h3 class="h2 mb-4">❤️ Xây Dựng Cộng Đồng</h3>
+                    <p class="text-muted mb-4">
+                        Chúng tôi không chỉ tạo ra một nền tảng đặt phòng, mà còn xây dựng 
+                        một cộng đồng ấm áp nơi mọi người có thể chia sẻ những khoảnh khắc 
+                        đẹp nhất. Mỗi homestay là một câu chuyện, mỗi chủ nhà là một người bạn.
+                    </p>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="h4 text-primary">1000+</div>
+                            <small class="text-muted">Homestay</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h4 text-success">50K+</div>
+                            <small class="text-muted">Khách hàng</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h4 text-warning">4.9★</div>
+                            <small class="text-muted">Đánh giá</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Story Card 3 -->
+        <div class="story-card fade-in-left">
+            <div class="row align-items-center p-4">
+                <div class="col-lg-6">
+                    <div class="story-image">
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                             alt="Trải nghiệm" class="img-fluid">
+                    </div>
+                </div>
+                <div class="col-lg-6 p-4">
+                    <h3 class="h2 mb-4">✨ Trải Nghiệm Độc Đáo</h3>
+                    <p class="text-muted mb-4">
+                        Với công nghệ hiện đại và tình yêu dành cho du lịch, chúng tôi mang đến 
+                        những trải nghiệm độc đáo. Từ những ngôi nhà nhỏ ấm cúng đến những 
+                        villa sang trọng, mỗi nơi đều chứa đựng câu chuyện riêng.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-light text-dark">AI Recommendation</span>
+                        <span class="badge bg-light text-dark">24/7 Support</span>
+                        <span class="badge bg-light text-dark">Secure Payment</span>
+                        <span class="badge bg-light text-dark">Mobile App</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="values-section">
+    <div class="container">
+        <div class="text-center mb-5 fade-in-up">
+            <h2 class="display-4 mb-4">💎 Giá Trị Cốt Lõi</h2>
+            <p class="lead">Những nguyên tắc dẫn lối chúng tôi mỗi ngày</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-4 mb-4 fade-in-up" style="animation-delay: 0.1s;">
+                <div class="value-card">
+                    <div class="value-icon">
+                        💝
+                    </div>
+                    <h4 class="mb-3">Tận Tâm</h4>
+                    <p>
+                        Chúng tôi đặt trái tim vào mỗi dịch vụ, quan tâm đến từng chi tiết 
+                        nhỏ để mang lại trải nghiệm hoàn hảo cho khách hàng.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                <div class="value-card">
+                    <div class="value-icon">
+                        🤝
+                    </div>
+                    <h4 class="mb-3">Tin Cậy</h4>
+                    <p>
+                        Xây dựng niềm tin thông qua sự minh bạch, trung thực và 
+                        cam kết bảo vệ quyền lợi của cả khách hàng và chủ nhà.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4 mb-4 fade-in-up" style="animation-delay: 0.3s;">
+                <div class="value-card">
+                    <div class="value-icon">
+                        🚀
+                    </div>
+                    <h4 class="mb-3">Đổi Mới</h4>
+                    <p>
+                        Không ngừng cải tiến và áp dụng công nghệ mới nhất 
+                        để tạo ra những giải pháp sáng tạo và tiện ích.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="team-section">
+    <div class="container">
+        <div class="text-center mb-5 fade-in-up">
+            <h2 class="display-4 mb-4">👥 Đội Ngũ Đom Đóm</h2>
+            <p class="lead text-muted">Những người thắp sáng ước mơ du lịch</p>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4 fade-in-up" style="animation-delay: 0.1s;">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        👨‍💼
+                    </div>
+                    <h5 class="mb-2">Lê Hoàng</h5>
+                    <p class="text-primary mb-3">CEO & Founder</p>
+                    <p class="small text-muted">
+                        "Tôi tin rằng du lịch không chỉ là đi từ nơi này đến nơi khác, 
+                        mà là hành trình khám phá chính mình."
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 fade-in-up" style="animation-delay: 0.2s;">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        👩‍💻
+                    </div>
+                    <h5 class="mb-2">Phạm Hoàng Minh</h5>
+                    <p class="text-info mb-3">CTO</p>
+                    <p class="small text-muted">
+                        "Công nghệ là cầu nối giúp chúng ta kết nối những trái tim 
+                        yêu thích khám phá thế giới."
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 fade-in-up" style="animation-delay: 0.3s;">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        👨‍🎨
+                    </div>
+                    <h5 class="mb-2">Thạch Hoàng Thành</h5>
+                    <p class="text-warning mb-3">Head of Design</p>
+                    <p class="small text-muted">
+                        "Mỗi thiết kế đều mang trong mình một câu chuyện, 
+                        một cảm xúc mà chúng tôi muốn truyền tải."
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-4 fade-in-up" style="animation-delay: 0.4s;">
+                <div class="team-card">
+                    <div class="team-avatar">
+                        👩‍🏢
+                    </div>
+                    <h5 class="mb-2">Nguyễn Hoàng Thiên Ân</h5>
+                    <p class="text-success mb-3">Customer Success</p>
+                    <p class="small text-muted">
+                        "Hạnh phúc của khách hàng chính là động lực 
+                        để chúng tôi không ngừng cải thiện dịch vụ."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact CTA Section -->
+<section class="contact-cta">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center fade-in-up">
+                <h2 class="display-4 mb-4">🌟 Cùng Chúng Tôi Thắp Sáng Ước Mơ</h2>
+                <p class="lead mb-5">
+                    Hãy trở thành một phần của cộng đồng Đom Đóm Dream. 
+                    Chia sẻ ngôi nhà của bạn hoặc khám phá những trải nghiệm mới.
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <a href="@Url.Action("Register", "Account")" class="cta-button">
+                        <i class="fas fa-user-plus me-2"></i>Trở Thành Host
+                    </a>
+                    <a href="@Url.Action("Index", "Homestay")" class="cta-button">
+                        <i class="fas fa-search me-2"></i>Khám Phá Homestay
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize all animations and effects
+            initializeSparkles();
+            initializeScrollAnimations();
+            initializeParallaxEffects();
+            initializeInteractiveEffects();
+            
+            // Page load animation
+            $('body').addClass('page-loaded');
+        });
+
+        // Create floating sparkles in hero section
+        function initializeSparkles() {
+            const sparklesContainer = $('#sparklesContainer');
+            const sparkleCount = 40;
+            
+            for (let i = 0; i < sparkleCount; i++) {
+                createSparkle(sparklesContainer);
+            }
+            
+            // Recreate sparkles periodically
+            setInterval(() => {
+                createSparkle(sparklesContainer);
+            }, 1500);
+        }
+
+        function createSparkle(container) {
+            const sparkle = $('<div class="sparkle"></div>');
+            const size = Math.random() * 6 + 2;
+            const left = Math.random() * 100;
+            const animationDuration = Math.random() * 4 + 3;
+            const delay = Math.random() * 2;
+            
+            sparkle.css({
+                left: left + '%',
+                top: '100%',
+                width: size + 'px',
+                height: size + 'px',
+                animationDuration: animationDuration + 's',
+                animationDelay: delay + 's',
+                background: `radial-gradient(circle, rgba(255,255,255,${Math.random() * 0.8 + 0.2}), transparent)`
+            });
+            
+            container.append(sparkle);
+            
+            // Remove sparkle after animation
+            setTimeout(() => {
+                sparkle.remove();
+            }, (animationDuration + delay) * 1000);
+        }
+
+        // Scroll-triggered animations
+        function initializeScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.15,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        
+                        // Trigger counter animation for stats
+                        const counters = entry.target.querySelectorAll('.h4');
+                        counters.forEach(counter => {
+                            animateCounter(counter);
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all elements with fade classes
+            document.querySelectorAll('.fade-in-up, .fade-in-left, .fade-in-right, .story-card, .value-card, .team-card').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Animate counters with easing
+        function animateCounter(element) {
+            const text = element.textContent;
+            const number = parseInt(text.replace(/\D/g, ''));
+            
+            if (number && !element.classList.contains('animated')) {
+                element.classList.add('animated');
+                let current = 0;
+                const duration = 2000;
+                const startTime = performance.now();
+                
+                function updateCounter(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    current = number * easeOut;
+                    
+                    if (text.includes('K')) {
+                        element.textContent = Math.floor(current / 1000) + 'K+';
+                    } else if (text.includes('★')) {
+                        element.textContent = (current / 10).toFixed(1) + '★';
+                    } else {
+                        element.textContent = Math.floor(current) + '+';
+                    }
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        element.textContent = text;
+                    }
+                }
+                
+                requestAnimationFrame(updateCounter);
+            }
+        }
+
+        // Enhanced parallax effects
+        function initializeParallaxEffects() {
+            let ticking = false;
+            
+            $(window).scroll(function() {
+                if (!ticking) {
+                    requestAnimationFrame(updateParallax);
+                    ticking = true;
+                }
+            });
+            
+            function updateParallax() {
+                const scrolled = $(window).scrollTop();
+                const rate = scrolled * -0.3;
+                
+                // Parallax effect for hero background
+                $('.about-hero::before').css('transform', 'translateY(' + rate + 'px)');
+                
+                // Floating effect for value icons
+                $('.value-icon').each(function(index) {
+                    const floatY = Math.sin(scrolled * 0.005 + index) * 5;
+                    $(this).css('transform', 'translateY(' + floatY + 'px)');
+                });
+                
+                // Gentle movement for team avatars
+                $('.team-avatar').each(function(index) {
+                    const floatY = Math.sin(scrolled * 0.003 + index * 0.5) * 8;
+                    const rotateZ = Math.sin(scrolled * 0.002 + index) * 3;
+                    $(this).css('transform', `translateY(${floatY}px) rotateZ(${rotateZ}deg)`);
+                });
+                
+                ticking = false;
+            }
+        }
+
+        // Interactive effects
+        function initializeInteractiveEffects() {
+            // Add ripple effect to CTA buttons
+            $('.cta-button').on('click', function(e) {
+                const button = $(this);
+                const ripple = $('<span class="ripple"></span>');
+                const size = Math.max(button.width(), button.height());
+                const x = e.pageX - button.offset().left - size / 2;
+                const y = e.pageY - button.offset().top - size / 2;
+                
+                ripple.css({
+                    width: size,
+                    height: size,
+                    left: x,
+                    top: y
+                }).appendTo(button);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+
+            // Smooth scrolling for scroll indicator
+            $('.scroll-indicator').on('click', function() {
+                $('html, body').animate({
+                    scrollTop: $('.story-container').offset().top
+                }, 1200, 'easeInOutCubic');
+            });
+
+            // Enhanced hover effects for story cards
+            $('.story-card').hover(
+                function() {
+                    $(this).find('.story-image img').css('transform', 'scale(1.08) rotate(1deg)');
+                },
+                function() {
+                    $(this).find('.story-image img').css('transform', 'scale(1) rotate(0deg)');
+                }
+            );
+
+            // 3D tilt effect for value cards
+            $('.value-card').on('mousemove', function(e) {
+                const card = $(this);
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                const rotateX = (y - centerY) / 8;
+                const rotateY = (centerX - x) / 8;
+                
+                card.css('transform', `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px) scale(1.02)`);
+            }).on('mouseleave', function() {
+                $(this).css('transform', 'perspective(1000px) rotateX(0) rotateY(0) translateY(0) scale(1)');
+            });
+
+            // Team card hover effects
+            $('.team-card').hover(
+                function() {
+                    $(this).find('.team-avatar').css('transform', 'scale(1.1) rotateY(360deg)');
+                },
+                function() {
+                    $(this).find('.team-avatar').css('transform', 'scale(1) rotateY(0deg)');
+                }
+            );
+        }
+
+        // Add typing effect to hero subtitle
+        setTimeout(() => {
+            const subtitle = $('.hero-subtitle');
+            const text = subtitle.text();
+            typeEffect(subtitle, text, 60);
+        }, 2000);
+
+        function typeEffect(element, text, speed = 80) {
+            let i = 0;
+            element.text('');
+            element.css('opacity', '1');
+            
+            function type() {
+                if (i < text.length) {
+                    element.text(element.text() + text.charAt(i));
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+    </script>
+
+    <style>
+        /* Enhanced dynamic effects styles */
+        body {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        body.page-loaded {
+            opacity: 1;
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: rippleEffect 0.6s linear;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        @@keyframes rippleEffect {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .story-image img {
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .value-card {
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        .team-avatar {
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: linear-gradient(180deg, #f1f1f1, #e1e1e1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #667eea, #764ba2);
+            border-radius: 5px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #5a6fd8, #6a4190);
+        }
+        
+        /* Enhanced mobile responsiveness */
+        @@media (max-width: 768px) {
+            .sparkle {
+                display: none;
+            }
+            
+            .value-card:hover {
+                transform: translateY(-5px) scale(1.02);
+            }
+        }
+        
+        /* Accessibility improvements */
+        @@media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .sparkle {
+                display: none;
+            }
+        }
+    </style>
+}
+

@@ -1,0 +1,428 @@
+@model WebHS.ViewModels.PricingCalendarViewModel
+<link rel="stylesheet" href="/css/host-calendar.css" />
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Pricing Calendar</h2>
+                    <p class="text-muted mb-0">@Model.HomestayName</p>
+                    <small class="text-muted">Default price: $@Model.DefaultPricePerNight per night</small>
+                </div>
+                <div class="btn-group">
+                    <a href="@Url.Action("Calendar", new { id = Model.HomestayId, year = Model.FirstDayOfMonth.AddMonths(-1).Year, month = Model.FirstDayOfMonth.AddMonths(-1).Month })" 
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                    <button type="button" class="btn btn-outline-primary" disabled>@Model.MonthName</button>
+                    <a href="@Url.Action("Calendar", new { id = Model.HomestayId, year = Model.FirstDayOfMonth.AddMonths(1).Year, month = Model.FirstDayOfMonth.AddMonths(1).Month })" 
+                       class="btn btn-outline-primary">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bulk Pricing Controls -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#bulkPricing" aria-expanded="false">
+                            <i class="fas fa-tools"></i> Bulk Pricing Tools
+                        </button>
+                    </h5>
+                </div>
+                <div id="bulkPricing" class="collapse">
+                    <div class="card-body">
+                        <form id="bulkPricingForm" class="row g-3">
+                            <input type="hidden" id="homestayId" value="@Model.HomestayId" />
+                            <div class="col-md-3">
+                                <label for="startDate" class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="startDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="endDate" class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="endDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="bulkPrice" class="form-label">Price per Night</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="bulkPrice" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="bulkNote" class="form-label">Note (optional)</label>
+                                <input type="text" class="form-control" id="bulkNote" maxlength="200">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save"></i> Apply Bulk Pricing
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered calendar-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center">Sun</th>
+                                    <th class="text-center">Mon</th>
+                                    <th class="text-center">Tue</th>
+                                    <th class="text-center">Wed</th>
+                                    <th class="text-center">Thu</th>
+                                    <th class="text-center">Fri</th>
+                                    <th class="text-center">Sat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    var currentDate = Model.FirstDayOfMonth;
+                                    var startOffset = (int)Model.FirstDayOfWeek;
+                                    var daysDisplayed = 0;
+                                }
+                                
+                                @for (int week = 0; week < 6; week++)
+                                {
+                                    <tr>
+                                        @for (int day = 0; day < 7; day++)
+                                        {
+                                            var cellDate = Model.FirstDayOfMonth.AddDays(daysDisplayed - startOffset);
+                                            var isCurrentMonth = cellDate.Month == Model.Month;
+                                            var isPastDate = cellDate < DateTime.Today;
+                                            var isBlocked = Model.IsDateBlocked(cellDate);
+                                            var isBooked = Model.IsDateBooked(cellDate);
+                                            var hasCustomPrice = Model.HasCustomPrice(cellDate);
+                                            var price = Model.GetPriceForDate(cellDate);
+                                            
+                                            <td class="calendar-day @(isCurrentMonth ? "" : "other-month") @(isPastDate ? "past-date" : "") @(isBlocked ? "blocked-date animate__animated animate__flash" : "") @(isBooked ? "booked-date" : "") @(hasCustomPrice ? "custom-price" : "")"
+                                                data-date="@cellDate.ToString("yyyy-MM-dd")"
+                                                @((isCurrentMonth && !isPastDate && !isBooked) ? "onclick=onDayClick(this)" : "")
+                                                style="@((isCurrentMonth && !isPastDate && !isBooked) ? "cursor: pointer;" : "")">
+                                                <div class="day-header">
+                                                    <span class="day-number">@cellDate.Day</span>
+                                                    @if (hasCustomPrice)
+                                                    {
+                                                        <small class="custom-indicator">
+                                                            <i class="fas fa-star text-warning"></i>
+                                                        </small>
+                                                    }
+                                                </div>
+                                                @if (isCurrentMonth)
+                                                {
+                                                    <div class="day-content">
+                                                        @if (isBlocked)
+                                                        {
+                                                            <span class="badge bg-secondary w-100 animate__animated animate__pulse">Blocked</span>
+                                                            <button class="btn btn-sm btn-outline-success mt-1 unblock-btn w-100" onclick="event.stopPropagation(); unblockDate('@cellDate.ToString("yyyy-MM-dd")')"><i class="fas fa-lock-open"></i> Unblock</button>
+                                                        }
+                                                        else if (isBooked)
+                                                        {
+                                                            <span class="badge bg-success w-100">Booked</span>
+                                                        }
+                                                        else if (!isPastDate)
+                                                        {
+                                                            <div class="price-display">
+                                                                <span class="fw-bold">$@price.ToString("F0")</span>
+                                                                @if (hasCustomPrice)
+                                                                {
+                                                                    var customPricing = Model.PricingRules.FirstOrDefault(pr => pr.Date.Date == cellDate.Date);
+                                                                    if (!string.IsNullOrEmpty(customPricing?.Note))
+                                                                    {
+                                                                        <small class="d-block text-muted">@customPricing.Note</small>
+                                                                    }
+                                                                }
+                                                            </div>
+                                                            <button class="btn btn-sm btn-outline-secondary mt-1 block-btn w-100 animate__animated animate__fadeIn" onclick="event.stopPropagation(); blockDate('@cellDate.ToString("yyyy-MM-dd")')"><i class="fas fa-ban"></i> Block</button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Past</span>
+                                                        }
+                                                    </div>
+                                                }
+                                                
+                                            </td>
+                                            
+                                            daysDisplayed++;
+                                        }
+                                    </tr>
+                                    
+                                    @if (daysDisplayed - startOffset >= Model.DaysInMonth && week < 5)
+                                    {
+                                        break;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-3">
+                <div class="row">
+                    <div class="col-12">
+                        <h6>Legend:</h6>
+                        <div class="d-flex flex-wrap gap-3">
+                            <span class="legend-badge"><i class="fas fa-square text-success"></i> Booked</span>
+                            <span class="legend-badge"><i class="fas fa-square text-secondary"></i> Blocked</span>
+                            <span class="legend-badge"><i class="fas fa-star text-warning"></i> Custom Price</span>
+                            <span class="legend-badge"><i class="fas fa-square" style="color: #f8f9fa; border: 1px solid #dee2e6;"></i> Available</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Price Setting Modal -->
+<div class="modal fade" id="priceModal" tabindex="-1" aria-labelledby="priceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="priceModalLabel">Set Price</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="priceForm">
+                <div class="modal-body">
+                    <input type="hidden" id="modalHomestayId" value="@Model.HomestayId" />
+                    <input type="hidden" id="modalDate" />
+                    
+                    <div class="mb-3">
+                        <label for="modalDateDisplay" class="form-label">Date</label>
+                        <input type="text" class="form-control" id="modalDateDisplay" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="modalPrice" class="form-label">Price per Night</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="modalPrice" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-text">Default price: $@Model.DefaultPricePerNight</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="modalNote" class="form-label">Note (optional)</label>
+                        <input type="text" class="form-control" id="modalNote" maxlength="200">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="removePrice" style="display: none;">Remove Custom Price</button>
+                    <button type="submit" class="btn btn-primary">Save Price</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentModal = null;
+        
+        function openPriceModal(element) {
+            const date = element.getAttribute('data-date');
+            const modal = new bootstrap.Modal(document.getElementById('priceModal'));
+            
+            // Set date in modal
+            document.getElementById('modalDate').value = date;
+            document.getElementById('modalDateDisplay').value = new Date(date).toLocaleDateString();
+            
+            // Load existing price if any
+            loadExistingPrice(date);
+            
+            currentModal = modal;
+            modal.show();
+        }
+        
+        async function loadExistingPrice(date) {
+            try {
+                const response = await fetch(`@Url.Action("GetPrice")?homestayId=@Model.HomestayId&date=${date}`);
+                const data = await response.json();
+                
+                document.getElementById('modalPrice').value = data.price;
+                document.getElementById('modalNote').value = data.note || '';
+                
+                const removeButton = document.getElementById('removePrice');
+                if (data.hasCustomPrice) {
+                    removeButton.style.display = 'inline-block';
+                } else {
+                    removeButton.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading price:', error);
+            }
+        }
+        
+        // Handle price form submission
+        document.getElementById('priceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const homestayId = document.getElementById('modalHomestayId').value;
+            const date = document.getElementById('modalDate').value;
+            const price = document.getElementById('modalPrice').value;
+            const note = document.getElementById('modalNote').value;
+            
+            try {
+                const response = await fetch('@Url.Action("SetPrice")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `homestayId=${homestayId}&date=${date}&price=${price}&note=${encodeURIComponent(note)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentModal.hide();
+                    location.reload(); // Refresh to show updated prices
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error updating price: ' + error.message);
+            }
+        });
+        
+        // Handle remove price
+        document.getElementById('removePrice').addEventListener('click', async function() {
+            if (!confirm('Are you sure you want to remove the custom price for this date?')) {
+                return;
+            }
+            
+            const homestayId = document.getElementById('modalHomestayId').value;
+            const date = document.getElementById('modalDate').value;
+            
+            try {
+                const response = await fetch('@Url.Action("RemovePrice")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `homestayId=${homestayId}&date=${date}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentModal.hide();
+                    location.reload(); // Refresh to show updated prices
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error removing price: ' + error.message);
+            }
+        });
+        
+        // Handle bulk pricing form
+        document.getElementById('bulkPricingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const homestayId = document.getElementById('homestayId').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const price = document.getElementById('bulkPrice').value;
+            const note = document.getElementById('bulkNote').value;
+            
+            if (!confirm(`Are you sure you want to set the price to $${price} for all dates from ${startDate} to ${endDate}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('@Url.Action("SetBulkPrice")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `homestayId=${homestayId}&startDate=${startDate}&endDate=${endDate}&price=${price}&note=${encodeURIComponent(note)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload(); // Refresh to show updated prices
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error updating prices: ' + error.message);
+            }
+        });
+        
+        // Sync end date with start date
+        document.getElementById('startDate').addEventListener('change', function() {
+            const endDateInput = document.getElementById('endDate');
+            if (endDateInput.value < this.value) {
+                endDateInput.value = this.value;
+            }
+            endDateInput.min = this.value;
+        });
+        
+        function blockDate(date) {
+            const homestayId = @Model.HomestayId;
+            if (confirm('Block this date?')) {
+                fetch('@Url.Action("BlockDate")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `homestayId=${homestayId}&date=${date}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Blocked successfully', 'success');
+                        setTimeout(() => location.reload(), 800);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                });
+            }
+        }
+        function unblockDate(date) {
+            const homestayId = @Model.HomestayId;
+            if (confirm('Unblock this date?')) {
+                fetch('@Url.Action("UnblockDate")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `homestayId=${homestayId}&date=${date}`
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('Unblocked successfully', 'success');
+                        setTimeout(() => location.reload(), 800);
+                    } else {
+                        showToast(data.message, 'danger');
+                    }
+                });
+            }
+        }
+        function onDayClick(element) {
+            // fallback: open price modal if not blocked/booked
+            openPriceModal(element);
+        }
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3 animate__animated animate__fadeInDown`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => { if (toast.parentElement) toast.remove(); }, 2000);
+        }
+    </script>
+}
+

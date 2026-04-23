@@ -1,0 +1,1059 @@
+@using WebHS.Models
+@using System.Linq
+@model WebHS.ViewModels.HostDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard Chủ Nhà";
+    Layout = "_Layout_New";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="dashboard-container">
+<div class="container-fluid" style="padding-top: 20px;">
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-6 fade-in">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.TotalHomestays</h4>
+                            <span>Tổng Homestay</span>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-home fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-6 fade-in">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.TotalBookings</h4>
+                            <span>Tổng Đặt Phòng</span>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-calendar-check fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-6 fade-in">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.TotalRevenue.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</h4>
+                            <span>Tổng Doanh Thu</span>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-6 fade-in">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>@Model.BookingConversionRate%</h4>
+                            <span>Tỷ Lệ Chuyển Đổi</span>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-chart-line fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-bolt mr-1"></i>
+                        Hành Động Nhanh
+                    </h3>
+                </div>
+                <div class="card-body">                    <div class="row">                        <div class="col-lg-2 col-md-3 col-6 mb-3">
+                            <a asp-action="Homestays" asp-controller="Host" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center quick-action-btn" style="min-height: 80px;">
+                                <i class="fas fa-home fa-2x mb-2"></i>
+                                <span>Homestay</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-3 col-6 mb-3">
+                            <a asp-action="AllBookings" asp-controller="Host" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center quick-action-btn" style="min-height: 80px;">
+                                <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                                <span>Đặt Phòng</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-3 col-6 mb-3">
+                            <a asp-action="MessageTemplates" asp-controller="Host" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center quick-action-btn" style="min-height: 80px;">
+                                <i class="fas fa-envelope-open-text fa-2x mb-2"></i>
+                                <span>Mẫu Tin Nhắn</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-3 col-6 mb-3">
+                            <a asp-action="Revenue" asp-controller="Host" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center quick-action-btn" style="min-height: 80px;">
+                                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                                <span>Doanh Thu</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-3 col-6 mb-3">
+                            <a asp-action="Reviews" asp-controller="Host" class="btn btn-outline-secondary w-100 h-100 d-flex flex-column align-items-center justify-content-center quick-action-btn" style="min-height: 80px;">
+                                <i class="fas fa-star fa-2x mb-2"></i>
+                                <span>Đánh Giá</span>
+                            </a>
+                        </div>
+                        <div class="col-lg-2 col-md-3 col-6 mb-3">
+                            <a asp-action="ManageBookings" asp-controller="Host" class="btn btn-outline-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center quick-action-btn" style="min-height: 80px;">
+                                <i class="fas fa-cogs fa-2x mb-2"></i>
+                                <span>Quản Lý</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Revenue Chart -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-area mr-1"></i>
+                        Doanh Thu 12 Tháng Gần Nhất
+                    </h3>
+                </div>
+                <div class="card-body chart-container">
+                    <canvas id="revenueChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monthly Stats -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-pie mr-1"></i>
+                        Thống Kê Tháng Này
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Doanh thu tháng:</span>
+                            <strong>@Model.MonthlyRevenue.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Homestay hoạt động:</span>
+                            <strong>@Model.ActiveHomestays</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Chờ duyệt:</span>
+                            <strong>@Model.PendingHomestays</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Lượt xem:</span>
+                            <strong>@Model.MonthlyViews.ToString("N0")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    <!-- Calendar Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar mr-1"></i>
+                        Lịch Đặt Phòng
+                    </h3>                    <div class="card-tools">
+                        <!-- Homestay Filter -->
+                        <div class="mb-3">
+                            <select id="homestayFilter" class="form-select form-select-sm" style="width: 250px;">
+                                @foreach (var homestay in Model.MyHomestays)
+                                {
+                                    <option value="@homestay.Id">@homestay.Name</option>
+                                }
+                            </select>
+                        </div>
+                        <!-- Legend -->
+                        <div class="legend d-flex flex-wrap gap-3">
+                            <div class="legend-item d-flex align-items-center">
+                                <div class="legend-color" style="width: 16px; height: 16px; background-color: #d4edda; border: 1px solid #c3e6cb; border-radius: 3px; margin-right: 8px;"></div>
+                                <span class="badge bg-success">Ngày trống</span>
+                            </div>
+                            <div class="legend-item d-flex align-items-center">
+                                <div class="legend-color" style="width: 16px; height: 16px; background-color: #dc3545; border: 1px solid #dc3545; border-radius: 3px; margin-right: 8px;"></div>
+                                <span class="badge bg-danger">Đã đặt</span>
+                            </div>
+                            <div class="legend-item d-flex align-items-center">
+                                <div class="legend-color" style="width: 16px; height: 16px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 3px; margin-right: 8px; opacity: 0.6;"></div>
+                                <span class="badge bg-secondary">Đã qua</span>
+                            </div>
+                        </div>
+                    </div>
+                </div><div class="card-body">
+                    <!-- Custom Simple Calendar -->
+                    <div id="customCalendar" class="custom-calendar">
+                        <!-- Calendar will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Top Performing Homestays -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-trophy mr-1"></i>
+                        Top Homestay Hiệu Suất Cao
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopHomestays.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Homestay</th>
+                                        <th>Bookings</th>
+                                        <th>Doanh Thu</th>
+                                        <th>Tỷ Lệ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var homestay in Model.TopHomestays)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="@homestay.Image" alt="@homestay.Name" class="img-size-32 mr-2" style="border-radius: 4px;">
+                                                    <span class="text-truncate" style="max-width: 120px;">@homestay.Name</span>
+                                                </div>
+                                            </td>
+                                            <td>@homestay.TotalBookings</td>
+                                            <td>@homestay.TotalRevenue.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</td>
+                                            <td>@homestay.ConversionRate.ToString("F1")%</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Chưa có dữ liệu homestay</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Bookings -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calendar-alt mr-1"></i>
+                        Đặt Phòng Sắp Tới
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.UpcomingBookings.Any())
+                    {
+                        @foreach (var booking in Model.UpcomingBookings.Take(5))
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-2 border-left border-primary">
+                                <div>
+                                    <strong>@booking.Homestay?.Name</strong><br>
+                                    <small class="text-muted">@booking.User?.FullName</small><br>
+                                    <small>@booking.CheckInDate.ToString("dd/MM/yyyy") - @booking.CheckOutDate.ToString("dd/MM/yyyy")</small>
+                                </div>
+                                <div class="text-right">
+                                    <span class="badge @(booking.Status == BookingStatus.Paid ? "bg-success" : "bg-warning")">
+                                        @booking.Status
+                                    </span><br>
+                                    <small>@booking.FinalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Không có đặt phòng sắp tới</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Modern Host Dashboard Styles */
+        .dashboard-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: calc(100vh - 120px);
+            padding: 2rem 0;
+        }
+
+        /* Enhanced stat cards */
+        .dashboard-container .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dashboard-container .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+        }
+
+        .dashboard-container .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .dashboard-container .card.bg-primary::before {
+            background: linear-gradient(90deg, #4e73df, #224abe);
+        }
+
+        .dashboard-container .card.bg-success::before {
+            background: linear-gradient(90deg, #1cc88a, #13855c);
+        }
+
+        .dashboard-container .card.bg-warning::before {
+            background: linear-gradient(90deg, #f6c23e, #dda20a);
+        }
+
+        .dashboard-container .card.bg-info::before {
+            background: linear-gradient(90deg, #36b9cc, #258391);
+        }
+
+        /* Enhanced quick action buttons */
+        .quick-action-btn {
+            border-radius: 15px !important;
+            border: 2px solid #e3e6f0 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            background: white !important;
+        }
+
+        .quick-action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102,126,234,0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .quick-action-btn:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+            border-color: #667eea !important;
+        }
+
+        .quick-action-btn:hover::before {
+            left: 100%;
+        }
+
+        .quick-action-btn i {
+            transition: all 0.3s ease;
+        }
+
+        .quick-action-btn:hover i {
+            transform: scale(1.1);
+            color: #667eea;
+        }
+
+        /* Enhanced icons in stat cards */
+        .card-body i {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover .card-body i {
+            transform: rotate(10deg) scale(1.1);
+        }
+
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            border-radius: 15px;
+        }
+
+        /* Card headers */
+        .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            border-bottom: 2px solid #dee2e6 !important;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .card-title {
+            font-weight: 700 !important;
+            color: #495057 !important;
+        }        /* Responsive improvements */
+        @@media (max-width: 768px) {
+            .dashboard-container {
+                padding: 1rem 0;
+            }
+            
+            .quick-action-btn {
+                min-height: 60px !important;
+            }
+            
+            .quick-action-btn i {
+                font-size: 1.5rem !important;
+            }
+        }
+
+        /* Loading animation */
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        @@keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stagger animation delays */
+        .fade-in:nth-child(1) { animation-delay: 0.1s; }
+        .fade-in:nth-child(2) { animation-delay: 0.2s; }
+        .fade-in:nth-child(3) { animation-delay: 0.3s; }
+        .fade-in:nth-child(4) { animation-delay: 0.4s; }
+
+        /* Calendar improvements */
+        #calendar {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        /* Select styling */
+        .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        /* Custom calendar styles */
+        .custom-calendar {
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .calendar-title {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        .calendar-weekdays {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+        .calendar-weekdays .weekday {
+            flex: 1;
+            text-align: center;
+            font-weight: 500;
+            color: #495057;
+            padding: 0.5rem 0;
+            font-size: 1rem;
+        }
+        .calendar-days {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        .calendar-day {
+            width: calc(100% / 7 - 0.25rem);
+            min-height: 60px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 0.25rem 0.4rem 0.2rem 0.4rem;
+        }
+        .calendar-day.other-month {
+            background: #f1f3f4;
+            color: #b0b0b0;
+            opacity: 0.6;
+        }
+        .calendar-day.past-date {
+            opacity: 0.5;
+        }
+        .calendar-day.today {
+            border: 2px solid #007bff;
+            background: #e3f0ff;
+        }
+        .calendar-day.booked-date {
+            background: #ffe5e5;
+            border: 1.5px solid #dc3545;
+        }
+        .calendar-day.available-date {
+            background: #e6ffe6;
+            border: 1.5px solid #28a745;
+        }
+        .calendar-day-number {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.2rem;
+        }
+        .calendar-day-info {
+            font-size: 0.85rem;
+            line-height: 1.2;
+        }
+        .booking-info {
+            background: #fff3cd;
+            border-radius: 5px;
+            padding: 2px 6px;
+            margin-bottom: 2px;
+            font-size: 0.85em;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .booking-status {
+            font-size: 0.7em;
+            color: #007bff;
+        }
+        /* Top Homestay Table */
+        .table-responsive {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table.table-sm th, .table.table-sm td {
+            vertical-align: middle;
+            font-size: 0.98em;
+        }
+        .img-size-32 {
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-right: 6px;
+        }
+        .text-truncate {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script src="~/js/host-dashboard.js" asp-append-version="true"></script>
+    <script>
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.MonthlyRevenueData.Select(x => x.MonthName))),
+                datasets: [{
+                    label: 'Doanh Thu (VNĐ)',
+                    data: @Html.Raw(Json.Serialize(Model.MonthlyRevenueData.Select(x => x.Revenue))),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(value);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Doanh thu: ' + new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(context.parsed.y);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Custom Calendar Implementation
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard loaded, initializing calendar...');
+            
+            // Get booking data from server
+            var bookingData = @Html.Raw(Json.Serialize(Model.BookedDates));
+            console.log('� Raw booking data:', bookingData);
+            
+            // Normalize booking data
+            var validBookedDates = [];
+            if (bookingData && Array.isArray(bookingData)) {
+                validBookedDates = bookingData.map(function(booking) {
+                    return {
+                        Date: booking.Date || booking.date,
+                        HomestayId: booking.HomestayId || booking.homestayId,
+                        HomestayName: booking.HomestayName || booking.homestayName,
+                        GuestName: booking.GuestName || booking.guestName,
+                        Status: booking.Status || booking.status
+                    };
+                }).filter(function(booking) {
+                    return booking.Date;
+                });
+            }
+            
+            console.log('✅ Processed booking dates:', validBookedDates);            // Calendar variables
+            var currentDate = new Date();
+            var currentMonth = currentDate.getMonth();
+            var currentYear = currentDate.getFullYear();
+            var currentFilter = ''; // Selected homestay filter
+            
+            // Set default filter to first homestay
+            var homestaySelect = document.getElementById('homestayFilter');
+            if (homestaySelect.options.length > 0) {
+                currentFilter = homestaySelect.options[0].value;
+                homestaySelect.value = currentFilter;
+            }
+            
+            // Homestay filter functionality
+            homestaySelect.addEventListener('change', function(e) {
+                currentFilter = e.target.value;
+                console.log('🏠 Filter changed to homestay:', currentFilter);
+                renderCustomCalendar(currentMonth, currentYear);
+            });
+            
+            function getFilteredBookings() {
+                if (!currentFilter) {
+                    return validBookedDates; // Show all bookings
+                }
+                return validBookedDates.filter(function(booking) {
+                    return booking.HomestayId.toString() === currentFilter;
+                });
+            }
+              function renderCustomCalendar(month, year) {
+                console.log('🎨 Rendering calendar for:', month + 1, year);
+                
+                var calendarEl = document.getElementById('customCalendar');
+                if (!calendarEl) {
+                    console.error('❌ Calendar element not found!');
+                    return;
+                }
+                
+                // Get filtered bookings
+                var filteredBookings = getFilteredBookings();
+                console.log('🔍 Filtered bookings:', filteredBookings);
+                
+                // Calendar calculations
+                var firstDay = new Date(year, month, 1);
+                var lastDay = new Date(year, month + 1, 0);
+                var startDate = new Date(firstDay);
+                startDate.setDate(startDate.getDate() - firstDay.getDay());
+                
+                var monthNames = [
+                    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
+                    'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'
+                ];
+                  // Build calendar HTML
+                var selectedHomestayName = '';
+                if (currentFilter) {
+                    var homestaySelect = document.getElementById('homestayFilter');
+                    selectedHomestayName = homestaySelect.options[homestaySelect.selectedIndex].text;
+                }
+                
+                var html = `
+                    <div class="calendar-header">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="previousMonth()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <h4 class="calendar-title">${monthNames[month]} ${year}${selectedHomestayName ? ' - ' + selectedHomestayName : ''}</h4>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="nextMonth()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div class="weekday">CN</div>
+                        <div class="weekday">T2</div>
+                        <div class="weekday">T3</div>
+                        <div class="weekday">T4</div>
+                        <div class="weekday">T5</div>
+                        <div class="weekday">T6</div>
+                        <div class="weekday">T7</div>
+                    </div>
+                    <div class="calendar-days">
+                `;
+                
+                // Generate calendar days
+                var currentDateLoop = new Date(startDate);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                for (var i = 0; i < 42; i++) {
+                    var dateStr = currentDateLoop.toISOString().split('T')[0];
+                    var dayNumber = currentDateLoop.getDate();
+                    var isCurrentMonth = currentDateLoop.getMonth() === month;
+                    var isPast = currentDateLoop < today;
+                    var isToday = currentDateLoop.getTime() === today.getTime();
+                      // Check for bookings (use filtered bookings)
+                    var bookingsForDate = filteredBookings.filter(function(booking) {
+                        var bookingDate = booking.Date;
+                        if (typeof bookingDate === 'string' && bookingDate.indexOf('T') > -1) {
+                            bookingDate = bookingDate.split('T')[0];
+                        }
+                        return bookingDate === dateStr;
+                    });
+                    
+                    // Set CSS classes
+                    var dayClass = 'calendar-day';
+                    if (!isCurrentMonth) dayClass += ' other-month';
+                    if (isPast) dayClass += ' past-date';
+                    if (isToday) dayClass += ' today';
+                    if (bookingsForDate.length > 0) dayClass += ' booked-date';
+                    else if (isCurrentMonth && !isPast) dayClass += ' available-date';
+                      // Generate detailed booking info
+                    var bookingInfoHtml = '';
+                    if (bookingsForDate.length > 0) {
+                        bookingInfoHtml = bookingsForDate.map(function(booking) {
+                            var guestName = booking.GuestName || 'Khách';
+                            var homestayName = booking.HomestayName || '';
+                            var status = booking.Status || '';
+                            
+                            // Display guest name (truncated if too long)
+                            var displayGuestName = guestName.length > 10 ? guestName.substring(0, 10) + '...' : guestName;
+                            
+                            // Status display
+                            var statusText = '';
+                            switch(status) {
+                                case 'Paid': statusText = 'Đã TT'; break;
+                                case 'Completed': statusText = 'Hoàn thành'; break;
+                                case 'Cancelled': statusText = 'Hủy'; break;
+                                default: statusText = status;
+                            }
+                            
+                            return `
+                                <div class="booking-info" title="Chi tiết: ${homestayName} - ${guestName} (${statusText})">
+                                    <div style="font-weight: bold;">${displayGuestName}</div>
+                                    ${!currentFilter ? '<div style="font-size: 8px; opacity: 0.8;">' + (homestayName.length > 12 ? homestayName.substring(0, 12) + '...' : homestayName) + '</div>' : ''}
+                                    <div class="booking-status">${statusText}</div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                    
+                    html += `
+                        <div class="${dayClass}" data-date="${dateStr}" onclick="onDateClick('${dateStr}')">
+                            <div class="calendar-day-number">${dayNumber}</div>
+                            <div class="calendar-day-info">
+                                ${bookingInfoHtml}
+                            </div>
+                        </div>
+                    `;
+                    
+                    currentDateLoop.setDate(currentDateLoop.getDate() + 1);
+                }
+                
+                html += '</div>';
+                calendarEl.innerHTML = html;
+                
+                console.log('✅ Calendar rendered successfully');
+            }
+            
+            // Navigation functions
+            window.previousMonth = function() {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                renderCustomCalendar(currentMonth, currentYear);
+            };
+            
+            window.nextMonth = function() {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                renderCustomCalendar(currentMonth, currentYear);
+            };              // Date click handler
+            window.onDateClick = function(dateStr) {
+                var clickedDate = new Date(dateStr);
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                // Use filtered bookings for click details
+                var filteredBookings = getFilteredBookings();
+                var bookingsForDate = filteredBookings.filter(function(booking) {
+                    var bookingDate = booking.Date;
+                    if (typeof bookingDate === 'string' && bookingDate.indexOf('T') > -1) {
+                        bookingDate = bookingDate.split('T')[0];
+                    }
+                    return bookingDate === dateStr;
+                });
+                
+                if (bookingsForDate.length > 0) {
+                    // Show detailed modal for first booking (or show list if multiple)
+                    if (bookingsForDate.length === 1) {
+                        showBookingDetails(bookingsForDate[0].BookingId);
+                    } else {
+                        // Multiple bookings - show selection
+                        var details = bookingsForDate.map(function(booking, index) {
+                            var statusText = '';
+                            switch(booking.Status) {
+                                case 'Paid': statusText = 'Đã thanh toán'; break;
+                                case 'Completed': statusText = 'Hoàn thành'; break;
+                                case 'Cancelled': statusText = 'Đã hủy'; break;
+                                default: statusText = booking.Status;
+                            }
+                            return `${index + 1}. ${booking.HomestayName} - ${booking.GuestName} (${statusText})`;
+                        }).join('\n');
+                        
+                        var choice = prompt(`Có ${bookingsForDate.length} đặt phòng ngày ${clickedDate.toLocaleDateString('vi-VN')}:\n\n${details}\n\nNhập số thứ tự để xem chi tiết (1-${bookingsForDate.length}):`);
+                        var choiceIndex = parseInt(choice) - 1;
+                        if (!isNaN(choiceIndex) && choiceIndex >= 0 && choiceIndex < bookingsForDate.length) {
+                            showBookingDetails(bookingsForDate[choiceIndex].BookingId);
+                        }
+                    }
+                } else if (clickedDate >= today) {
+                    alert(`Ngày ${clickedDate.toLocaleDateString('vi-VN')} hiện đang trống.\n\nBạn có thể thêm giá đặc biệt hoặc khuyến mãi cho ngày này.`);
+                }
+            };
+
+            // Show booking details in modal
+            window.showBookingDetails = function(bookingId) {
+                $.get('@Url.Action("GetBookingDetails", "Host")', { id: bookingId })
+                    .done(function(response) {
+                        if (response.success) {
+                            var booking = response.booking;
+                            var content = `
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-user me-2"></i>Thông tin khách</h6>
+                                        <p><strong>Tên:</strong> ${booking.GuestName}</p>
+                                        <p><strong>Email:</strong> ${booking.GuestEmail}</p>
+                                        <p><strong>Điện thoại:</strong> ${booking.GuestPhone || 'Chưa cung cấp'}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-home me-2"></i>Thông tin đặt phòng</h6>
+                                        <p><strong>Homestay:</strong> ${booking.HomestayName}</p>
+                                        <p><strong>Check-in:</strong> ${booking.CheckInDate}</p>
+                                        <p><strong>Check-out:</strong> ${booking.CheckOutDate}</p>
+                                        <p><strong>Số khách:</strong> ${booking.NumberOfGuests}</p>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-money-bill me-2"></i>Thông tin thanh toán</h6>
+                                        <p><strong>Tổng tiền:</strong> ${new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(booking.TotalAmount)}</p>
+                                        <p><strong>Số tiền cuối:</strong> ${new Intl.NumberFormat('vi-VN', {style: 'currency', currency: 'VND'}).format(booking.FinalAmount)}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-info-circle me-2"></i>Trạng thái</h6>
+                                        <p><strong>Trạng thái:</strong> <span class="badge bg-info">${booking.StatusText}</span></p>
+                                        <p><strong>Ngày đặt:</strong> ${booking.CreatedAt}</p>
+                                    </div>
+                                </div>
+                                ${booking.ReviewRating ? `
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <h6><i class="fas fa-star me-2"></i>Đánh giá</h6>
+                                        <p><strong>Điểm:</strong> ${booking.ReviewRating}/5 ⭐</p>
+                                        ${booking.ReviewComment ? `<p><strong>Nhận xét:</strong> ${booking.ReviewComment}</p>` : ''}
+                                    </div>
+                                </div>
+                                ` : ''}
+                            `;
+                            
+                            $('#bookingDetailsContent').html(content);
+                            
+                            // Add action buttons
+                            var actions = '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>';
+                            
+                            if (booking.CanComplete) {
+                                actions += ' <button type="button" class="btn btn-success" onclick="completeBooking(' + booking.Id + ')">Hoàn thành</button>';
+                            }
+                            
+                            if (booking.CanCancel) {
+                                actions += ' <button type="button" class="btn btn-danger" onclick="cancelBooking(' + booking.Id + ')">Hủy đặt phòng</button>';
+                            }
+                            
+                            $('#bookingDetailsActions').html(actions);
+                            $('#bookingDetailsModal').modal('show');
+                        } else {
+                            alert('Không thể tải chi tiết đặt phòng: ' + response.message);
+                        }
+                    })
+                    .fail(function() {
+                        alert('Có lỗi xảy ra khi tải chi tiết đặt phòng.');
+                    });
+            };
+
+            // Complete booking
+            window.completeBooking = function(bookingId) {
+                if (confirm('Bạn có chắc chắn muốn đánh dấu đặt phòng này là hoàn thành?')) {
+                    $.post('@Url.Action("CompleteBooking", "Host")', { 
+                        id: bookingId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    })
+                    .done(function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#bookingDetailsModal').modal('hide');
+                            location.reload(); // Refresh to see updated status
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    })
+                    .fail(function() {
+                        alert('Có lỗi xảy ra khi cập nhật trạng thái.');
+                    });
+                }
+            };
+
+            // Cancel booking
+            window.cancelBooking = function(bookingId) {
+                if (confirm('Bạn có chắc chắn muốn hủy đặt phòng này?')) {
+                    $.post('@Url.Action("CancelBooking", "Host")', { 
+                        id: bookingId,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    })
+                    .done(function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            $('#bookingDetailsModal').modal('hide');
+                            location.reload(); // Refresh to see updated status
+                        } else {
+                            alert('Lỗi: ' + response.message);
+                        }
+                    })
+                    .fail(function() {
+                        alert('Có lỗi xảy ra khi hủy đặt phòng.');
+                    });
+                }
+            };
+            
+            // Initialize calendar
+            renderCustomCalendar(currentMonth, currentYear);
+        });
+    </script>
+}
+
+@functions {
+    private string GetStatusColor(BookingStatus status)
+    {
+        return status switch
+        {
+            BookingStatus.Paid => "info",
+            BookingStatus.Completed => "success",
+            BookingStatus.Cancelled => "danger",
+            _ => "secondary"
+        };
+    }
+    
+    private string GetStatusText(BookingStatus status)
+    {
+        return status switch
+        {
+            BookingStatus.Paid => "Đã thanh toán",
+            BookingStatus.Completed => "Hoàn thành",
+            BookingStatus.Cancelled => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+}
+
+<!-- Booking Details Modal -->
+<div class="modal fade" id="bookingDetailsModal" tabindex="-1" aria-labelledby="bookingDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bookingDetailsModalLabel">
+                    <i class="fas fa-info-circle me-2"></i>Chi tiết đặt phòng
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="bookingDetailsContent">                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer" id="bookingDetailsActions">
+                <!-- Action buttons will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+<!-- Close dashboard-container -->

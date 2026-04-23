@@ -1,0 +1,110 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@* Google reCAPTCHA Widget Helper *@
+@{
+    var widgetId = ViewData["reCaptchaId"]?.ToString() ?? $"recaptcha-{Guid.NewGuid().ToString("N")[..8]}";
+    var callback = ViewData["reCaptchaCallback"]?.ToString();
+    var size = ViewData["reCaptchaSize"]?.ToString() ?? "normal"; // normal, compact, invisible
+    var theme = ViewData["reCaptchaTheme"]?.ToString() ?? "light"; // light, dark
+    var action = ViewData["reCaptchaAction"]?.ToString() ?? "submit";
+    
+    var reCaptchaEnabled = Configuration.GetValue<bool>("GoogleReCaptcha:Enabled");
+    var reCaptchaVersion = Configuration["GoogleReCaptcha:Version"] ?? "v2";
+}
+
+@if (reCaptchaEnabled)
+{
+    @if (reCaptchaVersion == "v3")
+    {
+        <!-- reCAPTCHA v3 (Invisible) -->
+        <input type="hidden" name="g-recaptcha-response" id="@(widgetId)-response" />
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.querySelector('form[data-recaptcha="true"]');
+                if (form) {
+                    form.setAttribute('data-recaptcha-action', '@action');
+                }
+            });
+        </script>
+    }
+    else
+    {
+        <!-- reCAPTCHA v2 Widget -->
+        <div class="mb-3">
+            <div class="g-recaptcha" 
+                 id="@widgetId"
+                 data-sitekey="@Configuration["GoogleReCaptcha:SiteKey"]"
+                 data-size="@size"
+                 data-theme="@theme"
+                 @if (!string.IsNullOrEmpty(callback))
+                 {
+                     <text>data-callback="@callback"</text>
+                 }>
+            </div>
+            <div class="invalid-feedback" id="@(widgetId)-error" style="display: none;">
+                Vui lòng xác thực reCAPTCHA
+            </div>
+        </div>
+
+        <!-- reCAPTCHA Validation Script -->
+        <script>
+            // Form validation with reCAPTCHA
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.querySelector('form[data-recaptcha="true"]');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        if (typeof grecaptcha !== 'undefined') {
+                            const response = grecaptcha.getResponse();
+                            if (!response) {
+                                e.preventDefault();
+                                document.getElementById('@(widgetId)-error').style.display = 'block';
+                                document.getElementById('@widgetId').scrollIntoView({ behavior: 'smooth' });
+                                return false;
+                            } else {
+                                document.getElementById('@(widgetId)-error').style.display = 'none';
+                            }
+                        }
+                    });
+                }
+            });
+
+            // Custom callback function
+            @if (!string.IsNullOrEmpty(callback))
+            {
+                <text>
+                function @(callback)(response) {
+                    console.log('reCAPTCHA solved:', response);
+                    document.getElementById('@(widgetId)-error').style.display = 'none';
+                    
+                    // Enable submit button if it was disabled
+                    const submitBtn = document.querySelector('form[data-recaptcha="true"] button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                    }
+                }
+                </text>
+            }
+        </script>
+    }
+
+    <!-- reCAPTCHA Info -->
+    <div class="recaptcha-info">
+        <small class="text-muted">
+            <i class="fas fa-shield-alt"></i>
+            Trang web này được bảo vệ bởi reCAPTCHA và tuân thủ 
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Chính sách Bảo mật</a> và 
+            <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Điều khoản Dịch vụ</a> của Google.
+        </small>
+    </div>
+}
+else
+{
+    <!-- Development mode placeholder -->
+    <div class="mb-3">
+        <div class="alert alert-info py-2" style="font-size: 0.9rem;">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Development Mode:</strong> reCAPTCHA verification is disabled
+        </div>
+    </div>
+}
+

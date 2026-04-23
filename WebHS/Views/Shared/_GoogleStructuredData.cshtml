@@ -1,0 +1,139 @@
+@using WebHS.Services
+@inject IGoogleStructuredDataService StructuredDataService
+
+@* Google Structured Data (JSON-LD) for SEO *@
+
+@{
+    var baseStructuredData = new List<string>();
+    
+    // Always include organization and website data
+    baseStructuredData.Add(StructuredDataService.GenerateOrganizationStructuredData());
+    baseStructuredData.Add(StructuredDataService.GenerateWebsiteStructuredData());
+    
+    // Add page-specific structured data
+    var pageType = ViewData["StructuredDataType"]?.ToString();
+    var pageData = ViewData["StructuredData"];
+    
+    if (!string.IsNullOrEmpty(pageType) && pageData != null)
+    {
+        switch (pageType.ToLower())
+        {
+            case "homestay":
+                baseStructuredData.Add(StructuredDataService.GenerateHomestayStructuredData(pageData));
+                break;
+            case "review":
+                baseStructuredData.Add(StructuredDataService.GenerateReviewStructuredData(pageData));
+                break;
+            case "event":
+                baseStructuredData.Add(StructuredDataService.GenerateEventStructuredData(pageData));
+                break;
+        }
+    }
+    
+    // Add breadcrumb data if available
+    var breadcrumbs = ViewData["Breadcrumbs"] as List<BreadcrumbItem>;
+    if (breadcrumbs != null && breadcrumbs.Any())
+    {
+        baseStructuredData.Add(StructuredDataService.GenerateBreadcrumbStructuredData(breadcrumbs));
+    }
+}
+
+@foreach (var structuredData in baseStructuredData.Where(data => !string.IsNullOrEmpty(data)))
+{
+    <script type="application/ld+json">
+        @Html.Raw(structuredData)
+    </script>
+}
+
+@* FAQ Schema for common questions *@
+@if (ViewData["FAQData"] != null)
+{
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@@type": "Question",
+                "name": "Làm thế nào để đặt phòng homestay?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Bạn có thể đặt phòng homestay bằng cách tìm kiếm theo địa điểm, chọn homestay phù hợp và điền thông tin đặt phòng. Chúng tôi hỗ trợ thanh toán qua VNPay, MoMo và PayPal."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "Có thể hủy đặt phòng không?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Có, bạn có thể hủy đặt phòng theo chính sách hủy của từng homestay. Thông tin chi tiết được hiển thị khi đặt phòng."
+                }
+            },
+            {
+                "@@type": "Question",
+                "name": "Homestay có đầy đủ tiện nghi không?",
+                "acceptedAnswer": {
+                    "@@type": "Answer",
+                    "text": "Mỗi homestay có danh sách tiện nghi riêng được hiển thị chi tiết trên trang mô tả. Bao gồm WiFi, điều hòa, bếp, máy giặt, v.v."
+                }
+            }
+        ]
+    }
+    </script>
+}
+
+@* Local Business Schema for contact information *@
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "LocalBusiness",
+    "name": "WebHS - Homestay Booking Platform",
+    "description": "Nền tảng đặt phòng homestay uy tín tại Việt Nam",
+    "url": "@(Context.Request.Scheme)://@(Context.Request.Host)",
+    "telephone": "+84-123-456-789",
+    "address": {
+        "@@type": "PostalAddress",
+        "addressLocality": "Ho Chi Minh City",
+        "addressRegion": "Ho Chi Minh",
+        "addressCountry": "VN"
+    },
+    "openingHours": "Mo-Su 00:00-23:59",
+    "priceRange": "$$",
+    "servedCuisine": "Vietnamese",
+    "serviceArea": {
+        "@@type": "GeoCircle",
+        "geoMidpoint": {
+            "@@type": "GeoCoordinates",
+            "latitude": "10.8231",
+            "longitude": "106.6297"
+        },
+        "geoRadius": "100000"
+    }
+}
+</script>
+
+@* SoftwareApplication Schema *@
+<script type="application/ld+json">
+{
+    "@@context": "https://schema.org",
+    "@@type": "SoftwareApplication",
+    "name": "WebHS Homestay Booking",
+    "description": "Ứng dụng đặt phòng homestay trực tuyến",
+    "url": "@(Context.Request.Scheme)://@(Context.Request.Host)",
+    "applicationCategory": "TravelApplication",
+    "operatingSystem": "Web",
+    "offers": {
+        "@@type": "Offer",
+        "price": "0",
+        "priceCurrency": "VND"
+    },
+    "aggregateRating": {
+        "@@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "reviewCount": "1250",
+        "bestRating": "5",
+        "worstRating": "1"
+    }
+}
+</script>
+

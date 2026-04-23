@@ -1,0 +1,491 @@
+@model WebHS.ViewModels.PricingManagementViewModel
+@{
+    ViewData["Title"] = "Pricing Management - " + Model.HomestayName;
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Pricing Management</h2>
+                    <p class="text-muted mb-0">@Model.HomestayName</p>
+                    <small class="text-muted">Default price: $@Model.DefaultPricePerNight per night</small>
+                </div>
+                <div class="btn-group">
+                    <a href="@Url.Action("Calendar", new { id = Model.HomestayId })" class="btn btn-primary">
+                        <i class="fas fa-calendar-alt"></i> Calendar View
+                    </a>
+                    <a href="@Url.Action("Details", "Homestay", new { id = Model.HomestayId })" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Homestay
+                    </a>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-day fa-2x text-primary mb-3"></i>
+                            <h5>Set Daily Prices</h5>
+                            <p class="text-muted">Manage prices for specific dates</p>
+                            <a href="@Url.Action("Calendar", new { id = Model.HomestayId })" class="btn btn-primary">
+                                Open Calendar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-2x text-success mb-3"></i>
+                            <h5>Pricing Analytics</h5>
+                            <p class="text-muted">View pricing trends and performance</p>
+                            <button class="btn btn-success" onclick="showPricingStats()">
+                                View Stats
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <i class="fas fa-tools fa-2x text-warning mb-3"></i>
+                            <h5>Bulk Operations</h5>
+                            <p class="text-muted">Set prices for multiple dates</p>
+                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#bulkPricingModal">
+                                Bulk Pricing
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Pricing Rules -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list"></i> Current Pricing Rules
+                        <span class="badge bg-primary ms-2">@Model.PricingRules.Count rules</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.PricingRules.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Day</th>
+                                        <th>Price</th>
+                                        <th>Note</th>
+                                        <th>Last Updated</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var rule in Model.PricingRules.OrderBy(r => r.Date))
+                                    {
+                                        <tr>
+                                            <td>@rule.Date.ToString("MMM dd, yyyy")</td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">@rule.Date.DayOfWeek</span>
+                                            </td>
+                                            <td>
+                                                <strong class="text-primary">$@rule.PricePerNight.ToString("F2")</strong>
+                                                @if (rule.PricePerNight != Model.DefaultPricePerNight)
+                                                {
+                                                    var difference = rule.PricePerNight - Model.DefaultPricePerNight;
+                                                    var percentage = (difference / Model.DefaultPricePerNight) * 100;
+                                                    <small class="d-block text-@(difference > 0 ? "success" : "danger")">
+                                                        @(difference > 0 ? "+" : "")@difference.ToString("F2") (@percentage.ToString("F1")%)
+                                                    </small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(rule.Note))
+                                                {
+                                                    <span class="text-muted">@rule.Note</span>
+                                                }
+                                                else
+                                                {
+                                                    <em class="text-muted">No note</em>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @if (rule.UpdatedAt != rule.CreatedAt)
+                                                    {
+                                                        @rule.UpdatedAt.ToString("MMM dd, HH:mm")
+                                                    }
+                                                    else
+                                                    {
+                                                        @rule.CreatedAt.ToString("MMM dd, HH:mm")
+                                                    }
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary" onclick="editPrice('@rule.Date.ToString("yyyy-MM-dd")', @rule.PricePerNight, '@Html.Raw(System.Web.HttpUtility.JavaScriptStringEncode(rule.Note ?? string.Empty))')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger" onclick="removePrice('@rule.Date.ToString("yyyy-MM-dd")')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No custom pricing rules set</h5>
+                            <p class="text-muted">All dates use the default price of $@Model.DefaultPricePerNight per night</p>
+                            <a href="@Url.Action("Calendar", new { id = Model.HomestayId })" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Set Custom Prices
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Pricing Modal -->
+<div class="modal fade" id="bulkPricingModal" tabindex="-1" aria-labelledby="bulkPricingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="bulkPricingModalLabel">Bulk Pricing</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulkPricingForm">
+                <div class="modal-body">
+                    <input type="hidden" id="bulkHomestayId" value="@Model.HomestayId" />
+                    
+                    <div class="mb-3">
+                        <label for="bulkStartDate" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="bulkStartDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulkEndDate" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="bulkEndDate" min="@DateTime.Today.ToString("yyyy-MM-dd")" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulkPrice" class="form-label">Price per Night</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="bulkPrice" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-text">Default price: $@Model.DefaultPricePerNight</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="bulkNote" class="form-label">Note (optional)</label>
+                        <input type="text" class="form-control" id="bulkNote" maxlength="200">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Apply Bulk Pricing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Price Modal -->
+<div class="modal fade" id="editPriceModal" tabindex="-1" aria-labelledby="editPriceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPriceModalLabel">Edit Price</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editPriceForm">
+                <div class="modal-body">
+                    <input type="hidden" id="editHomestayId" value="@Model.HomestayId" />
+                    <input type="hidden" id="editDate" />
+                    
+                    <div class="mb-3">
+                        <label for="editDateDisplay" class="form-label">Date</label>
+                        <input type="text" class="form-control" id="editDateDisplay" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editPrice" class="form-label">Price per Night</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" class="form-control" id="editPrice" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-text">Default price: $@Model.DefaultPricePerNight</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editNote" class="form-label">Note (optional)</label>
+                        <input type="text" class="form-control" id="editNote" maxlength="200">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="removeEditPrice">Remove Price</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Pricing Stats Modal -->
+<div class="modal fade" id="pricingStatsModal" tabindex="-1" aria-labelledby="pricingStatsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pricingStatsModalLabel">Pricing Statistics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="pricingStatsContent">
+                    <div class="col-12 text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading pricing statistics...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Sync end date with start date for bulk pricing
+        document.getElementById('bulkStartDate').addEventListener('change', function() {
+            const endDateInput = document.getElementById('bulkEndDate');
+            if (endDateInput.value < this.value) {
+                endDateInput.value = this.value;
+            }
+            endDateInput.min = this.value;
+        });
+
+        // Handle bulk pricing form submission
+        document.getElementById('bulkPricingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const homestayId = document.getElementById('bulkHomestayId').value;
+            const startDate = document.getElementById('bulkStartDate').value;
+            const endDate = document.getElementById('bulkEndDate').value;
+            const price = document.getElementById('bulkPrice').value;
+            const note = document.getElementById('bulkNote').value;
+            
+            if (!confirm(`Are you sure you want to set the price to $${price} for all dates from ${startDate} to ${endDate}?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('@Url.Action("SetBulkPrice", "Pricing")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `homestayId=${homestayId}&startDate=${startDate}&endDate=${endDate}&price=${price}&note=${encodeURIComponent(note)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error updating prices: ' + error.message);
+            }
+        });
+
+        // Edit price function
+        function editPrice(date, price, note) {
+            document.getElementById('editDate').value = date;
+            document.getElementById('editDateDisplay').value = new Date(date).toLocaleDateString();
+            document.getElementById('editPrice').value = price;
+            document.getElementById('editNote').value = note || '';
+            
+            const modal = new bootstrap.Modal(document.getElementById('editPriceModal'));
+            modal.show();
+        }
+
+        // Handle edit price form submission
+        document.getElementById('editPriceForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const homestayId = document.getElementById('editHomestayId').value;
+            const date = document.getElementById('editDate').value;
+            const price = document.getElementById('editPrice').value;
+            const note = document.getElementById('editNote').value;
+            
+            try {
+                const response = await fetch('@Url.Action("SetPrice", "Pricing")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `homestayId=${homestayId}&date=${date}&price=${price}&note=${encodeURIComponent(note)}`
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            } catch (error) {
+                alert('Error updating price: ' + error.message);
+            }
+        });
+
+        // Remove price function
+        function removePrice(date) {
+            if (!confirm(`Are you sure you want to remove the custom price for ${new Date(date).toLocaleDateString()}?`)) {
+                return;
+            }
+            
+            const homestayId = @Model.HomestayId;
+            
+            fetch('@Url.Action("RemovePrice", "Pricing")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `homestayId=${homestayId}&date=${date}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error removing price: ' + error.message);
+            });
+        }
+
+        // Handle remove price from edit modal
+        document.getElementById('removeEditPrice').addEventListener('click', function() {
+            const date = document.getElementById('editDate').value;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editPriceModal'));
+            modal.hide();
+            removePrice(date);
+        });
+
+        // Show pricing statistics
+        function showPricingStats() {
+            const modal = new bootstrap.Modal(document.getElementById('pricingStatsModal'));
+            modal.show();
+            
+            // Load statistics
+            loadPricingStats();
+        }
+
+        async function loadPricingStats() {
+            try {
+                const homestayId = @Model.HomestayId;
+                const rules = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PricingRules));
+                const defaultPrice = @Model.DefaultPricePerNight;
+                
+                // Calculate statistics
+                const totalRules = rules.length;
+                const avgCustomPrice = totalRules > 0 ? rules.reduce((sum, r) => sum + r.pricePerNight, 0) / totalRules : 0;
+                const maxPrice = totalRules > 0 ? Math.max(...rules.map(r => r.pricePerNight)) : defaultPrice;
+                const minPrice = totalRules > 0 ? Math.min(...rules.map(r => r.pricePerNight)) : defaultPrice;
+                
+                const premiumDays = rules.filter(r => r.pricePerNight > defaultPrice).length;
+                const discountDays = rules.filter(r => r.pricePerNight < defaultPrice).length;
+                
+                document.getElementById('pricingStatsContent').innerHTML = `
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-body text-center">
+                                <h4 class="text-primary">${totalRules}</h4>
+                                <p class="mb-0">Custom Pricing Rules</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body text-center">
+                                <h4 class="text-success">$${avgCustomPrice.toFixed(2)}</h4>
+                                <p class="mb-0">Average Custom Price</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <div class="card border-warning">
+                            <div class="card-body text-center">
+                                <h4 class="text-warning">$${maxPrice.toFixed(2)}</h4>
+                                <p class="mb-0">Highest Price</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <div class="card border-info">
+                            <div class="card-body text-center">
+                                <h4 class="text-info">$${minPrice.toFixed(2)}</h4>
+                                <p class="mb-0">Lowest Price</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 mt-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6>Pricing Distribution</h6>
+                                <div class="row">
+                                    <div class="col-4 text-center">
+                                        <h5 class="text-success">${premiumDays}</h5>
+                                        <p class="mb-0">Premium Days</p>
+                                        <small class="text-muted">Above default</small>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h5 class="text-primary">${totalRules}</h5>
+                                        <p class="mb-0">Total Rules</p>
+                                        <small class="text-muted">Custom pricing</small>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <h5 class="text-info">${discountDays}</h5>
+                                        <p class="mb-0">Discount Days</p>
+                                        <small class="text-muted">Below default</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('pricingStatsContent').innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger">
+                            Error loading statistics: ${error.message}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    </script>
+}
+

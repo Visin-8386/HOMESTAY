@@ -1,0 +1,442 @@
+@{
+    ViewData["Title"] = "Yêu Cầu Nhắn Tin";
+    Layout = "_Layout_New";
+}
+
+<!-- Add toastr for notifications -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="fw-bold text-primary mb-1">
+                        <i class="fas fa-bell me-2"></i>Yêu Cầu Nhắn Tin
+                    </h2>
+                    <p class="text-muted mb-0">Quản lý các yêu cầu nhắn tin từ người dùng</p>
+                </div>
+                <button id="refreshBtn" class="btn btn-primary" onclick="refreshRequests()">
+                    <i class="fas fa-sync-alt me-2"></i>Làm mới
+                </button>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Yêu cầu mới</h5>
+                                    <h2 class="mb-0" id="pendingCount">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-clock fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Đã chấp nhận</h5>
+                                    <h2 class="mb-0" id="acceptedCount">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-check fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Tổng yêu cầu</h5>
+                                    <h2 class="mb-0" id="totalCount">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-list fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="card-title">Hôm nay</h5>
+                                    <h2 class="mb-0" id="todayCount">0</h2>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-calendar-day fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Requests Table -->
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-inbox me-2"></i>Danh Sách Yêu Cầu
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Người gửi</th>
+                                    <th>Nội dung</th>
+                                    <th style="width: 150px;">Thời gian</th>
+                                    <th style="width: 120px;">Trạng thái</th>
+                                    <th style="width: 200px;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestsTableBody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Đang tải...</span>
+                                        </div>
+                                        <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        // Configure toastr
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": "3000"
+        };
+
+        $(document).ready(function() {
+            loadRequests();
+            
+            // Auto refresh every 30 seconds
+            setInterval(loadRequests, 30000);
+        });
+
+        function loadRequests() {
+            console.log('Loading requests...');
+            
+            // Show loading state
+            const tbody = $('#requestsTableBody');
+            tbody.html(`
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                        <p class="mt-2 text-muted">Đang tải dữ liệu...</p>
+                    </td>
+                </tr>
+            `);
+            
+            $.ajax({
+                url: '@Url.Action("GetAdminMessageRequests", "Messaging")',
+                type: 'GET',
+                timeout: 10000, // 10 second timeout
+                success: function(data) {
+                    console.log('Response received:', data);
+                    if (data && data.success) {
+                        console.log('Requests count:', data.requests ? data.requests.length : 0);
+                        displayRequests(data.requests || []);
+                        updateStats(data.requests || []);
+                    } else {
+                        console.error('API returned failure:', data);
+                        showError('Không thể tải danh sách yêu cầu: ' + (data.message || 'Unknown error'));
+                        showEmptyState('Không thể tải dữ liệu');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX failed:', status, error);
+                    console.error('Response text:', xhr.responseText);
+                    
+                    let errorMessage = 'Lỗi kết nối đến server';
+                    if (status === 'timeout') {
+                        errorMessage = 'Timeout - Vui lòng thử lại';
+                    } else if (xhr.status === 401) {
+                        errorMessage = 'Không có quyền truy cập';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Lỗi server nội bộ';
+                    }
+                    
+                    showError(errorMessage);
+                    showEmptyState('Lỗi tải dữ liệu');
+                }
+            });
+        }
+        
+        function showEmptyState(message) {
+            const tbody = $('#requestsTableBody');
+            tbody.html(`
+                <tr>
+                    <td colspan="6" class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <p class="text-muted">${message}</p>
+                        <button class="btn btn-primary btn-sm" onclick="loadRequests()">
+                            <i class="fas fa-sync-alt me-1"></i>Thử lại
+                        </button>
+                    </td>
+                </tr>
+            `);
+        }
+
+        function displayRequests(requests) {
+            const tbody = $('#requestsTableBody');
+            tbody.empty();
+
+            if (requests.length === 0) {
+                tbody.append(`
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Không có yêu cầu nhắn tin nào</p>
+                        </td>
+                    </tr>
+                `);
+                return;
+            }
+
+            requests.forEach(function(request, index) {
+                const statusBadge = getStatusBadge(request);
+                const actionButtons = getActionButtons(request);
+                const timeAgo = formatTimeAgo(request.createdAt);
+
+                tbody.append(`
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div>
+                                <strong>${request.requesterName || 'N/A'}</strong>
+                                <br>
+                                <small class="text-muted">${request.requesterEmail || 'N/A'}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="message-content" title="${request.message}">
+                                ${truncateMessage(request.message, 100)}
+                            </div>
+                        </td>
+                        <td>
+                            <small class="text-muted" title="${new Date(request.createdAt).toLocaleString()}">
+                                ${timeAgo}
+                            </small>
+                        </td>
+                        <td>${statusBadge}</td>
+                        <td>${actionButtons}</td>
+                    </tr>
+                `);
+            });
+        }
+
+        function updateStats(requests) {
+            const pending = requests.filter(r => !r.isRead && !r.isAccepted).length;
+            const accepted = requests.filter(r => r.isAccepted).length;
+            const total = requests.length;
+            const today = requests.filter(r => {
+                const requestDate = new Date(r.createdAt).toDateString();
+                const todayDate = new Date().toDateString();
+                return requestDate === todayDate;
+            }).length;
+
+            $('#pendingCount').text(pending);
+            $('#acceptedCount').text(accepted);
+            $('#totalCount').text(total);
+            $('#todayCount').text(today);
+        }
+
+        function getStatusBadge(request) {
+            if (request.isAccepted) {
+                return '<span class="badge bg-success">Đã chấp nhận</span>';
+            } else if (request.isRead) {
+                return '<span class="badge bg-info">Đã xem</span>';
+            } else {
+                return '<span class="badge bg-warning">Chờ xử lý</span>';
+            }
+        }
+
+        function getActionButtons(request) {
+            if (request.isAccepted) {
+                return `
+                    <span class="text-success">
+                        <i class="fas fa-check me-1"></i>Đã xử lý
+                    </span>
+                `;
+            } else {
+                return `
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-success btn-sm" onclick="acceptRequest(${request.id})" title="Chấp nhận">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="declineRequest(${request.id})" title="Từ chối">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function acceptRequest(notificationId) {
+            // Show loading state immediately
+            const button = $(`button[onclick="acceptRequest(${notificationId})"]`);
+            const originalHtml = button.html();
+            button.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+
+            // Accept request directly without modal for faster response
+            $.post('@Url.Action("AcceptAdminMessageRequest", "Messaging")', {
+                notificationId: notificationId
+            }, function(data) {
+                if (data.success) {
+                    showSuccess(data.message || 'Đã chấp nhận yêu cầu thành công!');
+                    
+                    // Update admin badge in navbar
+                    if (typeof updateAdminBadge === 'function') {
+                        updateAdminBadge();
+                    }
+                    
+                    // Immediate redirect to messaging page
+                    if (data.redirectUrl) {
+                        window.location.href = data.redirectUrl;
+                    } else if (data.conversationId) {
+                        window.location.href = '@Url.Action("Index", "Messaging")' + '?conversationId=' + data.conversationId;
+                    } else {
+                        // Fallback: just go to messaging index
+                        window.location.href = '@Url.Action("Index", "Messaging")';
+                    }
+                } else {
+                    showError(data.message || 'Có lỗi xảy ra khi chấp nhận yêu cầu');
+                    button.html(originalHtml).prop('disabled', false);
+                }
+            }).fail(function() {
+                showError('Lỗi kết nối khi chấp nhận yêu cầu');
+                button.html(originalHtml).prop('disabled', false);
+            });
+        }
+
+        function declineRequest(notificationId) {
+            // Show confirmation for decline action
+            if (confirm('Bạn có chắc chắn muốn từ chối yêu cầu nhắn tin này?')) {
+                const button = $(`button[onclick="declineRequest(${notificationId})"]`);
+                const originalHtml = button.html();
+                button.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+
+                $.post('@Url.Action("DeclineAdminMessageRequest", "Messaging")', {
+                    notificationId: notificationId
+                }, function(data) {
+                    if (data.success) {
+                        showSuccess(data.message || 'Đã từ chối yêu cầu');
+                        
+                        // Update admin badge in navbar
+                        if (typeof updateAdminBadge === 'function') {
+                            updateAdminBadge();
+                        }
+                        
+                        loadRequests(); // Reload the list
+                    } else {
+                        showError(data.message || 'Có lỗi xảy ra khi từ chối yêu cầu');
+                        button.html(originalHtml).prop('disabled', false);
+                    }
+                }).fail(function() {
+                    showError('Lỗi kết nối khi từ chối yêu cầu');
+                    button.html(originalHtml).prop('disabled', false);
+                });
+            }
+        }
+
+        function refreshRequests() {
+            const refreshBtn = $('#refreshBtn');
+            const originalHtml = refreshBtn.html();
+            refreshBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang tải...').prop('disabled', true);
+            
+            loadRequests();
+            
+            // Update admin badge when refreshing
+            if (typeof updateAdminBadge === 'function') {
+                updateAdminBadge();
+            }
+            
+            setTimeout(() => {
+                refreshBtn.html(originalHtml).prop('disabled', false);
+                showSuccess('Đã làm mới danh sách yêu cầu');
+            }, 1000);
+        }
+
+        function truncateMessage(message, maxLength) {
+            if (message.length <= maxLength) return message;
+            return message.substring(0, maxLength) + '...';
+        }
+
+        function formatTimeAgo(dateString) {
+            const now = new Date();
+            const date = new Date(dateString);
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Vừa xong';
+            if (diffInSeconds < 3600) return Math.floor(diffInSeconds / 60) + ' phút trước';
+            if (diffInSeconds < 86400) return Math.floor(diffInSeconds / 3600) + ' giờ trước';
+            return Math.floor(diffInSeconds / 86400) + ' ngày trước';
+        }
+
+        function showSuccess(message) {
+            toastr.success(message);
+        }
+
+        function showError(message) {
+            toastr.error(message);
+        }
+    </script>
+}
+
+<style>
+    .message-content {
+        max-width: 300px;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+    
+    .table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.025);
+    }
+</style>

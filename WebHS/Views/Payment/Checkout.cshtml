@@ -1,0 +1,299 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.PaymentViewModel
+
+@{
+    ViewData["Title"] = "Thanh Toán";
+}
+
+<div class="container">
+    <!-- Booking Status Info -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info" role="alert">
+                <h5 class="alert-heading"><i class="fas fa-info-circle"></i> Trạng thái đặt phòng</h5>
+                <p class="mb-1">
+                    <strong>Đặt phòng của bạn đã được tạo với trạng thái "Chờ thanh toán".</strong>
+                </p>                <p class="mb-0">
+                    Vui lòng chọn phương thức thanh toán bên dưới để hoàn tất việc đặt phòng. 
+                    <strong class="text-warning">Đặt phòng sẽ tự động bị hủy sau 30 phút nếu không thanh toán.</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0"><i class="fas fa-credit-card"></i> Hoàn tất thanh toán để xác nhận đặt phòng</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Chọn phương thức thanh toán</h5>
+                    
+                    <form asp-action="ProcessPayment" method="post" id="paymentForm">
+                        <input asp-for="BookingId" type="hidden" />
+                        <input asp-for="Amount" type="hidden" />
+                        <input asp-for="Currency" type="hidden" />
+                        <input asp-for="Description" type="hidden" />
+                        
+                        <div class="payment-methods">
+                            <div class="form-check payment-option">
+                                <input class="form-check-input" type="radio" name="PaymentMethod" value="VNPay" id="vnpay" checked>
+                                <label class="form-check-label payment-label" for="vnpay">
+                                    <div class="payment-card">
+                                        <img src="https://sandbox.vnpayment.vn/paymentv2/images/logo-merchant/logo_vnpay.png" alt="VNPay" style="height: 40px;">
+                                        <div class="payment-info">
+                                            <strong>VNPay</strong>
+                                            <small class="text-muted">Thanh toán qua ví điện tử VNPay</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="form-check payment-option">
+                                <input class="form-check-input" type="radio" name="PaymentMethod" value="MoMo" id="momo">
+                                <label class="form-check-label payment-label" for="momo">
+                                    <div class="payment-card">
+                                        <img src="https://developers.momo.vn/v3/assets/images/square-logo.svg" alt="MoMo" style="height: 40px;">
+                                        <div class="payment-info">
+                                            <strong>MoMo</strong>
+                                            <small class="text-muted">Thanh toán qua ví điện tử MoMo</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="form-check payment-option">
+                                <input class="form-check-input" type="radio" name="PaymentMethod" value="PayPal" id="paypal">
+                                <label class="form-check-label payment-label" for="paypal">
+                                    <div class="payment-card">
+                                        <img src="https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png" alt="PayPal" style="height: 40px;">
+                                        <div class="payment-info">
+                                            <strong>PayPal</strong>
+                                            <small class="text-muted">Thanh toán quốc tế qua PayPal</small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>                            @* Free payment option - Only show in development environment *@
+                            @{
+                                var environment = ViewContext.HttpContext.RequestServices.GetService<IWebHostEnvironment>();
+                            }
+                            @if (environment?.IsDevelopment() == true)
+                            {
+                                <div class="form-check payment-option">
+                                    <input class="form-check-input" type="radio" name="PaymentMethod" value="Free" id="free">
+                                    <label class="form-check-label payment-label" for="free">
+                                        <div class="payment-card">
+                                            <i class="fas fa-gift text-success" style="font-size: 30px; margin: 5px;"></i>
+                                            <div class="payment-info">
+                                                <strong>Miễn phí (DEV)</strong>
+                                                <small class="text-muted">Bỏ qua thanh toán và xác nhận đặt phòng ngay lập tức (chỉ dành cho kiểm thử development)</small>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            }
+                        </div>                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success btn-lg btn-block" id="payButton">
+                                <i class="fas fa-credit-card"></i> Thanh toán @Model.Amount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN")) để xác nhận đặt phòng
+                            </button>
+                            <p class="text-muted text-center mt-2 small">
+                                <i class="fas fa-clock"></i> Đặt phòng sẽ bị hủy tự động sau 30 phút nếu không thanh toán
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">                <div class="card-header">
+                    <h5 class="mb-0">Chi Tiết Đơn Hàng</h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-summary">
+                        <div class="d-flex justify-content-between">
+                            <span>Mã đặt phòng:</span>
+                            <strong>#@Model.BookingId</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Trạng thái:</span>
+                            <span class="badge bg-warning text-dark">Chờ thanh toán</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Tổng tiền:</span>
+                            <strong>@Model.Amount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</strong>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <span>Mô tả:</span>
+                            <span>@Model.Description</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6 class="mb-3">Bảo mật thanh toán</h6>
+                    <div class="security-info">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-shield-alt text-success mr-2"></i>
+                            <small>Thông tin được mã hóa SSL</small>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-lock text-success mr-2"></i>
+                            <small>Giao dịch an toàn 100%</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-history text-success mr-2"></i>
+                            <small>Hoàn tiền nếu có vấn đề</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .payment-methods {
+            margin: 20px 0;
+        }
+
+        .payment-option {
+            margin-bottom: 15px;
+        }
+
+        .payment-label {
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .payment-card {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .payment-card:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+
+        .form-check-input:checked ~ .payment-label .payment-card {
+            border-color: #007bff;
+            background-color: #e3f2fd;
+        }
+
+        .payment-info {
+            margin-left: 15px;
+            flex: 1;
+        }
+
+        .payment-info strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .order-summary > div {
+            margin-bottom: 10px;
+        }
+
+        .security-info {
+            font-size: 0.9rem;
+        }
+
+        #payButton {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 12px;
+        }
+
+        @@media (max-width: 768px) {
+            .payment-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .payment-info {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>        $(document).ready(function() {
+            // Update button text based on selected payment method
+            $('input[name="PaymentMethod"]').change(function() {
+                var method = $(this).val();
+                var amount = '@Model.Amount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))';
+                var buttonText = '';
+                  switch(method) {
+                    case 'VNPay':
+                        buttonText = '<i class="fas fa-credit-card"></i> Thanh toán qua VNPay ' + amount;
+                        break;
+                    case 'MoMo':
+                        buttonText = '<i class="fas fa-mobile-alt"></i> Thanh toán qua MoMo ' + amount;
+                        break;
+                    case 'PayPal':
+                        buttonText = '<i class="fab fa-paypal"></i> Pay with PayPal ' + amount;
+                        break;
+                    case 'Free':
+                        buttonText = '<i class="fas fa-gift"></i> Đặt phòng miễn phí (DEV)';
+                        break;
+                    default:
+                        buttonText = '<i class="fas fa-credit-card"></i> Thanh Toán ' + amount;
+                        break;
+                }
+                
+                $('#payButton').html(buttonText);
+            });// Form submission handling
+            $('#paymentForm').submit(function(e) {
+                e.preventDefault(); // Prevent default form submission
+                
+                var selectedMethod = $('input[name="PaymentMethod"]:checked').val();
+                if (!selectedMethod) {
+                    alert('Vui lòng chọn phương thức thanh toán');
+                    return false;
+                }
+
+                // Show loading state
+                $('#payButton').prop('disabled', true);
+                $('#payButton').html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+                // Submit via AJAX
+                $.ajax({
+                    url: $(this).attr('action'),
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.success && response.paymentUrl) {
+                            window.location.href = response.paymentUrl;
+                        } else {
+                            alert(response.message || 'Có lỗi xảy ra khi xử lý thanh toán');
+                            $('#payButton').prop('disabled', false);
+                            $('input[name="PaymentMethod"]:checked').trigger('change');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.');
+                        $('#payButton').prop('disabled', false);
+                        $('input[name="PaymentMethod"]:checked').trigger('change');
+                    }
+                });
+            });
+
+            // Initialize button text
+            $('input[name="PaymentMethod"]:checked').trigger('change');
+        });
+    </script>
+}
+
+

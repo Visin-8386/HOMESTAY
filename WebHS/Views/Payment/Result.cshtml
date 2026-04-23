@@ -1,0 +1,213 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.PaymentResultViewModel
+
+@{
+    ViewData["Title"] = Model.IsSuccess ? "Thanh Toán Thành Công" : "Thanh Toán Thất Bại";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    @if(Model.IsSuccess)
+                    {
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h2 class="text-success mb-3">Thanh Toán Thành Công!</h2>
+                        <p class="text-muted mb-4">
+                            Cảm ơn bạn đã thanh toán. Đặt phòng của bạn đã được xác nhận thành công.
+                        </p>
+                    }
+                    else
+                    {
+                        <div class="mb-4">
+                            <i class="fas fa-times-circle text-danger" style="font-size: 4rem;"></i>
+                        </div>
+                        <h2 class="text-danger mb-3">Thanh Toán Thất Bại!</h2>
+                        <p class="text-muted mb-4">
+                            Rất tiếc, giao dịch của bạn không thành công. Vui lòng thử lại.
+                        </p>
+                    }
+
+                    <div class="payment-details">
+                        <div class="row">
+                            <div class="col-6 text-right">
+                                <strong>Mã đặt phòng:</strong>
+                            </div>
+                            <div class="col-6 text-left">
+                                #@Model.BookingId
+                            </div>
+                        </div>
+                        
+                        @if(!string.IsNullOrEmpty(Model.TransactionId))
+                        {
+                            <div class="row">
+                                <div class="col-6 text-right">
+                                    <strong>Mã giao dịch:</strong>
+                                </div>
+                                <div class="col-6 text-left">
+                                    @Model.TransactionId
+                                </div>
+                            </div>
+                        }
+
+                        <div class="row">
+                            <div class="col-6 text-right">
+                                <strong>Số tiền:</strong>
+                            </div>
+                            <div class="col-6 text-left">
+                                @Model.Amount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 text-right">
+                                <strong>Phương thức:</strong>
+                            </div>
+                            <div class="col-6 text-left">
+                                @Model.PaymentMethod
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-6 text-right">
+                                <strong>Thời gian:</strong>
+                            </div>
+                            <div class="col-6 text-left">
+                                @DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+                            </div>
+                        </div>
+
+                        @if(!string.IsNullOrEmpty(Model.Message))
+                        {
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="alert @(Model.IsSuccess ? "alert-success" : "alert-danger") mt-3">
+                                        @Model.Message
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mt-4">
+                        @if(Model.IsSuccess)
+                        {
+                            <a href="@Url.Action("Details", "Booking", new { id = Model.BookingId })" class="btn btn-primary btn-lg mr-2">
+                                <i class="fas fa-eye"></i> Xem Chi Tiết Đặt Phòng
+                            </a>
+                            <a href="@Url.Action("Index", "Booking")" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-list"></i> Danh Sách Đặt Phòng
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Checkout", new { bookingId = Model.BookingId })" class="btn btn-primary btn-lg mr-2">
+                                <i class="fas fa-redo"></i> Thử Lại
+                            </a>
+                            <a href="@Url.Action("Details", "Booking", new { id = Model.BookingId })" class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-arrow-left"></i> Quay Lại
+                            </a>
+                        }
+                    </div>
+
+                    @if(Model.IsSuccess)
+                    {
+                        <div class="mt-4 pt-4 border-top">
+                            <h5>Bước tiếp theo</h5>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="next-step">
+                                        <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                                        <p><strong>Kiểm tra email</strong></p>
+                                        <small>Chúng tôi đã gửi xác nhận đặt phòng</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="next-step">
+                                        <i class="fas fa-phone fa-2x text-primary mb-2"></i>
+                                        <p><strong>Liên hệ chủ nhà</strong></p>
+                                        <small>Trao đổi chi tiết về chuyến đi</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="next-step">
+                                        <i class="fas fa-suitcase fa-2x text-primary mb-2"></i>
+                                        <p><strong>Chuẩn bị hành lý</strong></p>
+                                        <small>Và tận hưởng kỳ nghỉ tuyệt vời</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .payment-details .row {
+            margin-bottom: 10px;
+            padding: 5px 0;
+        }
+
+        .payment-details .row:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .next-step {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .next-step p {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .next-step small {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        @@media (max-width: 768px) {
+            .next-step {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+}
+
+@if(Model.IsSuccess)
+{
+    @section Scripts {
+        <script>
+            // Redirect to booking details after 10 seconds
+            setTimeout(function() {
+                if (confirm('Bạn có muốn xem chi tiết đặt phòng không?')) {
+                    window.location.href = '@Url.Action("Details", "Booking", new { id = Model.BookingId })';
+                }
+            }, 10000);
+
+            // Send event to analytics
+            gtag('event', 'purchase', {
+                'transaction_id': '@Model.TransactionId',
+                'value': @Model.Amount,
+                'currency': 'VND',
+                'items': [{
+                    'item_id': '@Model.BookingId',
+                    'item_name': 'Homestay Booking',
+                    'category': 'Booking',
+                    'quantity': 1,
+                    'price': @Model.Amount
+                }]
+            });
+        </script>
+    }
+}
+
+

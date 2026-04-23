@@ -1,0 +1,436 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.HomeViewModel
+@{
+    ViewData["Title"] = "Đom Đóm Dream - Where Dreams Take Flight";
+}
+
+<!-- Hero Section -->
+<section class="hero-section position-relative overflow-hidden">    
+    <!-- Image Slideshow Background -->
+    <div class="hero-slideshow">
+        <div class="slide active" style="background-image: url('/images/Tudong/1.jpg')"></div>
+        <div class="slide" style="background-image: url('/images/Tudong/2.jpg')"></div>
+        <div class="slide" style="background-image: url('/images/Tudong/3.jpg')"></div>
+        <div class="slide" style="background-image: url('/images/Tudong/4.jpg')"></div>
+        <div class="slide" style="background-image: url('/images/Tudong/5.jpg')"></div>
+        <div class="slide" style="background-image: url('/images/Tudong/6.jpg')"></div>
+        <div class="slide" style="background-image: url('/images/Tudong/7.jpg')"></div>
+    </div>
+      <!-- Navigation Arrows -->
+    <div class="slideshow-nav">
+        <button class="nav-btn prev-btn" id="prevBtn">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-btn next-btn" id="nextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+    
+    <div class="hero-overlay"></div>
+    
+    <!-- Slideshow Controls Bottom - Now inside slideshow -->
+    <div class="slideshow-controls">
+        <!-- Thumbnail Indicators -->
+        <div class="thumbnail-indicators">
+            <div class="thumbnail active" data-slide="0" style="background-image: url('/images/Tudong/1.jpg')"></div>
+            <div class="thumbnail" data-slide="1" style="background-image: url('/images/Tudong/2.jpg')"></div>
+            <div class="thumbnail" data-slide="2" style="background-image: url('/images/Tudong/3.jpg')"></div>
+            <div class="thumbnail" data-slide="3" style="background-image: url('/images/Tudong/4.jpg')"></div>
+            <div class="thumbnail" data-slide="4" style="background-image: url('/images/Tudong/5.jpg')"></div>
+            <div class="thumbnail" data-slide="5" style="background-image: url('/images/Tudong/6.jpg')"></div>
+            <div class="thumbnail" data-slide="6" style="background-image: url('/images/Tudong/7.jpg')"></div>
+        </div>
+    </div>
+</section>
+
+<!-- Content Section - Separate from slideshow -->
+<section class="content-section">
+    <div class="container">
+        <div class="row py-5">
+            <div class="col-lg-6">
+                <div class="hero-content text-white content-card">
+                    <div class="brand-logo mb-4">
+                        <h1 class="display-2 fw-bold gradient-text">
+                            <i class="fas fa-sparkles me-3 firefly-icon"></i>Đom Đóm Dream
+                        </h1>
+                        <p class="lead fs-4 mb-4 text-light-emphasis">Where Dreams Take Flight</p>
+                    </div>
+                    <h2 class="display-5 fw-bold mb-4">Khám phá những khoảnh khắc kỳ diệu</h2>
+                    <p class="lead mb-4">Hãy để Đom Đóm Dream dẫn lối bạn đến những trải nghiệm homestay độc đáo, 
+                       nơi mỗi kỷ niệm đều tỏa sáng như ánh đom đóm trong đêm.</p>
+                    <div class="hero-stats d-flex gap-4 mb-4">
+                        <div class="stat-item text-center">
+                            <h3 class="fw-bold">1000+</h3>
+                            <small>Homestay đẹp</small>
+                        </div>
+                        <div class="stat-item text-center">
+                            <h3 class="fw-bold">50K+</h3>
+                            <small>Khách hài lòng</small>
+                        </div>
+                        <div class="stat-item text-center">
+                            <h3 class="fw-bold">63</h3>
+                            <small>Tỉnh thành</small>
+                        </div>
+                    </div>
+                </div>
+            </div>            <div class="col-lg-6">
+                <div class="search-card floating-card">
+                    <div class="card shadow-lg border-0 interactive-card">
+                        <div class="card-body p-4">
+                            <div class="search-header text-center mb-4">
+                                <h5 class="card-title fw-bold text-primary mb-2">
+                                    <i class="fas fa-search me-2"></i>Tìm kiếm homestay mơ ước
+                                </h5>
+                                <p class="text-muted small">Bắt đầu hành trình khám phá của bạn</p>
+                            </div>
+                            @using (Html.BeginForm("Search", "Home", FormMethod.Post, new { @class = "search-form interactive-form" }))
+                            {
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold text-primary">
+                                            <i class="fas fa-map-marker-alt me-1"></i>Điểm đến
+                                        </label>
+                                        @Html.TextBoxFor(m => m.SearchForm.Location, new { 
+                                            @class = "form-control form-control-lg", 
+                                            placeholder = "Bạn muốn đi đâu?" 
+                                        })
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-primary">
+                                            <i class="fas fa-calendar-alt me-1"></i>Ngày nhận phòng
+                                        </label>
+                                        @Html.TextBoxFor(m => m.SearchForm.CheckInDate, new { 
+                                            @class = "form-control", 
+                                            type = "date" 
+                                        })
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold text-primary">
+                                            <i class="fas fa-calendar-check me-1"></i>Ngày trả phòng
+                                        </label>
+                                        @Html.TextBoxFor(m => m.SearchForm.CheckOutDate, new { 
+                                            @class = "form-control", 
+                                            type = "date" 
+                                        })
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold text-primary">
+                                            <i class="fas fa-users me-1"></i>Số khách
+                                        </label>
+                                        @Html.DropDownListFor(m => m.SearchForm.Guests, 
+                                            new SelectList(Enumerable.Range(1, 10).Select(x => new { Value = x, Text = x + " khách" }), "Value", "Text"), 
+                                            new { @class = "form-select" })
+                                    </div>
+                                    <div class="col-12 pt-2">
+                                        <button type="submit" class="btn btn-gradient btn-lg w-100 fw-semibold">
+                                            <i class="fas fa-sparkles me-2"></i>Bắt đầu hành trình
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating fireflies animation -->
+    <div class="fireflies">
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+        <div class="firefly"></div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section py-5 bg-light scroll-animate">
+    <div class="container">
+        <div class="row text-center mb-5 scroll-animate">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold text-primary mb-3">Tại sao chọn Đom Đóm Dream?</h2>
+                <p class="lead text-muted">Chúng tôi mang đến những trải nghiệm không thể quên</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6 scroll-animate">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-home fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Homestay chất lượng</h5>
+                    <p class="text-muted">Mỗi homestay đều được chọn lọc kỹ càng để đảm bảo chất lượng và sự thoải mái cho bạn.</p>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-success"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Đặt phòng an toàn</h5>
+                    <p class="text-muted">Hệ thống thanh toán bảo mật và chính sách bảo vệ khách hàng 24/7.</p>
+                </div>
+            </div>            <div class="col-lg-4 col-md-6 scroll-animate">
+                <div class="feature-card text-center p-4 h-100">
+                    <div class="feature-icon mb-3">
+                        <i class="fas fa-headset fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="fw-bold mb-3">Hỗ trợ tận tình</h5>
+                    <p class="text-muted">Đội ngũ hỗ trợ chuyên nghiệp luôn sẵn sàng giúp đỡ bạn mọi lúc mọi nơi.</p>
+                </div>
+            </div></div>
+    </div>
+</section>
+
+<!-- Popular Homestays Section -->
+<section class="popular-homestays py-5 scroll-animate">
+    <div class="container">
+        <div class="row mb-5 scroll-animate">
+            <div class="col-12 text-center">
+                <h2 class="display-5 fw-bold text-primary mb-3">
+                    <i class="fas fa-star me-2 text-warning"></i>Homestay được yêu thích
+                </h2>
+                <p class="lead text-muted">Những điểm đến được khách hàng đánh giá cao nhất</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            @foreach (var homestay in Model.PopularHomestays)
+            {
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="homestay-card card h-100 border-0 shadow-sm">
+                        <div class="position-relative overflow-hidden">
+                            <img src="@(string.IsNullOrEmpty(homestay.PrimaryImage) ? "/images/default-homestay.jpg" : homestay.PrimaryImage)" 
+                                 class="card-img-top homestay-image" alt="@homestay.Name">
+                            <div class="image-overlay">
+                                <div class="overlay-content">
+                                    <a href="@Url.Action("Details", "Homestay", new { id = homestay.Id })" 
+                                       class="btn btn-light btn-sm fw-semibold">
+                                        <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                    </a>
+                                </div>
+                            </div>                            @if (homestay.AverageRating >= 4.5)
+                            {
+                                <div class="badge-overlay">
+                                    <span class="badge bg-warning text-dark fw-semibold">
+                                        <i class="fas fa-crown me-1"></i>Xuất sắc
+                                    </span>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(homestay.YouTubeVideoId))
+                            {
+                                <div class="badge-overlay" style="top: 10px; right: 50px;">
+                                    <span class="badge bg-danger text-white fw-semibold" title="Có video giới thiệu">
+                                        <i class="fab fa-youtube"></i>
+                                    </span>
+                                </div>
+                            }
+                        </div>
+                        <div class="card-body d-flex flex-column p-4">
+                            <h5 class="card-title fw-bold mb-2">@homestay.Name</h5>
+                            <p class="card-text text-muted mb-3">
+                                <i class="fas fa-map-marker-alt text-primary me-1"></i> @homestay.City
+                            </p>
+                            <div class="rating-section mb-3">
+                                @if (homestay.AverageRating > 0)
+                                {
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="stars text-warning">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                if (i <= homestay.AverageRating)
+                                                {
+                                                    <i class="fas fa-star"></i>
+                                                }
+                                                else if (i - 0.5 <= homestay.AverageRating)
+                                                {
+                                                    <i class="fas fa-star-half-alt"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="far fa-star"></i>
+                                                }
+                                            }
+                                        </div>
+                                        <span class="fw-semibold">@homestay.AverageRating.ToString("F1")</span>
+                                        <small class="text-muted">(@homestay.ReviewCount đánh giá)</small>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">Chưa có đánh giá</small>
+                                }
+                            </div>
+                            <div class="price-section mt-auto">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="price-info">
+                                        <span class="price fw-bold text-primary fs-5">@homestay.PricePerNight.ToString("N0") VNĐ</span>
+                                        <small class="text-muted d-block">/ đêm</small>
+                                    </div>
+                                    <a href="@Url.Action("Details", "Homestay", new { id = homestay.Id })" 
+                                       class="btn btn-outline-primary btn-sm fw-semibold">
+                                        Đặt ngay
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        @if (!Model.PopularHomestays.Any())
+        {
+            <div class="empty-state text-center py-5">
+                <div class="empty-state-icon mb-4">
+                    <i class="fas fa-home fa-4x text-muted"></i>
+                </div>
+                <h4 class="text-muted mb-3">Chưa có homestay nào</h4>
+                <p class="text-muted mb-4">Hãy là người đầu tiên mang đến những trải nghiệm tuyệt vời!</p>
+                <a href="@Url.Action("Register", "Account")" class="btn btn-gradient btn-lg fw-semibold">
+                    <i class="fas fa-plus me-2"></i>Đăng ký làm Host ngay
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section py-5 bg-gradient scroll-animate">
+    <div class="container">
+        <div class="row align-items-center scroll-animate">
+            <div class="col-lg-8">
+                <h3 class="fw-bold text-white mb-2">Bạn có một ngôi nhà đẹp?</h3>
+                <p class="text-white-50 mb-0">Gia nhập cộng đồng Đom Đóm Dream và chia sẻ không gian của bạn với những du khách từ khắp nơi</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="@Url.Action("Register", "Account")" class="btn btn-light btn-lg fw-semibold">
+                    <i class="fas fa-home me-2"></i>Trở thành Host
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+</div>
+
+@section Styles {
+    <link href="~/css/home.css" rel="stylesheet" />
+    <link href="~/css/enhanced-home.css" rel="stylesheet" />
+}
+
+@section Scripts {
+    <script src="~/js/enhanced-home.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Ensure form interactions work
+            $('.interactive-form input, .interactive-form select, .interactive-form button').on('click focus', function(e) {
+                e.stopPropagation();
+            });
+            
+            // Slideshow functionality
+            let currentSlide = 0;
+            const slides = $('.slide');
+            const thumbnails = $('.thumbnail');
+            const totalSlides = slides.length;
+            let slideInterval;
+            
+            function goToSlide(index) {
+                // Remove active class from current slide and thumbnail
+                slides.eq(currentSlide).removeClass('active');
+                thumbnails.eq(currentSlide).removeClass('active');
+                
+                // Update current slide index
+                currentSlide = index;
+                
+                // Add active class to new slide and thumbnail
+                slides.eq(currentSlide).addClass('active');
+                thumbnails.eq(currentSlide).addClass('active');
+            }
+            
+            function nextSlide() {
+                const nextIndex = (currentSlide + 1) % totalSlides;
+                goToSlide(nextIndex);
+            }
+            
+            function prevSlide() {
+                const prevIndex = (currentSlide - 1 + totalSlides) % totalSlides;
+                goToSlide(prevIndex);
+            }
+            
+            function startSlideshow() {
+                slideInterval = setInterval(nextSlide, 5000);
+            }
+            
+            function stopSlideshow() {
+                clearInterval(slideInterval);
+            }
+            
+            // Start automatic slideshow
+            startSlideshow();
+            
+            // Handle thumbnail clicks
+            thumbnails.click(function() {
+                const slideIndex = parseInt($(this).data('slide'));
+                stopSlideshow();
+                goToSlide(slideIndex);
+                // Restart slideshow after user interaction
+                setTimeout(startSlideshow, 3000);
+            });
+            
+            // Handle navigation button clicks
+            $('#nextBtn').click(function() {
+                stopSlideshow();
+                nextSlide();
+                setTimeout(startSlideshow, 3000);
+            });
+            
+            $('#prevBtn').click(function() {
+                stopSlideshow();
+                prevSlide();
+                setTimeout(startSlideshow, 3000);
+            });
+            
+            // Pause slideshow on hover - but don't affect form
+            $('.hero-section').hover(
+                function() { stopSlideshow(); },
+                function() { startSlideshow(); }
+            );
+            
+            // Keyboard navigation - but don't interfere with form inputs
+            $(document).keydown(function(e) {
+                // Only handle arrows if not focused on form elements
+                if (!$(e.target).is('input, select, textarea')) {
+                    if (e.which === 37) { // Left arrow
+                        stopSlideshow();
+                        prevSlide();
+                        setTimeout(startSlideshow, 3000);
+                    } else if (e.which === 39) { // Right arrow
+                        stopSlideshow();
+                        nextSlide();
+                        setTimeout(startSlideshow, 3000);
+                    }
+                }
+            });
+            
+            // Set minimum dates for check-in and check-out
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            
+            $('input[name="SearchForm.CheckInDate"]').attr('min', today);
+            $('input[name="SearchForm.CheckOutDate"]').attr('min', tomorrowStr);
+            
+            // Update checkout date when checkin date changes
+            $('input[name="SearchForm.CheckInDate"]').change(function() {
+                const checkInDate = new Date($(this).val());
+                checkInDate.setDate(checkInDate.getDate() + 1);
+                const minCheckOut = checkInDate.toISOString().split('T')[0];
+                $('input[name="SearchForm.CheckOutDate"]').attr('min', minCheckOut);
+            });
+        });
+    </script>
+}
+
+

@@ -1,0 +1,151 @@
+/* Hiệu ứng & giao diện hiện đại cho trang Tất Cả Đặt Phòng (AllBookings) */
+.host-bookings-card {
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+    background: linear-gradient(135deg, #f8fafc 0%, #e9ecef 100%);
+    overflow: hidden;
+    margin-bottom: 32px;
+    border: 1.5px solid #e3e6f0;
+}
+.host-bookings-table {
+    border-radius: 16px;
+    overflow: hidden;
+    background: linear-gradient(120deg, #fff 80%, #e3f0ff 100%);
+    box-shadow: 0 4px 24px #4e73df22;
+    animation: fadeInTable 0.7s;
+}
+.host-bookings-table th {
+    background: linear-gradient(90deg, #e9ecef 60%, #dbeafe 100%);
+    color: #2d3a4a;
+    font-weight: 700;
+    font-size: 1.12em;
+    border: none;
+    letter-spacing: 0.5px;
+}
+.host-bookings-table td {
+    vertical-align: middle;
+    border: none;
+    transition: background 0.25s, color 0.2s, box-shadow 0.2s;
+    font-size: 1.04em;
+}
+.host-bookings-table tr {
+    transition: box-shadow 0.25s, background 0.25s, transform 0.18s;
+}
+.host-bookings-table tbody tr {
+    animation: fadeInRow 0.7s;
+}
+.host-bookings-table tbody tr:hover {
+    background: linear-gradient(90deg, #e3f0ff 60%, #f8fafc 100%);
+    box-shadow: 0 6px 24px #4e73df33;
+    z-index: 2;
+    transform: scale(1.012);
+}
+.booking-badge {
+    font-size: 1em;
+    border-radius: 10px;
+    padding: 6px 16px;
+    animation: fadeInBadge 0.7s;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px #0dcaf033;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.booking-badge.success { background: linear-gradient(90deg, #d1e7dd 60%, #b6e2d3 100%); color: #198754; border: 1.5px solid #19875433; }
+.booking-badge.primary { background: linear-gradient(90deg, #cfe2ff 60%, #b6d4fe 100%); color: #0d6efd; border: 1.5px solid #0d6efd33; }
+.booking-badge.danger { background: linear-gradient(90deg, #f8d7da 60%, #f1b0b7 100%); color: #dc3545; border: 1.5px solid #dc354533; }
+.booking-badge.secondary { background: #e2e3e5; color: #6c757d; border: 1.5px solid #adb5bd33; }
+
+/* Số khách nổi bật */
+.host-guests-badge {
+    background: linear-gradient(90deg, #0dcaf0 60%, #4e73df 100%);
+    color: #fff;
+    font-size: 1.08em;
+    font-weight: 700;
+    padding: 7px 18px;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px #0dcaf055;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    letter-spacing: 0.5px;
+    border: 2px solid #4e73df33;
+    animation: guestsPulse 1.2s infinite alternate;
+}
+.host-guests-badge i {
+    font-size: 1.15em;
+    animation: guestsIconMove 1.2s infinite alternate;
+}
+
+.btn-outline-primary, .btn-outline-success {
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.18em;
+    transition: box-shadow 0.2s, background 0.2s, transform 0.15s;
+    box-shadow: 0 2px 8px #4e73df22;
+    margin: 0 2px;
+    position: relative;
+    overflow: hidden;
+}
+.btn-outline-primary:hover, .btn-outline-success:hover {
+    box-shadow: 0 4px 16px #4e73df33;
+    background: #e3f0ff;
+    transform: scale(1.08);
+}
+.btn-outline-primary:active, .btn-outline-success:active {
+    animation: rippleBtn 0.4s;
+}
+
+/* Toast notification */
+.host-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    min-width: 220px;
+    z-index: 9999;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px #0002;
+    animation: fadeInToast 0.6s;
+}
+@keyframes fadeInTable {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInBadge {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeInRow {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInToast {
+    from { opacity: 0; right: 0; }
+    to { opacity: 1; right: 24px; }
+}
+@keyframes guestsPulse {
+    0% { box-shadow: 0 0 0 0 #0dcaf033; }
+    100% { box-shadow: 0 0 12px 4px #0dcaf033; }
+}
+@keyframes guestsIconMove {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-2px) scale(1.12); }
+}
+@keyframes rippleBtn {
+    0% { box-shadow: 0 0 0 0 #4e73df44; }
+    100% { box-shadow: 0 0 16px 8px #4e73df11; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .host-bookings-table th, .host-bookings-table td {
+        font-size: 0.95em;
+        padding: 8px 4px;
+    }
+    .host-bookings-card { margin-bottom: 18px; }
+}

@@ -1,0 +1,339 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@using WebHSBookingStatus = WebHS.Models.BookingStatus
+@model WebHS.ViewModels.AdminReportsViewModel
+@{
+    ViewData["Title"] = "Báo Cáo Thống Kê";
+    Layout = "_Layout_New";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-danger">
+                        <i class="fas fa-cog me-2"></i>Admin Panel
+                    </h5>
+                    <div class="list-group list-group-flush">
+                        <a asp-action="Index" class="list-group-item list-group-item-action">
+                            <i class="fas fa-chart-bar me-2"></i>Dashboard
+                        </a>
+                        <a asp-action="Users" class="list-group-item list-group-item-action">
+                            <i class="fas fa-users me-2"></i>Quản lý người dùng
+                        </a>
+                        <a asp-action="Homestays" class="list-group-item list-group-item-action">
+                            <i class="fas fa-home me-2"></i>Quản lý Homestay
+                        </a>
+                        <a asp-action="Bookings" class="list-group-item list-group-item-action">
+                            <i class="fas fa-calendar-check me-2"></i>Quản lý đặt phòng
+                        </a>
+                        <a asp-action="Reports" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-chart-pie me-2"></i>Báo cáo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-pie me-2"></i>Báo Cáo Thống Kê</h2>
+                <button class="btn btn-primary" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>In báo cáo
+                </button>
+            </div>
+
+            <!-- Monthly Comparison -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="h4 mb-0">@Model.ThisMonthBookings</div>
+                                    <div class="text-white-75 small">Đặt phòng tháng này</div>
+                                    @{
+                                        var bookingChange = Model.LastMonthBookings > 0 ? 
+                                            ((double)(Model.ThisMonthBookings - Model.LastMonthBookings) / Model.LastMonthBookings * 100) : 0;
+                                    }
+                                    <div class="small">
+                                        @if (bookingChange >= 0)
+                                        {
+                                            <span><i class="fas fa-arrow-up"></i> +@(bookingChange.ToString("F1"))%</span>
+                                        }
+                                        else
+                                        {
+                                            <span><i class="fas fa-arrow-down"></i> @(bookingChange.ToString("F1"))%</span>
+                                        }
+                                        so với tháng trước
+                                    </div>
+                                </div>
+                                <div class="fa-3x opacity-25">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card bg-info text-white shadow">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="h4 mb-0">@Model.ThisMonthRevenue.ToString("N0") VNĐ</div>
+                                    <div class="text-white-75 small">Doanh thu tháng này</div>
+                                    @{
+                                        var revenueChange = Model.LastMonthRevenue > 0 ? 
+                                            ((double)(Model.ThisMonthRevenue - Model.LastMonthRevenue) / (double)Model.LastMonthRevenue * 100) : 0;
+                                    }
+                                    <div class="small">
+                                        @if (revenueChange >= 0)
+                                        {
+                                            <span><i class="fas fa-arrow-up"></i> +@(revenueChange.ToString("F1"))%</span>
+                                        }
+                                        else
+                                        {
+                                            <span><i class="fas fa-arrow-down"></i> @(revenueChange.ToString("F1"))%</span>
+                                        }
+                                        so với tháng trước
+                                    </div>
+                                </div>
+                                <div class="fa-3x opacity-25">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Homestays Chart -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-trophy me-2"></i>Top 10 Homestay theo lượt đặt
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.TopHomestays != null)
+                            {
+                                <canvas id="topHomestaysChart" width="400" height="400"></canvas>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-pie fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Chưa có dữ liệu</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-star me-2"></i>Top 10 Host theo doanh thu
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.TopHosts != null)
+                            {
+                                <canvas id="topHostsChart" width="400" height="400"></canvas>
+                            }
+                            else
+                            {
+                                <div class="text-center py-4">
+                                    <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Chưa có dữ liệu</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Tables -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Chi tiết Top Homestays
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên Homestay</th>
+                                            <th>Lượt đặt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.TopHomestays != null)
+                                        {
+                                            @foreach (dynamic homestay in (dynamic)Model.TopHomestays)
+                                            {
+                                                <tr>
+                                                    <td>@homestay.Name</td>
+                                                    <td><span class="badge bg-primary">@homestay.BookingCount</span></td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted">Chưa có dữ liệu</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Chi tiết Top Hosts
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Tên Host</th>
+                                            <th>Doanh thu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.TopHosts != null)
+                                        {
+                                            @foreach (dynamic host in (dynamic)Model.TopHosts)
+                                            {
+                                                <tr>
+                                                    <td>@host.Name</td>
+                                                    <td><span class="badge bg-success">@host.Revenue.ToString("N0") VNĐ</span></td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted">Chưa có dữ liệu</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Top Homestays Chart
+        @if (Model.TopHomestays != null)
+        {
+        @:var topHomestaysData = @Html.Raw(Json.Serialize(Model.TopHomestays));
+        @:if (topHomestaysData && topHomestaysData.length > 0) {
+        @:    const homestaysCtx = document.getElementById('topHomestaysChart').getContext('2d');
+        @:    new Chart(homestaysCtx, {
+        @:        type: 'doughnut',
+        @:        data: {
+        @:            labels: topHomestaysData.map(h => h.name),
+        @:            datasets: [{
+        @:                data: topHomestaysData.map(h => h.bookingCount),
+        @:                backgroundColor: [
+        @:                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        @:                    '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'
+        @:                ]
+        @:            }]
+        @:        },
+        @:        options: {
+        @:            responsive: true,
+        @:            maintainAspectRatio: false,
+        @:            plugins: {
+        @:                legend: {
+        @:                    position: 'bottom'
+        @:                }
+        @:            }
+        @:        }
+        @:    });
+        @:}
+        }
+
+        // Top Hosts Chart
+        @if (Model.TopHosts != null)
+        {
+        @:var topHostsData = @Html.Raw(Json.Serialize(Model.TopHosts));
+        @:if (topHostsData && topHostsData.length > 0) {
+        @:    const hostsCtx = document.getElementById('topHostsChart').getContext('2d');
+        @:    new Chart(hostsCtx, {
+        @:        type: 'bar',
+        @:        data: {
+        @:            labels: topHostsData.map(h => h.name),
+        @:            datasets: [{
+        @:                label: 'Doanh thu (VNĐ)',
+        @:                data: topHostsData.map(h => h.revenue),
+        @:                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+        @:                borderColor: 'rgba(54, 162, 235, 1)',
+        @:                borderWidth: 1
+        @:            }]
+        @:        },
+        @:        options: {
+        @:            responsive: true,
+        @:            maintainAspectRatio: false,
+        @:            plugins: {
+        @:                legend: {
+        @:                    display: false
+        @:                }
+        @:            },
+        @:            scales: {
+        @:                y: {
+        @:                    beginAtZero: true,
+        @:                    ticks: {
+        @:                        callback: function(value) {
+        @:                            return value.toLocaleString('vi-VN') + ' VNĐ';
+        @:                        }
+        @:                    }
+        @:                },
+        @:                x: {
+        @:                    ticks: {
+        @:                        maxRotation: 45
+        @:                    }
+        @:                }
+        @:            }
+        @:        }
+        @:    });
+        @:}
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        @@media print {
+            .btn, .list-group, .card-header .btn {
+                display: none !important;
+            }
+        }
+    </style>
+}
+

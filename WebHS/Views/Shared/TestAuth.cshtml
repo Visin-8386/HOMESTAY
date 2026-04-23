@@ -1,0 +1,188 @@
+@{
+    ViewData["Title"] = "Test Authentication & Tokens";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="fas fa-key"></i> Test Authentication & Token System</h4>
+        </div>
+        <div class="card-body">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> 
+                    <strong>Logged in as:</strong> @User.Identity.Name
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Token Actions</h5>
+                        <div class="btn-group-vertical w-100 mb-3" role="group">
+                            <button type="button" class="btn btn-primary" onclick="checkMyTokens()">
+                                <i class="fas fa-search"></i> Check My Tokens
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="checkAllTokens()">
+                                <i class="fas fa-database"></i> Check All Tokens in DB
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="checkUserInfo()">
+                                <i class="fas fa-user"></i> Check My User Info
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testTokenCreation()">
+                                <i class="fas fa-plus"></i> Test Token Creation
+                            </button>
+                            <button type="button" class="btn btn-danger" onclick="clearResults()">
+                                <i class="fas fa-trash"></i> Clear Results
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6>Current Authentication:</h6>
+                            <ul class="mb-0">
+                                <li><strong>Name:</strong> @User.Identity.Name</li>
+                                <li><strong>Auth Type:</strong> @User.Identity.AuthenticationType</li>
+                                <li><strong>Claims Count:</strong> @User.Claims.Count()</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Results</h5>
+                        <div id="results" class="border p-3" style="min-height: 400px; background-color: #f8f9fa; overflow-y: auto; max-height: 600px;">
+                            <em>Click an action to see results...</em>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Not logged in.</strong> Please log in to test the token system.
+                </div>
+                
+                <div class="text-center">
+                    <a href="/Account/Login" class="btn btn-primary me-2">
+                        <i class="fas fa-sign-in-alt"></i> Login with Email
+                    </a>
+                    <a href="/Account/Login" class="btn btn-danger">
+                        <i class="fab fa-google"></i> Login with Google
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <script>
+    function logResult(title, data = null, type = 'info') {
+        const resultsDiv = document.getElementById('results');
+        const timestamp = new Date().toLocaleTimeString();
+        
+        let iconClass = 'fas fa-info-circle';
+        let colorClass = 'text-info';
+        
+        switch(type) {
+            case 'success': iconClass = 'fas fa-check-circle'; colorClass = 'text-success'; break;
+            case 'error': iconClass = 'fas fa-exclamation-circle'; colorClass = 'text-danger'; break;
+            case 'warning': iconClass = 'fas fa-exclamation-triangle'; colorClass = 'text-warning'; break;
+        }
+        
+        let logHtml = `<div class="mb-2 border-start border-3 border-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} ps-2">
+            <div class="d-flex align-items-center mb-1">
+                <i class="${iconClass} ${colorClass} me-2"></i>
+                <strong>[${timestamp}]</strong>
+                <span class="ms-2">${title}</span>
+            </div>
+        `;
+        
+        if (data) {
+            logHtml += `<pre class="mt-2 p-2 bg-light border rounded small">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+        
+        logHtml += '</div><hr>';
+        
+        resultsDiv.innerHTML = logHtml + resultsDiv.innerHTML;
+    }
+
+    async function checkMyTokens() {
+        try {
+            logResult('🔍 Checking my authentication tokens...', null, 'info');
+            
+            const response = await fetch('/Account/CheckMyTokens');
+            const data = await response.json();
+            
+            if (data.error) {
+                logResult('❌ Error checking tokens', data, 'error');
+            } else {
+                logResult('✅ My token information', data, 'success');
+            }
+        } catch (error) {
+            logResult('💥 Error fetching token info', { error: error.message }, 'error');
+        }
+    }
+
+    async function checkAllTokens() {
+        try {
+            logResult('🗃️ Checking all tokens in database...', null, 'info');
+            
+            const response = await fetch('/DatabaseTest/CheckUserTokens');
+            const data = await response.json();
+            
+            if (data.error) {
+                logResult('❌ Error checking database tokens', data, 'error');
+            } else {
+                logResult('📊 Database token summary', data, 'success');
+            }
+        } catch (error) {
+            logResult('💥 Error fetching database tokens', { error: error.message }, 'error');
+        }
+    }
+
+    async function checkUserInfo() {
+        try {
+            logResult('👤 Checking user information...', null, 'info');
+            
+            const response = await fetch('/Account/DebugTokens');
+            const data = await response.json();
+            
+            if (data.error) {
+                logResult('❌ Error checking user info', data, 'error');
+            } else {
+                logResult('ℹ️ User information', data, 'success');
+            }
+        } catch (error) {
+            logResult('💥 Error fetching user info', { error: error.message }, 'error');
+        }
+    }
+
+    async function testTokenCreation() {
+        try {
+            logResult('🧪 Testing token creation...', null, 'info');
+            
+            const response = await fetch('/DatabaseTest/DebugTokenCreation');
+            const data = await response.json();
+            
+            if (data.error) {
+                logResult('❌ Error testing token creation', data, 'error');
+            } else {
+                logResult('🔬 Token creation test results', data, 'success');
+            }
+        } catch (error) {
+            logResult('💥 Error testing token creation', { error: error.message }, 'error');
+        }
+    }
+
+    function clearResults() {
+        document.getElementById('results').innerHTML = '<em>Results cleared...</em>';
+    }
+
+    // Auto-run check on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            checkMyTokens();
+        }, 500);
+    });
+    </script>
+}

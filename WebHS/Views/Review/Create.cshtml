@@ -1,0 +1,961 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.CreateReviewViewModel
+
+@{
+    ViewData["Title"] = "Đánh Giá Homestay";
+}
+
+<style>
+    /* ===== REVIEW PAGE STYLES ===== */
+    .review-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+        overflow: hidden;
+        padding: 2rem 0;
+    }
+
+    .review-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="reviewPattern" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23reviewPattern)"/></svg>');
+        animation: float 25s ease-in-out infinite;
+    }
+
+    .floating-review-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .floating-review-shape {
+        position: absolute;
+        opacity: 0.1;
+        animation: floatReviewShape 20s linear infinite;
+    }
+
+    .floating-review-shape:nth-child(1) {
+        top: 10%;
+        left: 5%;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(45deg, #ffd700, #ff8c00);
+        border-radius: 50%;
+        animation-delay: 0s;
+    }
+
+    .floating-review-shape:nth-child(2) {
+        top: 30%;
+        right: 10%;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg, #ff69b4, #ff1493);
+        clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        animation-delay: 5s;
+    }
+
+    .floating-review-shape:nth-child(3) {
+        bottom: 20%;
+        left: 15%;
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(45deg, #00ced1, #20b2aa);
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        animation-delay: 10s;
+    }
+
+    .floating-review-shape:nth-child(4) {
+        top: 60%;
+        right: 20%;
+        width: 35px;
+        height: 35px;
+        background: linear-gradient(45deg, #98fb98, #32cd32);
+        transform: rotate(45deg);
+        animation-delay: 15s;
+    }
+
+    @@keyframes floatReviewShape {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-25px) rotate(90deg); }
+        50% { transform: translateY(-50px) rotate(180deg); }
+        75% { transform: translateY(-25px) rotate(270deg); }
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+
+    .review-container {
+        position: relative;
+        z-index: 10;
+    }
+
+    .review-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        box-shadow: 
+            0 25px 70px rgba(0, 0, 0, 0.1),
+            0 10px 30px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        overflow: hidden;
+        position: relative;
+        animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(50px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .review-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, #ffd700, transparent);
+        animation: shimmer 2.5s infinite;
+    }
+
+    @@keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .review-header {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .review-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 20px 20px;
+        animation: backgroundMove 30s linear infinite;
+    }
+
+    @@keyframes backgroundMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(20px, 20px); }
+    }
+
+    .review-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .review-subtitle {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.1rem;
+        font-weight: 400;
+        position: relative;
+        z-index: 2;
+    }
+
+    .homestay-info-card {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        animation: fadeInLeft 1s 0.3s both;
+    }
+
+    @@keyframes fadeInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .homestay-image {
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .homestay-image:hover {
+        transform: scale(1.02);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .homestay-image img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .homestay-image:hover img {
+        filter: brightness(1.1);
+    }
+
+    .homestay-placeholder {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 16px;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #dee2e6;
+        transition: all 0.3s ease;
+    }
+
+    .homestay-placeholder:hover {
+        border-color: #667eea;
+        background: linear-gradient(135deg, #f8f9fa, #667eea20);
+    }
+
+    .homestay-details h5 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .homestay-meta {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .homestay-meta i {
+        color: #667eea;
+        margin-right: 0.5rem;
+        width: 16px;
+    }
+
+    .review-form-section {
+        animation: fadeInRight 1s 0.5s both;
+    }
+
+    @@keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .form-group-modern {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .form-label-modern {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-label-modern i {
+        color: #667eea;
+        margin-right: 0.5rem;
+    }
+
+    .rating-container {
+        background: rgba(255, 255, 255, 0.8);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 2px solid rgba(102, 126, 234, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .rating-container:hover {
+        border-color: rgba(102, 126, 234, 0.3);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+    }
+
+    .rating-stars {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .rating-star {
+        font-size: 3rem !important;
+        color: #ddd;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+    }
+
+    .rating-star:hover {
+        transform: scale(1.2) rotate(10deg);
+        filter: drop-shadow(0 5px 10px rgba(255, 193, 7, 0.4));
+    }
+
+    .rating-star.active {
+        color: #ffd700;
+        animation: starGlow 0.6s ease;
+    }
+
+    @@keyframes starGlow {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.3); filter: drop-shadow(0 0 20px #ffd700); }
+    }
+
+    .rating-feedback {
+        text-align: center;
+        font-weight: 600;
+        margin-top: 1rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .rating-feedback.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .rating-feedback.excellent { color: #28a745; }
+    .rating-feedback.good { color: #17a2b8; }
+    .rating-feedback.average { color: #ffc107; }
+    .rating-feedback.poor { color: #fd7e14; }
+    .rating-feedback.terrible { color: #dc3545; }
+
+    .form-control-modern {
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(10px);
+        resize: vertical;
+        min-height: 150px;
+    }
+
+    .form-control-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-2px);
+    }
+
+    .char-counter {
+        position: absolute;
+        bottom: -1.5rem;
+        right: 0;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .btn-submit-modern {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border: none;
+        border-radius: 16px;
+        padding: 1rem 3rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        margin-right: 1rem;
+    }
+
+    .btn-submit-modern::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-submit-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 40px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-submit-modern:hover::before {
+        left: 100%;
+    }
+
+    .btn-cancel-modern {
+        background: linear-gradient(135deg, #6c757d, #495057);
+        border: none;
+        border-radius: 16px;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+    }
+
+    .btn-cancel-modern:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(108, 117, 125, 0.4);
+        color: white;
+    }
+
+    .progress-indicator {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .progress-step {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #6c757d;
+        position: relative;
+        margin: 0 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .progress-step.completed {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+    }
+
+    /* Mobile Optimizations */
+    @@media (max-width: 768px) {
+        .review-page {
+            padding: 1rem 0;
+        }
+        
+        .review-card {
+            margin: 1rem;
+            border-radius: 20px;
+        }
+        
+        .review-title {
+            font-size: 2rem;
+        }
+        
+        .rating-star {
+            font-size: 2.5rem !important;
+        }
+        
+        .btn-submit-modern,
+        .btn-cancel-modern {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+    }
+
+    /* Dark mode support */
+    @@media (prefers-color-scheme: dark) {
+        .review-card {
+            background: rgba(30, 30, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .homestay-info-card {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-control-modern {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .rating-container {
+            background: rgba(50, 50, 50, 0.8);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .homestay-details h5 {
+            color: #e9ecef;
+        }
+        
+        .form-label-modern {
+            color: #e9ecef;
+        }
+    }
+</style>
+
+<div class="review-page">
+    <div class="floating-review-shapes">
+        <div class="floating-review-shape"></div>
+        <div class="floating-review-shape"></div>
+        <div class="floating-review-shape"></div>
+        <div class="floating-review-shape"></div>
+    </div>
+    
+    <div class="review-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-10 col-lg-8">
+                    <div class="review-card">
+                        <div class="review-header">
+                            <h1 class="review-title">Đánh Giá Homestay</h1>
+                            <p class="review-subtitle">Chia sẻ trải nghiệm tuyệt vời của bạn</p>
+                        </div>
+                        
+                        <div class="p-4 p-md-5">
+                            <div class="progress-indicator">
+                                <div class="progress-step completed">1</div>
+                                <div class="progress-step active">2</div>
+                                <div class="progress-step">3</div>
+                            </div>
+
+                            <div class="homestay-info-card">
+                                <div class="row align-items-center">
+                                    <div class="col-md-4">
+                                        @if(!string.IsNullOrEmpty(Model.HomestayImage))
+                                        {
+                                            <div class="homestay-image">
+                                                <img src="@Model.HomestayImage" alt="@Model.HomestayName">
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="homestay-placeholder">
+                                                <i class="fas fa-home fa-4x text-muted"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-8 homestay-details">
+                                        <h5>@Model.HomestayName</h5>
+                                        <div class="homestay-meta">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span>@Model.CheckInDate.ToString("dd/MM/yyyy") - @Model.CheckOutDate.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <div class="homestay-meta">
+                                            <i class="fas fa-moon"></i>
+                                            <span>@((Model.CheckOutDate - Model.CheckInDate).Days) đêm lưu trú</span>
+                                        </div>
+                                        <div class="homestay-meta">
+                                            <i class="fas fa-star"></i>
+                                            <span>Hãy chia sẻ đánh giá của bạn</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>                            <div class="review-form-section">
+                                <form asp-action="Create" method="post">
+                                    <input asp-for="BookingId" type="hidden" />
+                                    <input asp-for="HomestayId" type="hidden" />
+                                    <input asp-for="HomestayName" type="hidden" />
+                                    <input asp-for="CheckInDate" type="hidden" />
+                                    <input asp-for="CheckOutDate" type="hidden" />
+
+                                    <div class="form-group-modern">
+                                        <label class="form-label-modern">
+                                            <i class="fas fa-star"></i>
+                                            Đánh giá tổng thể
+                                        </label>
+                                        <div class="rating-container">
+                                            <div class="rating-stars">
+                                                @for(int i = 1; i <= 5; i++)
+                                                {
+                                                    <i class="fas fa-star rating-star" data-rating="@i"></i>
+                                                }
+                                            </div>
+                                            <div class="rating-feedback" id="ratingFeedback"></div>
+                                            <input asp-for="Rating" type="hidden" />
+                                            <span asp-validation-for="Rating" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group-modern">
+                                        <label asp-for="Comment" class="form-label-modern">
+                                            <i class="fas fa-comment-dots"></i>
+                                            Chia sẻ trải nghiệm của bạn
+                                        </label>
+                                        <div class="position-relative">
+                                            <textarea asp-for="Comment" class="form-control form-control-modern" 
+                                                      placeholder="Hãy chia sẻ những trải nghiệm chi tiết của bạn về homestay này... Điều gì làm bạn ấn tượng nhất? Dịch vụ có tốt không? Không gian có thoải mái không?"></textarea>
+                                            <div class="char-counter" id="charCounter">0/1000 ký tự</div>
+                                            <span asp-validation-for="Comment" class="text-danger"></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group-modern text-center">
+                                        <button type="submit" class="btn btn-submit-modern">
+                                            <i class="fas fa-paper-plane me-2"></i>Gửi Đánh Giá
+                                        </button>
+                                        <a href="@Url.Action("Details", "Booking", new { id = Model.BookingId })" class="btn btn-cancel-modern">
+                                            <i class="fas fa-arrow-left me-2"></i>Quay lại
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize animations
+            initializeAnimations();
+            
+            // Rating stars interaction with enhanced effects
+            initializeRatingSystem();
+            
+            // Comment character counter
+            initializeCharacterCounter();
+            
+            // Form submission enhancements
+            initializeFormSubmission();
+            
+            // Create floating particles
+            createReviewParticles();
+        });
+
+        function initializeAnimations() {
+            // Animate form elements on load
+            $('.form-group-modern').each(function(index) {
+                $(this).css({
+                    'animation-delay': `${0.8 + (index * 0.2)}s`,
+                    'animation': 'fadeInUp 0.8s ease-out forwards'
+                });
+            });
+            
+            // Add pulse effect to progress steps
+            $('.progress-step.active').addClass('animate__pulse');
+        }
+
+        function initializeRatingSystem() {
+            const ratingFeedback = {
+                1: { text: 'Rất tệ - Cần cải thiện nhiều', class: 'terrible' },
+                2: { text: 'Tệ - Không đáp ứng mong đợi', class: 'poor' },
+                3: { text: 'Bình thường - Có thể chấp nhận', class: 'average' },
+                4: { text: 'Tốt - Đáng giá tiền', class: 'good' },
+                5: { text: 'Xuất sắc - Vượt mong đợi!', class: 'excellent' }
+            };
+
+            $('.rating-star').hover(
+                function() {
+                    const rating = $(this).data('rating');
+                    highlightStars(rating);
+                    showRatingFeedback(rating, ratingFeedback);
+                },
+                function() {
+                    const selectedRating = $('#Rating').val();
+                    highlightStars(selectedRating);
+                    if (selectedRating) {
+                        showRatingFeedback(selectedRating, ratingFeedback);
+                    } else {
+                        hideRatingFeedback();
+                    }
+                }
+            );
+
+            $('.rating-star').click(function() {
+                const rating = $(this).data('rating');
+                $('#Rating').val(rating);
+                highlightStars(rating);
+                showRatingFeedback(rating, ratingFeedback);
+                
+                // Add celebration effect for high ratings
+                if (rating >= 4) {
+                    createStarBurst($(this));
+                }
+                
+                // Update progress
+                updateProgress();
+            });
+
+            function highlightStars(rating) {
+                $('.rating-star').each(function() {
+                    const starRating = $(this).data('rating');
+                    $(this).removeClass('active');
+                    if (starRating <= rating) {
+                        $(this).addClass('active');
+                    }
+                });
+            }
+
+            function showRatingFeedback(rating, feedback) {
+                const feedbackElement = $('#ratingFeedback');
+                const feedbackData = feedback[rating];
+                
+                feedbackElement
+                    .removeClass('terrible poor average good excellent')
+                    .addClass(feedbackData.class)
+                    .text(feedbackData.text)
+                    .addClass('show');
+            }
+
+            function hideRatingFeedback() {
+                $('#ratingFeedback').removeClass('show');
+            }
+
+            function createStarBurst(starElement) {
+                for (let i = 0; i < 6; i++) {
+                    const particle = $('<div class="star-particle">✨</div>');
+                    particle.css({
+                        position: 'absolute',
+                        left: starElement.position().left + 'px',
+                        top: starElement.position().top + 'px',
+                        fontSize: '1rem',
+                        color: '#ffd700',
+                        pointerEvents: 'none',
+                        zIndex: 1000
+                    });
+                    
+                    starElement.parent().append(particle);
+                    
+                    particle.animate({
+                        left: '+=' + (Math.random() * 100 - 50),
+                        top: '+=' + (Math.random() * 100 - 50),
+                        opacity: 0
+                    }, 1000, function() {
+                        $(this).remove();
+                    });
+                }
+            }
+        }
+
+        function initializeCharacterCounter() {
+            const commentTextarea = $('#Comment');
+            const charCounter = $('#charCounter');
+            
+            commentTextarea.on('input', function() {
+                const length = $(this).val().length;
+                const remaining = 1000 - length;
+                
+                charCounter.text(`${length}/1000 ký tự`);
+                
+                // Color coding based on character count
+                charCounter.removeClass('text-muted text-warning text-danger text-success');
+                
+                if (length < 10) {
+                    charCounter.addClass('text-muted');
+                } else if (length < 50) {
+                    charCounter.addClass('text-warning');
+                } else if (remaining < 100) {
+                    charCounter.addClass('text-warning');
+                } else if (remaining < 0) {
+                    charCounter.addClass('text-danger');
+                } else {
+                    charCounter.addClass('text-success');
+                }
+                
+                // Auto-resize textarea
+                $(this).css('height', 'auto');
+                $(this).css('height', $(this)[0].scrollHeight + 'px');
+                
+                updateProgress();
+            });
+            
+            // Initialize character count
+            commentTextarea.trigger('input');
+        }
+
+        function initializeFormSubmission() {
+            const form = $('form');
+            const submitBtn = $('.btn-submit-modern');
+            
+            form.on('submit', function(e) {
+                // Validate rating
+                if (!$('#Rating').val()) {
+                    e.preventDefault();
+                    showValidationMessage('Vui lòng chọn số sao đánh giá!');
+                    $('.rating-container').addClass('shake');
+                    setTimeout(() => $('.rating-container').removeClass('shake'), 600);
+                    return;
+                }
+                
+                // Validate comment
+                const comment = $('#Comment').val().trim();
+                if (comment.length < 10) {
+                    e.preventDefault();
+                    showValidationMessage('Vui lòng viết ít nhất 10 ký tự cho nhận xét!');
+                    $('#Comment').focus().addClass('is-invalid');
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi đánh giá...');
+                submitBtn.prop('disabled', true);
+                
+                // Add success animation
+                $('.progress-step').eq(2).addClass('completed');
+            });
+        }
+
+        function updateProgress() {
+            const rating = $('#Rating').val();
+            const comment = $('#Comment').val().trim();
+            
+            // Update step 2 (rating)
+            if (rating) {
+                $('.progress-step').eq(1).addClass('completed').removeClass('active');
+                $('.progress-step').eq(2).addClass('active');
+            }
+            
+            // Update step 3 (complete)
+            if (rating && comment.length >= 10) {
+                $('.progress-step').eq(2).addClass('completed');
+            }
+        }
+
+        function showValidationMessage(message) {
+            // Create and show validation message
+            const alert = $(`
+                <div class="alert alert-warning alert-dismissible fade show validation-alert" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `);
+            
+            $('.review-form-section').prepend(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alert.alert('close');
+            }, 5000);
+        }
+
+        function createReviewParticles() {
+            const container = $('.floating-review-shapes');
+            
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const shapes = ['⭐', '💬', '❤️', '👍', '✨', '🏠'];
+                    const shape = shapes[Math.floor(Math.random() * shapes.length)];
+                    
+                    const particle = $(`<div class="floating-emoji-particle">${shape}</div>`);
+                    particle.css({
+                        position: 'absolute',
+                        fontSize: `${Math.random() * 1.5 + 0.8}rem`,
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        opacity: 0.3,
+                        pointerEvents: 'none',
+                        animation: `floatEmoji ${5 + Math.random() * 10}s ease-in-out infinite`,
+                        animationDelay: `${Math.random() * 5}s`
+                    });
+                    
+                    container.append(particle);
+                }, i * 300);
+            }
+        }
+
+        // Add additional CSS animations
+        const additionalStyles = `
+            <style>
+                @@keyframes fadeInUp {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                @@keyframes floatEmoji {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    25% { transform: translateY(-20px) rotate(90deg); }
+                    50% { transform: translateY(-40px) rotate(180deg); }
+                    75% { transform: translateY(-20px) rotate(270deg); }
+                }
+                
+                .shake {
+                    animation: shake 0.6s ease-in-out;
+                }
+                
+                @@keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-10px); }
+                    75% { transform: translateX(10px); }
+                }
+                
+                .is-invalid {
+                    border-color: #dc3545 !important;
+                    animation: invalidInput 0.3s ease;
+                }
+                
+                @@keyframes invalidInput {
+                    0%, 100% { transform: translateX(0); }
+                    25% { transform: translateX(-5px); }
+                    75% { transform: translateX(5px); }
+                }
+                
+                .validation-alert {
+                    animation: slideInDown 0.5s ease;
+                }
+                
+                @@keyframes slideInDown {
+                    from {
+                        opacity: 0;
+                        transform: translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+            </style>
+        `;
+        
+        $('head').append(additionalStyles);
+    </script>
+}
+
+

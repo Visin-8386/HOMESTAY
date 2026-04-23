@@ -1,0 +1,172 @@
+@{
+    ViewData["Title"] = "Email Control Panel";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2>📧 Email Control Panel</h2>
+            <p class="text-muted">Quản lý email service và ngừng các retry cũ</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">🔧 Email Service Control</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <button id="disableEmailBtn" class="btn btn-warning me-2">
+                            <i class="fas fa-pause"></i> Tắt Email Service
+                        </button>
+                        <button id="enableEmailBtn" class="btn btn-success me-2">
+                            <i class="fas fa-play"></i> Bật Email Service
+                        </button>
+                    </div>
+                    <div id="emailStatus" class="alert alert-info">
+                        <i class="fas fa-spinner fa-spin"></i> Đang kiểm tra trạng thái...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">🛑 Emergency Stop</h5>
+                </div>
+                <div class="card-body">
+                    <p>Nếu email đang gửi liên tục, restart server ngay lập tức:</p>
+                    <button id="restartServerBtn" class="btn btn-danger">
+                        <i class="fas fa-power-off"></i> Restart Server
+                    </button>
+                    <small class="text-muted d-block mt-2">
+                        Điều này sẽ dừng tất cả các email retry đang chạy
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📊 Email Logs</h5>
+                </div>
+                <div class="card-body">
+                    <button id="viewLogsBtn" class="btn btn-outline-info">
+                        <i class="fas fa-eye"></i> Xem Logs Email
+                    </button>
+                    <button id="clearLogsBtn" class="btn btn-outline-warning">
+                        <i class="fas fa-trash"></i> Xóa Logs
+                    </button>
+                    <div id="logsContainer" class="mt-3" style="display: none;">
+                        <pre id="logsContent" class="bg-dark text-white p-3" style="max-height: 400px; overflow-y: auto;"></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Check email status on load
+    checkEmailStatus();
+    
+    // Disable email button
+    document.getElementById('disableEmailBtn').addEventListener('click', function() {
+        updateEmailStatus(false);
+    });
+    
+    // Enable email button
+    document.getElementById('enableEmailBtn').addEventListener('click', function() {
+        updateEmailStatus(true);
+    });
+    
+    // Restart server button
+    document.getElementById('restartServerBtn').addEventListener('click', function() {
+        if (confirm('Bạn có chắc muốn restart server? Điều này sẽ dừng tất cả các process đang chạy.')) {
+            fetch('/Account/RestartServer', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message || 'Server đang restart...');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi restart server');
+                });
+        }
+    });
+    
+    // View logs button
+    document.getElementById('viewLogsBtn').addEventListener('click', function() {
+        const container = document.getElementById('logsContainer');
+        if (container.style.display === 'none') {
+            loadLogs();
+            container.style.display = 'block';
+            this.innerHTML = '<i class="fas fa-eye-slash"></i> Ẩn Logs';
+        } else {
+            container.style.display = 'none';
+            this.innerHTML = '<i class="fas fa-eye"></i> Xem Logs Email';
+        }
+    });
+    
+    function checkEmailStatus() {
+        fetch('/Account/EmailStatus')
+            .then(response => response.json())
+            .then(data => {
+                const statusDiv = document.getElementById('emailStatus');
+                if (data.enabled) {
+                    statusDiv.className = 'alert alert-success';
+                    statusDiv.innerHTML = '<i class="fas fa-check-circle"></i> Email Service đang BẬT';
+                } else {
+                    statusDiv.className = 'alert alert-warning';
+                    statusDiv.innerHTML = '<i class="fas fa-pause-circle"></i> Email Service đang TẮT';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking email status:', error);
+                document.getElementById('emailStatus').innerHTML = '<i class="fas fa-exclamation-triangle"></i> Không thể kiểm tra trạng thái email';
+            });
+    }
+    
+    function updateEmailStatus(enabled) {
+        fetch('/Account/SetEmailStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ enabled: enabled })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                checkEmailStatus();
+                alert(data.message);
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error updating email status:', error);
+            alert('Có lỗi xảy ra khi cập nhật trạng thái email');
+        });
+    }
+    
+    function loadLogs() {
+        fetch('/Account/GetEmailLogs')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('logsContent').textContent = data;
+            })
+            .catch(error => {
+                console.error('Error loading logs:', error);
+                document.getElementById('logsContent').textContent = 'Không thể tải logs: ' + error.message;
+            });
+    }
+});
+</script>

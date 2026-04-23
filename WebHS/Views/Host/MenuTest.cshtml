@@ -1,0 +1,63 @@
+@{
+    ViewData["Title"] = "Menu Test";
+    Layout = "_Layout_New";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Menu Debug Test</h3>
+                </div>
+                <div class="card-body">
+                    <h4>User Info:</h4>
+                    <ul>
+                        <li><strong>Authenticated:</strong> @(User?.Identity?.IsAuthenticated == true)</li>
+                        <li><strong>Name:</strong> @(User?.Identity?.Name ?? "Not authenticated")</li>                        <li><strong>Is Host:</strong> @(User?.IsInRole("Host") == true)</li>
+                        <li><strong>Is Admin:</strong> @(User?.IsInRole("Admin") == true)</li>
+                    </ul>
+                    
+                    <h4>Test Links:</h4>
+                    <ul>
+                        <li><a href="@Url.Action("Dashboard", "Host")">Host Dashboard</a></li>
+                        <li><a href="@Url.Action("Homestays", "Host")">Host Homestays</a></li>
+                        <li><a href="@Url.Action("Create", "Homestay")">Create Homestay</a></li>
+                    </ul>
+                    
+                    <h4>Manual Dropdown Test:</h4>
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Test Dropdown
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            console.log('Menu test page loaded');
+            console.log('User authenticated:', '@(User?.Identity?.IsAuthenticated == true)');
+            console.log('User is Host:', '@(User?.IsInRole("Host") == true)');
+            
+            // Test dropdown functionality
+            $('#dropdownMenuButton').click(function() {
+                console.log('Test dropdown clicked');
+                $(this).next('.dropdown-menu').toggle();
+            });
+            
+            // Force show navbar dropdown for debugging
+            $('.navbar-nav .dropdown-menu').show();
+            console.log('Forced navbar dropdowns to show');
+        });
+    </script>
+}

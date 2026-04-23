@@ -1,0 +1,119 @@
+@model WebHS.ViewModels.BookingDetailViewModel
+
+<div class="row">
+    <div class="col-md-8">
+        <h5>Chi tiết đặt phòng #@Model.Id</h5>
+        <hr>
+        
+        <div class="row mb-3">
+            <div class="col-sm-6">
+                <strong>Khách hàng:</strong><br>
+                @Model.UserName<br>
+                @Model.UserEmail<br>
+                @if (!string.IsNullOrEmpty(Model.UserPhone))
+                {
+                    <text>📞 @Model.UserPhone</text>
+                }
+            </div>
+            <div class="col-sm-6">
+                <strong>Homestay:</strong><br>
+                @Model.HomestayName<br>
+                @Model.HomestayLocation
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-sm-6">
+                <strong>Ngày nhận phòng:</strong><br>
+                @Model.CheckInDate.ToString("dd/MM/yyyy")
+            </div>
+            <div class="col-sm-6">
+                <strong>Ngày trả phòng:</strong><br>
+                @Model.CheckOutDate.ToString("dd/MM/yyyy")
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-sm-6">
+                <strong>Số khách:</strong><br>
+                @Model.NumberOfGuests người
+            </div>
+            <div class="col-sm-6">
+                <strong>Số đêm:</strong><br>
+                @((Model.CheckOutDate - Model.CheckInDate).Days) đêm
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-sm-6">
+                <strong>Tổng tiền:</strong><br>
+                @Model.TotalAmount.ToString("N0") VNĐ
+            </div>
+            <div class="col-sm-6">
+                <strong>Giảm giá:</strong><br>
+                @Model.DiscountAmount.ToString("N0") VNĐ
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-sm-6">
+                <strong>Thành tiền:</strong><br>
+                <span class="h5 text-success">@Model.FinalAmount.ToString("N0") VNĐ</span>
+            </div>
+            <div class="col-sm-6">
+                <strong>Trạng thái:</strong><br>
+                @switch(Model.Status.ToString())
+                {
+                    case "Pending":
+                        <span class="badge bg-warning text-dark">Chờ xác nhận</span>
+                        break;
+                    case "Confirmed":
+                        <span class="badge bg-primary text-white">Đã xác nhận</span>
+                        break;
+                    case "CheckedIn":
+                        <span class="badge bg-info text-white">Đã check-in</span>
+                        break;
+                    case "CheckedOut":
+                        <span class="badge bg-secondary text-white">Đã check-out</span>
+                        break;
+                    case "Completed":
+                        <span class="badge bg-success text-white">Hoàn thành</span>
+                        break;
+                    case "Cancelled":
+                        <span class="badge bg-danger text-white">Đã hủy</span>
+                        break;
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Booking?.Notes))
+        {
+            <div class="mb-3">
+                <strong>Ghi chú:</strong><br>
+                <div class="border p-2 bg-light">
+                    @Model.Booking.Notes
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-4">
+        @if (!string.IsNullOrEmpty(Model.PrimaryImage))
+        {
+            <img src="@Model.PrimaryImage" class="img-fluid rounded mb-3" alt="@Model.HomestayName">
+        }
+        else
+        {
+            <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3" style="height: 200px;">
+                <i class="fas fa-home fa-3x text-muted"></i>
+            </div>
+        }
+        
+        <div class="text-center">
+            <small class="text-muted">
+                Đặt phòng lúc: @Model.Booking?.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </small>
+        </div>
+    </div>
+</div>
+

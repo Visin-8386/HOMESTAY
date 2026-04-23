@@ -1,0 +1,267 @@
+@model WebHS.ViewModels.CreateMessageTemplateViewModel
+@{
+    ViewData["Title"] = ViewBag.IsEdit == true ? "Chỉnh Sửa Mẫu Tin Nhắn" : "Tạo Mẫu Tin Nhắn Mới";
+    var isEdit = ViewBag.IsEdit == true;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a asp-action="Dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a asp-action="MessageTemplates">Mẫu Tin Nhắn</a></li>
+                    <li class="breadcrumb-item active">@(isEdit ? "Chỉnh Sửa" : "Tạo Mới")</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-@(isEdit ? "edit" : "plus-circle") me-2"></i>
+                    @ViewData["Title"]
+                </h2>
+                <a asp-action="MessageTemplates" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay Lại
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-form me-2"></i>Thông Tin Mẫu Tin Nhắn
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="@(isEdit ? "EditMessageTemplate" : "CreateMessageTemplate")" 
+                                  asp-route-id="@(isEdit ? ViewBag.TemplateId : null)" method="post">
+                                
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label asp-for="Name" class="form-label fw-semibold">
+                                            <i class="fas fa-tag me-1"></i>Tên Mẫu Tin Nhắn
+                                        </label>
+                                        <input asp-for="Name" class="form-control" placeholder="VD: Chào mừng khách mới">
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Type" class="form-label fw-semibold">
+                                            <i class="fas fa-folder me-1"></i>Loại Mẫu
+                                        </label>
+                                        <select asp-for="Type" class="form-select">
+                                            <option value="">Chọn loại mẫu</option>
+                                            <option value="1">🎉 Chào mừng</option>
+                                            <option value="2">✅ Xác nhận booking</option>
+                                            <option value="3">🏠 Hướng dẫn check-in</option>
+                                            <option value="4">🚪 Nhắc nhở check-out</option>
+                                            <option value="5">💕 Cảm ơn & yêu cầu review</option>
+                                            <option value="6">📋 Nội quy nhà</option>
+                                            <option value="7">🗺️ Gợi ý địa điểm</option>
+                                            <option value="8">🔧 Tùy chỉnh</option>
+                                        </select>
+                                        <span asp-validation-for="Type" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Subject" class="form-label fw-semibold">
+                                        <i class="fas fa-heading me-1"></i>Tiêu Đề Email/Tin Nhắn
+                                    </label>
+                                    <input asp-for="Subject" class="form-control" placeholder="VD: Chào mừng bạn đến với {homestayName}!">
+                                    <span asp-validation-for="Subject" class="text-danger"></span>
+                                    <small class="form-text text-muted">
+                                        Có thể sử dụng placeholders như {guestName}, {homestayName}
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Content" class="form-label fw-semibold">
+                                        <i class="fas fa-align-left me-1"></i>Nội Dung Tin Nhắn
+                                    </label>
+                                    <textarea asp-for="Content" class="form-control" rows="12" 
+                                              placeholder="Nội dung mẫu tin nhắn..."></textarea>
+                                    <span asp-validation-for="Content" class="text-danger"></span>
+                                    <small class="form-text text-muted">
+                                        Sử dụng \n để xuống dòng. Placeholders sẽ được thay thế tự động khi gửi.
+                                    </small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div class="form-check form-switch">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox" checked>
+                                        <label asp-for="IsActive" class="form-check-label fw-semibold">
+                                            <i class="fas fa-toggle-on me-1"></i>Kích hoạt mẫu tin nhắn
+                                        </label>
+                                        <small class="form-text text-muted d-block">
+                                            Chỉ những mẫu được kích hoạt mới hiển thị trong danh sách sử dụng
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save me-2"></i>@(isEdit ? "Cập Nhật" : "Tạo Mẫu")
+                                    </button>
+                                    <button type="button" class="btn btn-info" id="previewBtn">
+                                        <i class="fas fa-eye me-2"></i>Xem Trước
+                                    </button>
+                                    <a asp-action="MessageTemplates" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times me-2"></i>Hủy
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Help Panel -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-question-circle me-2"></i>Placeholders Có Thể Sử Dụng
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <small class="text-muted d-block mb-2"><strong>Thông tin khách:</strong></small>
+                                    <code class="d-block mb-1">{guestName}</code>
+                                    <code class="d-block mb-3">{guestEmail}</code>
+
+                                    <small class="text-muted d-block mb-2"><strong>Thông tin homestay:</strong></small>
+                                    <code class="d-block mb-1">{homestayName}</code>
+                                    <code class="d-block mb-3">{address}</code>
+
+                                    <small class="text-muted d-block mb-2"><strong>Thông tin host:</strong></small>
+                                    <code class="d-block mb-1">{hostName}</code>
+                                    <code class="d-block mb-3">{hostPhone}</code>
+
+                                    <small class="text-muted d-block mb-2"><strong>Thông tin booking:</strong></small>
+                                    <code class="d-block mb-1">{bookingId}</code>
+                                    <code class="d-block mb-1">{checkInDate}</code>
+                                    <code class="d-block mb-1">{checkOutDate}</code>
+                                    <code class="d-block mb-1">{checkInTime}</code>
+                                    <code class="d-block mb-1">{totalAmount}</code>
+                                    <code class="d-block mb-3">{nights}</code>
+
+                                    <small class="text-muted d-block mb-2"><strong>Tiện ích:</strong></small>
+                                    <code class="d-block mb-1">{wifiName}</code>
+                                    <code class="d-block mb-1">{wifiPassword}</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Templates -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-lightbulb me-2"></i>Mẫu Nhanh
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="insertQuickTemplate('welcome')">
+                                    🎉 Mẫu Chào Mừng
+                                </button>
+                                <button type="button" class="btn btn-outline-success btn-sm" onclick="insertQuickTemplate('checkin')">
+                                    🏠 Mẫu Check-in
+                                </button>
+                                <button type="button" class="btn btn-outline-warning btn-sm" onclick="insertQuickTemplate('checkout')">
+                                    🚪 Mẫu Check-out
+                                </button>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="insertQuickTemplate('thankyou')">
+                                    💕 Mẫu Cảm Ơn
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem Trước Mẫu Tin Nhắn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tiêu đề:</label>
+                    <div id="modalPreviewSubject" class="form-control-plaintext border rounded p-2 bg-light"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nội dung:</label>
+                    <div id="modalPreviewContent" class="form-control-plaintext border rounded p-3 bg-light" style="min-height: 200px; white-space: pre-wrap;"></div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Đây là bản xem trước với placeholders. Khi gửi thực tế, các giá trị sẽ được thay thế bằng thông tin thực.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Quick templates
+        const quickTemplates = {
+            welcome: {
+                subject: "Chào mừng bạn đến với {homestayName}!",
+                content: "Xin chào {guestName},\n\nCảm ơn bạn đã đặt phòng tại {homestayName}! Chúng tôi rất vui được đón tiếp bạn.\n\nThông tin check-in:\n- Thời gian: {checkInTime}\n- Địa chỉ: {address}\n- Liên hệ: {hostPhone}\n\nChúc bạn có chuyến đi vui vẻ!\n\nTrân trọng,\n{hostName}"
+            },
+            checkin: {
+                subject: "Hướng dẫn check-in tại {homestayName}",
+                content: "Xin chào {guestName},\n\nBạn sẽ check-in vào ngày mai! Dưới đây là thông tin quan trọng:\n\n📍 Địa chỉ: {address}\n🕐 Thời gian check-in: {checkInTime}\n📞 Số điện thoại khẩn cấp: {hostPhone}\n\nHướng dẫn:\n1. Gọi cho tôi khi bạn đến gần\n2. Mang theo CMND/CCCD\n3. Wifi: {wifiName} / Pass: {wifiPassword}\n\nHẹn gặp bạn!\n{hostName}"
+            },
+            checkout: {
+                subject: "Cảm ơn bạn đã lưu trú tại {homestayName}",
+                content: "Xin chào {guestName},\n\nCảm ơn bạn đã lựa chọn {homestayName} cho chuyến đi của mình! Hy vọng bạn đã có những trải nghiệm tuyệt vời.\n\nVui lòng:\n- Check-out trước {checkOutTime}\n- Để chìa khóa tại vị trí đã hướng dẫn\n- Tắt tất cả thiết bị điện\n\nNếu bạn hài lòng với dịch vụ, rất mong bạn dành chút thời gian để đánh giá.\n\nTrân trọng,\n{hostName}"
+            },
+            thankyou: {
+                subject: "Chia sẻ trải nghiệm tại {homestayName}",
+                content: "Xin chào {guestName},\n\nHy vọng bạn đã có kỳ nghỉ tuyệt vời tại {homestayName}!\n\nTrải nghiệm của bạn rất quan trọng với chúng tôi. Bạn có thể dành 2 phút để đánh giá và chia sẻ cảm nhận không?\n\nĐánh giá của bạn sẽ giúp:\n✨ Cải thiện chất lượng dịch vụ\n✨ Hỗ trợ khách hàng tương lai\n✨ Động viên team chúng tôi\n\nCảm ơn bạn rất nhiều!\n{hostName}"
+            }
+        };
+
+        function insertQuickTemplate(type) {
+            if (quickTemplates[type]) {
+                const template = quickTemplates[type];
+                document.getElementById('Subject').value = template.subject;
+                document.getElementById('Content').value = template.content;
+            }
+        }
+
+        document.getElementById('previewBtn').addEventListener('click', function() {
+            const subject = document.getElementById('Subject').value || 'Chưa có tiêu đề';
+            const content = document.getElementById('Content').value || 'Chưa có nội dung';
+            
+            document.getElementById('modalPreviewSubject').textContent = subject;
+            document.getElementById('modalPreviewContent').textContent = content;
+            
+            new bootstrap.Modal(document.getElementById('previewModal')).show();
+        });
+
+        // Auto-resize textarea
+        const textarea = document.getElementById('Content');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    </script>
+}

@@ -1,0 +1,314 @@
+@model List<WebHS.ViewModels.UserViewModel>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@ViewData["Title"]</h1>
+        <div>
+            <a asp-area="" asp-controller="ClaimsManagement" asp-action="Index" class="btn btn-info">
+                <i class="bi bi-key"></i> Quản lý Claims
+            </a>
+        </div>
+    </div>
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="usersTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tên người dùng</th>
+                            <th>Email</th>
+                            <th>Họ và tên</th>
+                            <th>Vai trò</th>
+                            <th>Ngày tạo</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>@user.UserName</td>
+                                <td>
+                                    @user.Email
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <span class="badge bg-success ms-1" title="Email đã xác thực">
+                                            <i class="bi bi-check-circle"></i>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning ms-1" title="Email chưa xác thực">
+                                            <i class="bi bi-exclamation-circle"></i>
+                                        </span>
+                                    }
+                                </td>
+                                <td>@user.FullName</td>
+                                <td>
+                                    <!-- Hiển thị trạng thái Host dựa trên role -->
+                                    @if (user.IsHost)
+                                    {
+                                        <span class="badge bg-success me-1" title="Người dùng có quyền host">
+                                            <i class="bi bi-house-check"></i> Host
+                                        </span>
+                                    }
+                                    
+                                    <!-- Hiển thị các vai trò từ AspNetUserRoles (trừ Host đã hiển thị ở trên) -->
+                                    @if (user.Roles.Any())
+                                    {
+                                        @foreach (var role in user.Roles)
+                                        {
+                                            @if (role != "Host")
+                                            {
+                                                <span class="badge bg-primary me-1" title="Vai trò: @role">
+                                                    <i class="bi bi-person-badge"></i> @role
+                                                </span>
+                                            }
+                                        }
+                                    }
+                                    
+                                    <!-- Hiển thị các claims đặc biệt (không bao gồm host status vì đã hiển thị ở trên) -->
+                                    <div id="special-claims-@user.Id" class="special-claims-container mt-1">
+                                        <small class="text-muted" style="font-size: 0.7em;">
+                                            <i class="bi bi-hourglass-split"></i> Đang tải claims...
+                                        </small>
+                                    </div>
+                                </td>
+                                <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Vô hiệu hóa</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-info">
+                                            <i class="bi bi-info-circle"></i> Chi tiết
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@user.Id" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i> Sửa
+                                        </a>
+                                        
+                                        <!-- Dropdown cho quyền đặc biệt -->
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-award"></i> Quyền đặc biệt
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><h6 class="dropdown-header">Cấp quyền nhanh</h6></li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="grantSpecialPermission('@user.Id', 'super_host', '@user.FullName')">
+                                                        <i class="bi bi-star text-warning"></i> Super Host
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="grantSpecialPermission('@user.Id', 'can_view_reports', '@user.FullName')">
+                                                        <i class="bi bi-graph-up text-info"></i> Xem báo cáo
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="grantSpecialPermission('@user.Id', 'can_moderate_reviews', '@user.FullName')">
+                                                        <i class="bi bi-shield-check text-primary"></i> Kiểm duyệt đánh giá
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" onclick="grantSpecialPermission('@user.Id', 'can_manage_promotions', '@user.FullName')">
+                                                        <i class="bi bi-percent text-success"></i> Quản lý khuyến mãi
+                                                    </a>
+                                                </li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li>
+                                                    <a class="dropdown-item" asp-controller="ClaimsManagement" asp-action="UserClaims" asp-route-userId="@user.Id">
+                                                        <i class="bi bi-gear text-secondary"></i> Quản lý chi tiết
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        @* Debug: Hiển thị trạng thái IsHost *@
+                                        <small class="text-muted">IsHost: @user.IsHost</small>
+
+                                        @if (user.IsHost)
+                                        {
+                                            <form asp-action="ToggleHostStatus" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" 
+                                                        onclick="return confirm('Bạn có chắc muốn thu hồi quyền host của @user.FullName?')"
+                                                        title="Thu hồi quyền host">
+                                                    <i class="bi bi-house-slash"></i> Thu hồi
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="ToggleHostStatus" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        onclick="return confirm('Bạn có chắc muốn cấp quyền host cho @user.FullName?')"
+                                                        title="Cấp quyền host">
+                                                    <i class="bi bi-house-add"></i> Cấp Host
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#usersTable').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/vi.json'
+                }
+            });
+
+            // Load special claims cho tất cả users
+            loadAllSpecialClaims();
+        });
+
+        // Load quyền đặc biệt cho tất cả users
+        function loadAllSpecialClaims() {
+            $('.special-claims-container').each(function() {
+                const userId = $(this).attr('id').replace('special-claims-', '');
+                loadUserSpecialClaims(userId);
+            });
+        }
+
+        // Load quyền đặc biệt cho một user
+        function loadUserSpecialClaims(userId) {
+            $.ajax({
+                url: '/ClaimsManagement/GetUserSpecialClaims',
+                type: 'GET',
+                data: { userId: userId },
+                success: function(response) {
+                    if (response.success) {
+                        displaySpecialClaims(userId, response.claims);
+                    } else {
+                        $(`#special-claims-${userId}`).html('<span class="badge bg-light text-muted">Không có</span>');
+                    }
+                },
+                error: function() {
+                    $(`#special-claims-${userId}`).html('<span class="badge bg-danger" style="font-size: 0.6em;">Lỗi</span>');
+                }
+            });
+        }
+
+        // Hiển thị các quyền đặc biệt
+        function displaySpecialClaims(userId, claims) {
+            const container = $(`#special-claims-${userId}`);
+            container.empty();
+
+            if (claims && claims.length > 0) {
+                claims.forEach(claim => {
+                    const badge = getClaimBadge(claim.type, claim.displayName);
+                    container.append(badge);
+                });
+            } else {
+                container.html('<span class="badge bg-light text-muted" style="font-size: 0.6em;">Không có</span>');
+            }
+        }
+
+        // Tạo badge cho claim
+        function getClaimBadge(claimType, displayName) {
+            const badgeClasses = {
+                'super_host': 'bg-warning text-dark',
+                'can_view_reports': 'bg-info',
+                'can_moderate_reviews': 'bg-primary',
+                'can_manage_promotions': 'bg-success',
+                'can_manage_users': 'bg-danger',
+                'can_manage_properties': 'bg-dark',
+                'can_approve_listings': 'bg-secondary',
+                'can_access_api_keys': 'bg-purple'
+            };
+
+            const badgeClass = badgeClasses[claimType] || 'bg-secondary';
+            return `<span class="badge ${badgeClass} me-1" style="font-size: 0.6em;" title="${displayName}">${displayName}</span>`;
+        }
+
+        // Hàm cấp quyền đặc biệt nhanh
+        function grantSpecialPermission(userId, claimType, userName) {
+            if (!confirm(`Bạn có chắc muốn cấp quyền "${getClaimDisplayName(claimType)}" cho ${userName}?`)) {
+                return;
+            }
+
+            $.ajax({
+                url: '/ClaimsManagement/QuickGrantClaim',
+                type: 'POST',
+                data: {
+                    userId: userId,
+                    claimType: claimType,
+                    claimValue: 'true'
+                },
+                headers: {
+                    'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(response) {
+                    if (response.success) {
+                        toastr.success(response.message || 'Cấp quyền thành công!');
+                        // Reload trang sau 1 giây
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        toastr.error(response.message || 'Có lỗi xảy ra!');
+                    }
+                },
+                error: function() {
+                    toastr.error('Không thể kết nối đến server!');
+                }
+            });
+        }
+
+        // Hàm hiển thị tên quyền dễ hiểu
+        function getClaimDisplayName(claimType) {
+            const claimNames = {
+                'super_host': 'Super Host',
+                'can_view_reports': 'Xem báo cáo',
+                'can_moderate_reviews': 'Kiểm duyệt đánh giá',
+                'can_manage_promotions': 'Quản lý khuyến mãi',
+                'can_manage_users': 'Quản lý người dùng',
+                'can_manage_properties': 'Quản lý bất động sản',
+                'can_approve_listings': 'Duyệt tin đăng',
+                'can_access_api_keys': 'Truy cập API Keys'
+            };
+            return claimNames[claimType] || claimType;
+        }
+    </script>
+
+    <!-- Thêm Toastr cho thông báo đẹp -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+}

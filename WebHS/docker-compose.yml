@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  webhs-app:
+    build: .
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:80;https://+:443
+    depends_on:
+      - webhs-db
+    volumes:
+      - ./logs:/app/logs
+      - ./wwwroot/uploads:/app/wwwroot/uploads
+
+  webhs-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "YOUR_SQL_SERVER_SA_PASSWORD"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - webhs_data:/var/opt/mssql
+
+volumes:
+  webhs_data:

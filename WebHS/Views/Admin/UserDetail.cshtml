@@ -1,0 +1,715 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.Models.User
+
+@{
+    ViewData["Title"] = "Chi Tiết Người Dùng";
+    Layout = "_Layout_New";
+    var userRoles = ViewBag.UserRoles as List<string>;
+    var homestays = ViewBag.Homestays as List<WebHS.Models.Homestay>;
+    var bookings = ViewBag.Bookings as List<WebHS.Models.Booking>;
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card card-primary card-outline">
+                <div class="card-body box-profile">
+                    <div class="text-center">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+                        {
+                            <img class="profile-user-img img-fluid img-circle" src="@Model.ProfilePicture" alt="User profile picture">
+                        }
+                        else
+                        {
+                            <div class="profile-user-img img-fluid img-circle bg-secondary d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user fa-2x text-white"></i>
+                            </div>
+                        }
+                    </div>
+
+                    <h3 class="profile-username text-center">@Model.FullName</h3>
+
+                    @if (userRoles != null)
+                    {
+                        @foreach (var role in userRoles)
+                        {
+                            <p class="text-center">
+                                <span class="badge @(role == "Admin" ? "badge-danger" : role == "Host" ? "badge-warning" : "badge-info")">@role</span>
+                            </p>
+                        }
+                    }
+
+                    <p class="text-muted text-center">
+                        @if (Model.IsActive)
+                        {
+                            <span class="badge bg-success text-white">Hoạt động</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger text-white">Đã khóa</span>
+                        }
+                    </p>
+
+                    <ul class="list-group list-group-unbordered mb-3">
+                        <li class="list-group-item">
+                            <b>Email</b> <a class="float-right">@Model.Email</a>
+                        </li>
+                        <li class="list-group-item">
+                            <b>Số điện thoại</b> <a class="float-right">@Model.PhoneNumber</a>
+                        </li>
+                        <li class="list-group-item">
+                            <b>Ngày tham gia</b> <a class="float-right">@Model.CreatedAt.ToString("dd/MM/yyyy")</a>
+                        </li>
+                        @if (!string.IsNullOrEmpty(Model.Address))
+                        {
+                            <li class="list-group-item">
+                                <b>Địa chỉ</b> <a class="float-right">@Model.Address</a>
+                            </li>
+                        }
+                    </ul>                    <div class="btn-group w-100">
+                        <a href="@Url.Action("Users")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                        @* Chỉ hiển thị các nút quản lý nếu không phải System Administrator *@
+                        @if (Model.Email != "admin@webhs.com")
+                        {
+                            @if (Model.IsActive)
+                            {
+                                <button type="button" class="btn btn-warning" onclick="lockUser('@Model.Id')">
+                                    <i class="fas fa-lock"></i> Khóa tài khoản
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button" class="btn btn-success" onclick="unlockUser('@Model.Id')">
+                                    <i class="fas fa-unlock"></i> Mở khóa
+                                </button>
+                            }                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#roleModal" data-bs-toggle="modal" data-bs-target="#roleModal" onclick="openRoleModal('@Model.Id', '@(userRoles != null ? string.Join(",", userRoles) : "")')" data-userid="@Model.Id" data-roles="@(userRoles != null ? string.Join(",", userRoles) : "")">
+                                <i class="fas fa-user-cog"></i> Phân quyền
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.Bio))
+            {
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">Giới thiệu</h3>
+                    </div>
+                    <div class="card-body">
+                        <p>@Model.Bio</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">                <div class="card-header p-2">
+                    <ul class="nav nav-pills">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#bookings" data-toggle="tab" data-bs-toggle="tab">
+                                <i class="fas fa-calendar-check me-1"></i>
+                                Lịch sử đặt phòng (@((bookings?.Count ?? 0)))
+                            </a>
+                        </li>
+                        @if (userRoles?.Contains("Host") == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="#homestays" data-toggle="tab" data-bs-toggle="tab">
+                                    <i class="fas fa-home me-1"></i>
+                                    Homestay (@((homestays?.Count ?? 0)))
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="bookings">
+                            @if (bookings != null && bookings.Any())
+                            {
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Homestay</th>
+                                            <th>Check-in</th>
+                                            <th>Check-out</th>
+                                            <th>Số người</th>
+                                            <th>Trạng thái</th>
+                                            <th>Tổng tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var booking in bookings)
+                                        {
+                                            <tr>
+                                                <td>@booking.Id</td>
+                                                <td><a href="@Url.Action("Details", "Homestay", new { id = booking.HomestayId })">@booking.Homestay.Name</a></td>
+                                                <td>@booking.CheckInDate.ToString("dd/MM/yyyy")</td>
+                                                <td>@booking.CheckOutDate.ToString("dd/MM/yyyy")</td>
+                                                <td>@booking.NumberOfGuests</td>
+                                                <td>                                                    @switch (booking.Status)
+                                                    {
+                                                        case WebHS.Models.BookingStatus.Paid:
+                                                            <span class="badge bg-warning text-dark">Đã thanh toán</span>
+                                                            break;
+                                                        case WebHS.Models.BookingStatus.Cancelled:
+                                                            <span class="badge bg-danger text-white">Đã hủy</span>
+                                                            break;
+                                                        case WebHS.Models.BookingStatus.Completed:
+                                                            <span class="badge bg-info text-white">Đã hoàn thành</span>
+                                                            break;
+                                                    }
+                                                </td>
+                                                <td>@booking.FinalAmount.ToString("#,##0") VNĐ</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>                            }
+                            else
+                            {
+                                <div class="alert alert-info mb-0">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-calendar-times fa-2x text-muted me-3"></i>
+                                        <div>
+                                            <h5 class="alert-heading mb-1">Chưa có lịch sử đặt phòng</h5>
+                                            <p class="mb-0">Người dùng này chưa thực hiện đặt phòng nào.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (userRoles != null && userRoles.Contains("Host"))
+                        {
+                            <div class="tab-pane" id="homestays">
+                                @if (homestays != null && homestays.Any())
+                                {
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Tên</th>
+                                                <th>Địa chỉ</th>
+                                                <th>Giá/đêm</th>
+                                                <th>Trạng thái</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var homestay in homestays)
+                                            {                                                <tr>
+                                                    <td>@homestay.Id</td>
+                                                    <td>
+                                                        <a href="@Url.Action("HomestayDetails", "Admin", new { id = homestay.Id })" class="text-primary text-decoration-none">
+                                                            @homestay.Name
+                                                        </a>
+                                                    </td>
+                                                    <td>@homestay.Address, @homestay.City, @homestay.State</td>
+                                                    <td>@homestay.PricePerNight.ToString("#,##0") VNĐ</td>
+                                                    <td>
+                                                        @if (!homestay.IsApproved)
+                                                        {
+                                                            <span class="badge bg-warning text-dark">Chờ phê duyệt</span>
+                                                        }
+                                                        else if (homestay.IsActive)
+                                                        {
+                                                            <span class="badge bg-success text-white">Hoạt động</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="badge bg-danger text-white">Không hoạt động</span>
+                                                        }
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            <a href="@Url.Action("HomestayDetails", "Admin", new { id = homestay.Id })" class="btn btn-info btn-sm" title="Xem chi tiết">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            @if (!homestay.IsApproved)
+                                                            {
+                                                                <button type="button" class="btn btn-success btn-sm" onclick="approveHomestay(@homestay.Id)" title="Phê duyệt">
+                                                                    <i class="fas fa-check"></i>
+                                                                </button>
+                                                                <button type="button" class="btn btn-danger btn-sm" onclick="rejectHomestay(@homestay.Id)" title="Từ chối">
+                                                                    <i class="fas fa-times"></i>
+                                                                </button>
+                                                            }
+                                                            else
+                                                            {
+                                                                @if (homestay.IsActive)
+                                                                {
+                                                                    <button type="button" class="btn btn-warning btn-sm" onclick="deactivateHomestay(@homestay.Id)" title="Tạm dừng">
+                                                                        <i class="fas fa-pause"></i>
+                                                                    </button>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <button type="button" class="btn btn-success btn-sm" onclick="activateHomestay(@homestay.Id)" title="Kích hoạt">
+                                                                        <i class="fas fa-play"></i>
+                                                                    </button>
+                                                                }
+                                                            }
+                                                            <a href="@Url.Action("Details", "Homestay", new { id = homestay.Id })" class="btn btn-secondary btn-sm" target="_blank" title="Xem trên trang chủ">
+                                                                <i class="fas fa-external-link-alt"></i>
+                                                            </a>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>                                }
+                                else
+                                {
+                                    <div class="alert alert-info mb-0">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-home fa-2x text-muted me-3"></i>
+                                            <div>
+                                                <h5 class="alert-heading mb-1">Chưa có homestay nào</h5>
+                                                <p class="mb-0">Người dùng này có vai trò Host nhưng chưa tạo homestay nào.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Role Assignment Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="roleModalLabel">
+                    <i class="fas fa-user-cog me-2"></i>
+                    Cập nhật vai trò người dùng
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="roleForm">
+                    <input type="hidden" id="userId" name="userId" value="@Model.Id">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Chọn vai trò cho người dùng:</label>
+                        <div class="mt-2">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="User" id="roleUser" name="roles">
+                                <label class="form-check-label" for="roleUser">
+                                    <i class="fas fa-user text-info me-1"></i>
+                                    <strong>Người dùng</strong>
+                                    <br><small class="text-muted">Có thể đặt phòng và sử dụng các dịch vụ cơ bản</small>
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" value="Host" id="roleHost" name="roles">
+                                <label class="form-check-label" for="roleHost">
+                                    <i class="fas fa-home text-warning me-1"></i>
+                                    <strong>Chủ nhà (Host)</strong>
+                                    <br><small class="text-muted">Có thể đăng và quản lý homestay</small>
+                                </label>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" value="Admin" id="roleAdmin" name="roles">
+                                <label class="form-check-label" for="roleAdmin">
+                                    <i class="fas fa-shield-alt text-danger me-1"></i>
+                                    <strong>Quản trị viên</strong>
+                                    <br><small class="text-muted">Có quyền quản lý toàn bộ hệ thống</small>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <small><strong>Lưu ý:</strong> Thay đổi vai trò sẽ ảnh hưởng đến quyền truy cập của người dùng.</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>
+                    Hủy bỏ
+                </button>
+                <button type="button" class="btn btn-primary" onclick="updateRoles()">
+                    <i class="fas fa-save me-1"></i>
+                    Cập nhật vai trò
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .profile-user-img {
+            width: 100px;
+            height: 100px;
+            border: 3px solid #adb5bd;
+            margin: 0 auto;
+            padding: 3px;
+        }
+        
+        .btn-group .btn {
+            margin-right: 2px;
+        }
+        
+        .btn-group .btn:last-child {
+            margin-right: 0;
+        }
+        
+        .tab-content .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .nav-pills .nav-link {
+            border-radius: 0.375rem;
+            margin-right: 0.25rem;
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: #007bff;
+        }
+        
+        .text-decoration-none:hover {
+            text-decoration: underline !important;
+        }
+
+        /* Modal improvements */
+        .modal-dialog-centered {
+            min-height: calc(100% - 1rem);
+        }
+
+        .form-check {
+            padding: 0.75rem;
+            border: 1px solid #e3e6f0;
+            border-radius: 0.375rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .form-check:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+        }
+
+        .form-check-input:checked + .form-check-label {
+            color: #007bff;
+        }
+
+        .btn-close {
+            font-size: 0.875rem;
+        }        /* Tab improvements */
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* Modal fallback styles */
+        .modal.show {
+            display: block !important;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1040;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0.5;
+        }
+
+        /* Force modal to appear on top */
+        #roleModal {
+            z-index: 1050;
+        }
+
+        #roleModal.show {
+            display: block !important;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>        $(document).ready(function() {
+            // Khởi tạo Bootstrap tabs - tương thích với cả Bootstrap 4 và 5
+            $('.nav-pills a').on('click', function (e) {
+                e.preventDefault();
+                
+                // Remove active class from all nav-links and tab-panes
+                $('.nav-pills .nav-link').removeClass('active');
+                $('.tab-pane').removeClass('active show');
+                
+                // Add active class to clicked nav-link
+                $(this).addClass('active');
+                
+                // Show corresponding tab-pane
+                var target = $(this).attr('href');
+                $(target).addClass('active show');
+            });            // Debug: Check if modal exists
+            console.log('Modal element exists:', $('#roleModal').length > 0);
+            console.log('jQuery version:', $.fn.jquery);
+            
+            // Test button for debugging
+            if ($('#roleModal').length === 0) {
+                console.error('Modal element not found!');
+            }
+        });
+
+        // Function to manually open role modal
+        function openRoleModal(userId, userRoles) {
+            console.log('Opening role modal for user:', userId, 'with roles:', userRoles);
+            
+            // Set userId
+            $('#userId').val(userId);
+            
+            // Clear all checkboxes
+            $('input[name="roles"]').prop('checked', false);
+            
+            // Check current roles
+            if (userRoles) {
+                var roles = userRoles.split(',');
+                roles.forEach(function(role) {
+                    if (role.trim()) {
+                        $('input[name="roles"][value="' + role.trim() + '"]').prop('checked', true);
+                    }
+                });
+            }
+            
+            // Try different methods to show modal
+            try {
+                // Bootstrap 5 method
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    var modal = new bootstrap.Modal(document.getElementById('roleModal'));
+                    modal.show();
+                    console.log('Modal opened with Bootstrap 5');
+                } else if ($.fn.modal) {
+                    // Bootstrap 4/jQuery method
+                    $('#roleModal').modal('show');
+                    console.log('Modal opened with Bootstrap 4/jQuery');                } else {
+                    // Fallback - just show the modal div
+                    $('#roleModal').css('display', 'block').addClass('show');
+                    $('body').addClass('modal-open');
+                    
+                    // Add backdrop manually
+                    if ($('.modal-backdrop').length === 0) {
+                        $('<div class="modal-backdrop"></div>').appendTo('body');
+                    }
+                    
+                    console.log('Modal opened with fallback method');
+                }
+            } catch (error) {
+                console.error('Error opening modal:', error);                alert('Không thể mở cửa sổ phân quyền. Vui lòng thử lại.');
+            }
+        }
+
+        // Function to close modal
+        function closeRoleModal() {
+            try {
+                if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    var modal = bootstrap.Modal.getInstance(document.getElementById('roleModal'));
+                    if (modal) modal.hide();
+                } else if ($.fn.modal) {
+                    $('#roleModal').modal('hide');
+                } else {
+                    $('#roleModal').css('display', 'none').removeClass('show');
+                    $('body').removeClass('modal-open');
+                    $('.modal-backdrop').remove();
+                }
+            } catch (error) {
+                console.error('Error closing modal:', error);
+            }
+        }
+
+        // Add click handlers for close buttons
+        $(document).on('click', '[data-dismiss="modal"], [data-bs-dismiss="modal"]', function() {
+            closeRoleModal();
+        });
+
+        // Close modal when clicking outside
+        $(document).on('click', '#roleModal', function(e) {
+            if (e.target === this) {
+                closeRoleModal();
+            }
+        });// Modal event handlers - tương thích với Bootstrap 5
+        $('#roleModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var userId = button.data('userid');
+            var roles = button.data('roles') ? button.data('roles').split(',') : [];
+            
+            $('#userId').val(userId);
+            
+            // Clear all checkboxes
+            $('input[name="roles"]').prop('checked', false);
+            
+            // Check current roles
+            roles.forEach(function(role) {
+                if (role.trim()) {
+                    $('input[name="roles"][value="' + role.trim() + '"]').prop('checked', true);
+                }
+            });
+        });
+
+        // Fallback for Bootstrap 4
+        $('#roleModal').on('show.bs.modal shown.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            if (button.length) {
+                var userId = button.data('userid');
+                var roles = button.data('roles') ? button.data('roles').split(',') : [];
+                
+                $('#userId').val(userId);
+                
+                // Clear all checkboxes
+                $('input[name="roles"]').prop('checked', false);
+                
+                // Check current roles
+                roles.forEach(function(role) {
+                    if (role.trim()) {
+                        $('input[name="roles"][value="' + role.trim() + '"]').prop('checked', true);
+                    }
+                });
+            }
+        });function updateRoles() {
+            var userId = $('#userId').val();
+            var roles = [];
+            $('input[name="roles"]:checked').each(function() {
+                roles.push($(this).val());
+            });
+
+            // Validate: At least one role must be selected
+            if (roles.length === 0) {
+                alert('Vui lòng chọn ít nhất một vai trò cho người dùng.');
+                return;
+            }
+
+            // Show loading
+            var updateBtn = $('button[onclick="updateRoles()"]');
+            var originalText = updateBtn.html();
+            updateBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Đang cập nhật...');
+
+            $.ajax({
+                url: '@Url.Action("UpdateUserRoles", "Admin")',
+                type: 'POST',
+                data: { 
+                    userId: userId, 
+                    roles: roles 
+                },                success: function(data) {
+                    if (data.success) {
+                        // Close modal using the custom function
+                        closeRoleModal();
+                        
+                        // Show success message
+                        alert('Cập nhật vai trò thành công!');
+                        
+                        // Reload page to reflect changes
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể cập nhật vai trò'));
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating roles:', error);
+                    alert('Có lỗi xảy ra khi cập nhật vai trò. Vui lòng thử lại.');
+                },
+                complete: function() {
+                    // Restore button
+                    updateBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        }
+
+        function lockUser(userId) {
+            if (confirm('Bạn có chắc chắn muốn khóa tài khoản này?')) {
+                $.post('@Url.Action("LockUser", "Admin")', { userId: userId }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                });
+            }
+        }        function unlockUser(userId) {
+            if (confirm('Bạn có chắc chắn muốn mở khóa tài khoản này?')) {
+                $.post('@Url.Action("UnlockUser", "Admin")', { userId: userId }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function approveHomestay(homestayId) {
+            if (confirm('Bạn có chắc chắn muốn phê duyệt homestay này?')) {
+                $.post('@Url.Action("ApproveHomestay", "Admin")', { id: homestayId }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể phê duyệt homestay'));
+                    }
+                }).fail(function() {
+                    alert('Có lỗi xảy ra khi phê duyệt homestay');
+                });
+            }
+        }
+
+        function rejectHomestay(homestayId) {
+            if (confirm('Bạn có chắc chắn muốn từ chối homestay này?')) {
+                $.post('@Url.Action("RejectHomestay", "Admin")', { id: homestayId }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể từ chối homestay'));
+                    }
+                }).fail(function() {
+                    alert('Có lỗi xảy ra khi từ chối homestay');
+                });
+            }
+        }
+
+        function activateHomestay(homestayId) {
+            if (confirm('Bạn có chắc chắn muốn kích hoạt homestay này?')) {
+                $.post('@Url.Action("ActivateHomestay", "Admin")', { id: homestayId }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể kích hoạt homestay'));
+                    }
+                }).fail(function() {
+                    alert('Có lỗi xảy ra khi kích hoạt homestay');
+                });
+            }
+        }
+
+        function deactivateHomestay(homestayId) {
+            if (confirm('Bạn có chắc chắn muốn tạm dừng homestay này?')) {
+                $.post('@Url.Action("DeactivateHomestay", "Admin")', { id: homestayId }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + (data.message || 'Không thể tạm dừng homestay'));
+                    }
+                }).fail(function() {
+                    alert('Có lỗi xảy ra khi tạm dừng homestay');
+                });
+            }
+        }
+    </script>
+}
+

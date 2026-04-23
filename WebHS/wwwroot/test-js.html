@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JavaScript Test</title>
+</head>
+<body>
+    <h1>JavaScript Test Page</h1>
+    <div id="test-output"></div>
+    
+    <script>
+        console.log('Test JavaScript is working');
+        document.getElementById('test-output').textContent = 'JavaScript is working!';
+        
+        // Test function with return
+        function testFunction() {
+            console.log('Testing function');
+            return 'success';
+        }
+        
+        const result = testFunction();
+        console.log('Function result:', result);
+    </script>
+</body>
+</html>

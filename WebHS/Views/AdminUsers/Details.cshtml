@@ -1,0 +1,319 @@
+@model WebHS.ViewModels.UserDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết người dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Helper methods để hiển thị tiếng Việt
+    string GetClaimTypeDisplayName(string claimType)
+    {
+        var claimTypeNames = new Dictionary<string, string>
+        {
+            // Claims hệ thống chuẩn
+            { "email", "Email" },
+            { "name", "Tên" },
+            { "given_name", "Tên riêng" },
+            { "family_name", "Họ" },
+            { "birthdate", "Ngày sinh" },
+            { "address", "Địa chỉ" },
+            { "phone_number", "Số điện thoại" },
+            { "language", "Ngôn ngữ" },
+            { "role", "Vai trò" },
+            
+            // Claims xác thực
+            { "phone_verified", "Xác thực SĐT" },
+            { "email_verified", "Xác thực Email" },
+            { "identity_verified", "Xác thực danh tính" },
+            
+            // Claims cấp độ
+            { "account_level", "Cấp độ tài khoản" },
+            { "membership_tier", "Hạng thành viên" },
+            
+            // Claims quyền hạn
+            { "super_host", "Siêu chủ nhà" },
+            { "can_view_reports", "Quyền xem báo cáo" },
+            { "can_moderate_reviews", "Quyền kiểm duyệt đánh giá" },
+            { "can_manage_promotions", "Quyền quản lý khuyến mãi" },
+            { "can_manage_users", "Quyền quản lý người dùng" },
+            { "can_manage_properties", "Quyền quản lý bất động sản" },
+            { "can_approve_listings", "Quyền duyệt tin đăng" },
+            { "can_access_api_keys", "Quyền truy cập API Keys" },
+            { "can_manage_roles", "Quyền quản lý vai trò" }
+        };
+        
+        return claimTypeNames.GetValueOrDefault(claimType, claimType);
+    }
+    
+    string GetClaimValueDisplayName(string claimType, string claimValue)
+    {
+        if (string.IsNullOrEmpty(claimValue))
+            return claimValue ?? "";
+
+        // Xử lý các giá trị boolean
+        if (claimValue.ToLower() == "true")
+            return "Có";
+        if (claimValue.ToLower() == "false")
+            return "Không";
+
+        // Xử lý các giá trị cụ thể theo loại claim
+        switch (claimType)
+        {
+            case "account_level":
+                return claimValue.ToLower() switch
+                {
+                    "basic" => "Cơ bản",
+                    "premium" => "Cao cấp",
+                    "vip" => "VIP",
+                    _ => claimValue
+                };
+
+            case "membership_tier":
+                return claimValue.ToLower() switch
+                {
+                    "bronze" => "Đồng",
+                    "silver" => "Bạc",
+                    "gold" => "Vàng",
+                    "platinum" => "Bạch kim",
+                    _ => claimValue
+                };
+
+            case "language":
+                return claimValue.ToLower() switch
+                {
+                    "vi" => "Tiếng Việt",
+                    "en" => "Tiếng Anh",
+                    "fr" => "Tiếng Pháp",
+                    "de" => "Tiếng Đức",
+                    "ja" => "Tiếng Nhật",
+                    "ko" => "Tiếng Hàn",
+                    "zh" => "Tiếng Trung",
+                    _ => claimValue
+                };
+
+            default:
+                return claimValue;
+        }
+    }
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@ViewData["Title"]</h1>
+        <div>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Chỉnh sửa
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-person-circle"></i> Thông tin cá nhân</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Tên đăng nhập:</dt>
+                        <dd class="col-sm-8">@Model.UserName</dd>
+
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">
+                            @Model.Email
+                            @if (Model.EmailConfirmed)
+                            {
+                                <span class="badge bg-success ms-2">
+                                    <i class="bi bi-check-circle"></i> Đã xác thực
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning ms-2">
+                                    <i class="bi bi-exclamation-circle"></i> Chưa xác thực
+                                </span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Họ và tên:</dt>
+                        <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
+
+                        <dt class="col-sm-4">Số điện thoại:</dt>
+                        <dd class="col-sm-8">@(Model.PhoneNumber ?? "Chưa cung cấp")</dd>
+
+                        <dt class="col-sm-4">Địa chỉ:</dt>
+                        <dd class="col-sm-8">@(Model.Address ?? "Chưa cung cấp")</dd>
+
+                        <dt class="col-sm-4">Ngày tạo:</dt>
+                        <dd class="col-sm-8">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <dt class="col-sm-4">Cập nhật cuối:</dt>
+                            <dd class="col-sm-8">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</dd>
+                        }
+
+                        <dt class="col-sm-4">Trạng thái:</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Vô hiệu hóa
+                                </span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Vai trò của người dùng -->
+            @if (Model.Roles.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5><i class="bi bi-person-badge"></i> Vai trò (@Model.Roles.Count)</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var role in Model.Roles)
+                        {
+                            <span class="badge bg-info me-2 mb-2">
+                                <i class="bi bi-person-badge"></i> @role
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Claims của người dùng -->
+            @if (Model.Claims.Any())
+            {
+                <div class="card mt-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="bi bi-key"></i> Claims đặc biệt (@Model.Claims.Count)</h5>
+                        <a asp-controller="ClaimsManagement" asp-action="UserClaims" asp-route-userId="@Model.Id" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-gear"></i> Quản lý
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Loại Claim</th>
+                                        <th>Giá trị</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var claim in Model.Claims)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-primary me-1">@GetClaimTypeDisplayName(claim.ClaimType)</span>
+                                                <small class="text-muted">(@claim.ClaimType)</small>
+                                            </td>
+                                            <td>
+                                                <strong>@GetClaimValueDisplayName(claim.ClaimType, claim.ClaimValue)</strong>
+                                                @if (GetClaimValueDisplayName(claim.ClaimType, claim.ClaimValue) != claim.ClaimValue)
+                                                {
+                                                    <br><small class="text-muted">(@claim.ClaimValue)</small>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5><i class="bi bi-house"></i> Quyền Host</h5>
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.IsHost)
+                    {
+                        <div class="mb-3">
+                            <span class="badge bg-success fs-6">
+                                <i class="bi bi-house-check"></i> Đã là Host
+                            </span>
+                        </div>
+                        <p class="text-muted">Người dùng này có quyền đăng ký homestay</p>
+                        <form asp-action="ToggleHostStatus" asp-route-id="@Model.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-warning" 
+                                    onclick="return confirm('Bạn có chắc muốn thu hồi quyền host của @Model.FirstName @Model.LastName?')">>
+                                <i class="bi bi-house-slash"></i> Thu hồi quyền Host
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <span class="badge bg-secondary fs-6">
+                                <i class="bi bi-house-slash"></i> Chưa là Host
+                            </span>
+                        </div>
+                        <p class="text-muted">Người dùng này chưa có quyền đăng ký homestay</p>
+                        <form asp-action="ToggleHostStatus" asp-route-id="@Model.Id" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-success" 
+                                    onclick="return confirm('Bạn có chắc muốn cấp quyền host cho @Model.FirstName @Model.LastName?')">>
+                                <i class="bi bi-house-add"></i> Cấp quyền Host
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-key"></i> Quản lý quyền</h5>
+                </div>
+                <div class="card-body">
+                    <a asp-controller="ClaimsManagement" asp-action="UserClaims" asp-route-userId="@Model.Id" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="bi bi-key"></i> Quản lý Claims
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-pencil"></i> Chỉnh sửa thông tin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto hide alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+}

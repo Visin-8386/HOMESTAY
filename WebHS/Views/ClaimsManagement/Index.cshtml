@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Quản lý Claims";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">@ViewData["Title"]</h1>
+            <div class="card bg-light mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Giới thiệu về Claims</h5>
+                    <p class="card-text">
+                        Claims là các thông tin bổ sung được lưu trữ cho người dùng và vai trò, 
+                        giúp mở rộng hệ thống phân quyền so với Roles truyền thống. 
+                        Claims có thể chứa thông tin như quyền hạn cụ thể, thuộc tính bổ sung, 
+                        hoặc các cài đặt người dùng.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Quản lý Claims cho Người dùng</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Các claims người dùng lưu trữ thông tin và quyền hạn cho từng người dùng cụ thể.</p>
+                            <a asp-controller="Admin" asp-action="Users" class="btn btn-primary">
+                                <i class="bi bi-person"></i> Chọn người dùng để quản lý Claims
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Quản lý Claims cho Vai trò</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Các claims vai trò định nghĩa quyền hạn cho tất cả người dùng thuộc vai trò đó.</p>
+                            <a asp-controller="Admin" asp-action="Roles" class="btn btn-success">
+                                <i class="bi bi-shield"></i> Chọn vai trò để quản lý Claims
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <h5><i class="bi bi-info-circle"></i> Lưu ý</h5>
+                <p>
+                    Khi bạn thêm claims cho vai trò, tất cả người dùng thuộc vai trò đó sẽ được thừa hưởng các quyền hạn đó.
+                    Để gán quyền hạn riêng cho từng người dùng, hãy sử dụng Claims người dùng.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

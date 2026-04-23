@@ -1,0 +1,432 @@
+@{
+    ViewData["Title"] = "Test Booking Address Input";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">
+                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                Test Booking Address Input System
+            </h2>
+            <p class="text-muted mb-4">
+                Test the new address input functionality for booking system with smart geocoding and map integration.
+            </p>
+        </div>
+    </div>
+
+    <!-- Mock Booking Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-check me-2"></i>
+                        Booking Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Booking Info -->
+                    <div class="mb-4">
+                        <h6 class="text-primary border-bottom pb-2">Basic Booking Details</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Homestay</label>
+                                    <input type="text" class="form-control" value="Test Homestay - Hà Nội" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Check-in</label>
+                                    <input type="date" class="form-control" value="2024-02-01">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Check-out</label>
+                                    <input type="date" class="form-control" value="2024-02-03">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Number of Guests</label>
+                                    <select class="form-control">
+                                        <option value="1">1 Guest</option>
+                                        <option value="2" selected>2 Guests</option>
+                                        <option value="3">3 Guests</option>
+                                        <option value="4">4 Guests</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <input type="text" class="form-control" placeholder="Special requests...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Input Component -->
+                    @await Html.PartialAsync("_BookingAddressInput")
+
+                    <!-- Test Actions -->
+                    <div class="mt-4 pt-3 border-top">
+                        <h6 class="text-primary mb-3">Test Actions</h6>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-success" onclick="testGetAddressData()">
+                                <i class="fas fa-check me-1"></i>Get Address Data
+                            </button>
+                            <button type="button" class="btn btn-info" onclick="testValidateForm()">
+                                <i class="fas fa-shield-alt me-1"></i>Validate Form
+                            </button>
+                            <button type="button" class="btn btn-warning" onclick="testAutofillSample()">
+                                <i class="fas fa-magic me-1"></i>Fill Sample Data
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="testReset()">
+                                <i class="fas fa-undo me-1"></i>Reset Form
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Results Panel -->
+        <div class="col-lg-4">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bug me-2"></i>
+                        Test Results
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div id="testResults">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-flask fa-2x mb-2"></i>
+                            <p>Click test buttons to see results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Test Panel -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        API Tests
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group-vertical w-100" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testEnhancedGeocoding()">
+                            Test Enhanced Geocoding
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testReverseGeocoding()">
+                            Test Reverse Geocoding
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testFallbackSearch()">
+                            Test Fallback Search
+                        </button>
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="testDistrictSearch()">
+                            Test District Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Addresses -->
+            <div class="card shadow mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Sample Addresses
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <button type="button" class="list-group-item list-group-item-action p-2" 
+                                onclick="testAddress('Phạm Ngũ Lão, Quận 1, TP.HCM')">
+                            📍 Phạm Ngũ Lão, Q1
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action p-2" 
+                                onclick="testAddress('Hàng Bạc, Hoàn Kiếm, Hà Nội')">
+                            📍 Hàng Bạc, HN
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action p-2" 
+                                onclick="testAddress('Trần Phú, Nha Trang, Khánh Hòa')">
+                            📍 Trần Phú, NT
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action p-2" 
+                                onclick="testAddress('123 Nguyễn Huệ, Quận 1, TP.HCM')">
+                            📍 123 Nguyễn Huệ
+                        </button>
+                        <button type="button" class="list-group-item list-group-item-action p-2" 
+                                onclick="testAddress('Phố cổ Hội An, Quảng Nam')">
+                            📍 Phố cổ Hội An
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Test Functions
+    function testGetAddressData() {
+        try {
+            const addressData = window.getBookingAddressData();
+            displayTestResult('Get Address Data', addressData, 'success');
+        } catch (error) {
+            displayTestResult('Get Address Data', { error: error.message }, 'error');
+        }
+    }
+
+    function testValidateForm() {
+        try {
+            const addressData = window.getBookingAddressData();
+            const validation = {
+                hasStreetName: !!addressData.streetName,
+                hasCoordinates: !!(addressData.latitude && addressData.longitude),
+                hasFullAddress: !!addressData.fullAddress,
+                isValid: !!(addressData.streetName && (addressData.latitude && addressData.longitude)),
+                score: calculateValidationScore(addressData)
+            };
+            displayTestResult('Form Validation', validation, validation.isValid ? 'success' : 'warning');
+        } catch (error) {
+            displayTestResult('Form Validation', { error: error.message }, 'error');
+        }
+    }
+
+    function calculateValidationScore(data) {
+        let score = 0;
+        if (data.streetName) score += 30;
+        if (data.ward) score += 15;
+        if (data.district) score += 15;
+        if (data.city) score += 15;
+        if (data.latitude && data.longitude) score += 25;
+        return score;
+    }
+
+    function testAutofillSample() {
+        const sampleData = {
+            houseNumber: '123A',
+            streetName: 'Nguyễn Huệ',
+            ward: 'Bến Nghé',
+            district: 'Quận 1',
+            city: 'TP.HCM'
+        };
+
+        // Fill form fields
+        document.getElementById('bookingHouseNumber').value = sampleData.houseNumber;
+        document.getElementById('bookingStreetName').value = sampleData.streetName;
+        document.getElementById('bookingWard').value = sampleData.ward;
+        document.getElementById('bookingDistrict').value = sampleData.district;
+        document.getElementById('bookingCity').value = sampleData.city;
+
+        // Update the summary
+        if (window.bookingAddressManager) {
+            window.bookingAddressManager.updateAddressSummary();
+        }
+
+        displayTestResult('Autofill Sample', sampleData, 'success');
+    }
+
+    function testReset() {
+        if (window.bookingAddressManager) {
+            window.bookingAddressManager.clearAddress();
+            displayTestResult('Reset Form', { status: 'Form cleared successfully' }, 'success');
+        } else {
+            displayTestResult('Reset Form', { error: 'Booking address manager not available' }, 'error');
+        }
+    }
+
+    function testAddress(address) {
+        document.getElementById('fullAddressSearch').value = address;
+        if (window.bookingAddressManager) {
+            window.bookingAddressManager.searchAddressOnMap();
+            displayTestResult('Test Address', { address: address, action: 'Searching...' }, 'info');
+        }
+    }
+
+    // API Test Functions
+    async function testEnhancedGeocoding() {
+        const testAddress = 'Phạm Ngũ Lão, Quận 1, TP.HCM';
+        try {
+            const response = await fetch('/api/enhancedgeocoding/coordinates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: testAddress })
+            });
+            const result = await response.json();
+            displayTestResult('Enhanced Geocoding API', result, result.success ? 'success' : 'error');
+        } catch (error) {
+            displayTestResult('Enhanced Geocoding API', { error: error.message }, 'error');
+        }
+    }
+
+    async function testReverseGeocoding() {
+        // Test coordinates for Ho Chi Minh City center
+        const testLat = 10.8231;
+        const testLng = 106.6297;
+        try {
+            const response = await fetch('/api/enhancedgeocoding/address', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude: testLat, longitude: testLng })
+            });
+            const result = await response.json();
+            displayTestResult('Reverse Geocoding API', result, result.success ? 'success' : 'error');
+        } catch (error) {
+            displayTestResult('Reverse Geocoding API', { error: error.message }, 'error');
+        }
+    }
+
+    async function testFallbackSearch() {
+        // Test with a more general address that should trigger fallback
+        const testAddress = 'Khu vực trung tâm Quận 1';
+        try {
+            const response = await fetch('/api/enhancedgeocoding/coordinates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: testAddress })
+            });
+            const result = await response.json();
+            displayTestResult('Fallback Search', result, result.success ? 'success' : 'warning');
+        } catch (error) {
+            displayTestResult('Fallback Search', { error: error.message }, 'error');
+        }
+    }
+
+    async function testDistrictSearch() {
+        // Test district-only search
+        const testDistrict = 'Hoàn Kiếm, Hà Nội';
+        try {
+            const response = await fetch('/api/enhancedgeocoding/coordinates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: testDistrict })
+            });
+            const result = await response.json();
+            displayTestResult('District Search', result, result.success ? 'success' : 'warning');
+        } catch (error) {
+            displayTestResult('District Search', { error: error.message }, 'error');
+        }
+    }
+
+    // Utility Functions
+    function displayTestResult(testName, result, type = 'info') {
+        const resultsDiv = document.getElementById('testResults');
+        const timestamp = new Date().toLocaleTimeString();
+        
+        const alertClass = {
+            'success': 'alert-success',
+            'error': 'alert-danger',
+            'warning': 'alert-warning',
+            'info': 'alert-info'
+        }[type] || 'alert-info';
+
+        const icon = {
+            'success': 'fa-check-circle',
+            'error': 'fa-times-circle',
+            'warning': 'fa-exclamation-triangle',
+            'info': 'fa-info-circle'
+        }[type] || 'fa-info-circle';
+
+        const resultHtml = `
+            <div class="alert ${alertClass} mb-2">
+                <div class="d-flex align-items-start">
+                    <i class="fas ${icon} me-2 mt-1"></i>
+                    <div class="flex-grow-1">
+                        <strong>${testName}</strong>
+                        <small class="text-muted d-block">${timestamp}</small>
+                        <pre class="mt-2 mb-0 small">${JSON.stringify(result, null, 2)}</pre>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        resultsDiv.innerHTML = resultHtml + resultsDiv.innerHTML;
+        
+        // Keep only last 10 results
+        const alerts = resultsDiv.querySelectorAll('.alert');
+        if (alerts.length > 10) {
+            for (let i = 10; i < alerts.length; i++) {
+                alerts[i].remove();
+            }
+        }
+    }
+
+    // Auto-run some tests on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            displayTestResult('System Status', {
+                addressManagerLoaded: !!window.bookingAddressManager,
+                getDataFunctionAvailable: !!window.getBookingAddressData,
+                timestamp: new Date().toISOString()
+            }, 'info');
+        }, 1000);
+    });
+</script>
+}
+
+@section Styles {
+<style>
+    .card {
+        border: none;
+        border-radius: 12px;
+    }
+
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+        border: none;
+    }
+
+    .btn-group .btn,
+    .btn-group-vertical .btn {
+        border-radius: 6px !important;
+        margin: 2px;
+    }
+
+    .list-group-item {
+        border: none;
+        border-bottom: 1px solid #eee;
+        font-size: 0.9rem;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+        transition: all 0.2s ease;
+    }
+
+    #testResults {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    #testResults pre {
+        background-color: rgba(0,0,0,0.05);
+        border-radius: 4px;
+        padding: 8px;
+        margin: 0;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-size: 0.8rem;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+
+    .alert {
+        border-radius: 8px;
+    }
+</style>
+}
+

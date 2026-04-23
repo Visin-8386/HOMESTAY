@@ -1,0 +1,462 @@
+@{
+    ViewData["Title"] = "Google Services Test";
+    var services = ViewData["GoogleServices"] as dynamic;
+}
+
+@if (services != null)
+{
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-primary mb-4">
+                <i class="fab fa-google me-3"></i>Google Services Integration Test
+            </h1>
+            <p class="lead">Testing all integrated Google services for the homestay website</p>
+        </div>
+    </div>
+
+    <!-- Service Status Overview -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2>Service Status Overview</h2>
+            <div class="row g-3">
+                <!-- Google OAuth -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(services?.GoogleOAuth?.Enabled == true ? "border-success" : "border-warning")">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fab fa-google me-2"></i>Google OAuth 2.0
+                                @if (services?.GoogleOAuth?.Enabled == true)
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Disabled</span>
+                                }
+                            </h5>
+                            <p class="card-text">User authentication with Google accounts</p>
+                            <small class="text-muted">Client ID: @(services?.GoogleOAuth?.ClientId ?? "Not Set")</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Analytics -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(services?.GoogleAnalytics?.Enabled == true ? "border-success" : "border-warning")">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-chart-line me-2"></i>Google Analytics
+                                @if (services?.GoogleAnalytics?.Enabled == true)
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Disabled</span>
+                                }
+                            </h5>
+                            <p class="card-text">Website analytics and user tracking</p>
+                            <small class="text-muted">Tracking ID: @(services?.GoogleAnalytics?.TrackingId ?? "Not Set")</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- YouTube API -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(services?.YouTube?.Enabled == true ? "border-success" : "border-warning")">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fab fa-youtube me-2"></i>YouTube API
+                                @if (services?.YouTube?.Enabled == true)
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Disabled</span>
+                                }
+                            </h5>
+                            <p class="card-text">Video content integration</p>
+                            <small class="text-muted">API Key: @(services?.YouTube?.ApiKey ?? "Not Set")</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google reCAPTCHA -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(services?.GoogleReCaptcha?.Enabled == true ? "border-success" : "border-warning")">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-shield-alt me-2"></i>Google reCAPTCHA
+                                @if (services?.GoogleReCaptcha?.Enabled == true)
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Disabled</span>
+                                }
+                            </h5>
+                            <p class="card-text">Form security and spam protection</p>
+                            <small class="text-muted">Version: @(services?.GoogleReCaptcha?.Version ?? "Not Set")</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Tag Manager -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(services?.GoogleTagManager?.Enabled == true ? "border-success" : "border-warning")">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-tags me-2"></i>Google Tag Manager
+                                @if (services?.GoogleTagManager?.Enabled == true)
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Disabled</span>
+                                }
+                            </h5>
+                            <p class="card-text">Tag management and tracking</p>
+                            <small class="text-muted">Container: @(services?.GoogleTagManager?.ContainerId ?? "Not Set")</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google AdSense -->
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 @(services?.GoogleAdSense?.Enabled == true ? "border-success" : "border-warning")">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-ad me-2"></i>Google AdSense
+                                @if (services?.GoogleAdSense?.Enabled == true)
+                                {
+                                    <span class="badge bg-success ms-2">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning ms-2">Disabled</span>
+                                }
+                            </h5>
+                            <p class="card-text">Monetization through advertisements</p>
+                            <small class="text-muted">Auto Ads: @(services?.GoogleAdSense?.AutoAds == true ? "Enabled" : "Disabled")</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Tests -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2>Interactive Tests</h2>
+
+            <!-- reCAPTCHA Test -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>reCAPTCHA Test
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="recaptchaTestForm" data-recaptcha="true">
+                        <div class="mb-3">
+                            <label for="testMessage" class="form-label">Test Message</label>
+                            <input type="text" class="form-control" id="testMessage" name="testMessage" 
+                                   placeholder="Enter a test message" required>
+                        </div>
+                        
+                        <!-- reCAPTCHA Widget -->
+                        @{
+                            ViewData["reCaptchaId"] = "test-recaptcha";
+                            ViewData["reCaptchaCallback"] = "onRecaptchaSuccess";
+                        }
+                        <partial name="_ReCaptchaWidget" />
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Test Submit
+                        </button>
+                    </form>
+                    
+                    <div id="recaptchaResult" class="mt-3" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Google Analytics Test -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>Google Analytics Test
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>Test various Google Analytics events:</p>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary" onclick="testPageView()">
+                            Track Page View
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="testEvent()">
+                            Track Event
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="testConversion()">
+                            Track Conversion
+                        </button>
+                    </div>
+                    <div id="analyticsResult" class="mt-3"></div>
+                </div>
+            </div>
+
+            <!-- YouTube Integration Test -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fab fa-youtube me-2"></i>YouTube Integration Test
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <button type="button" class="btn btn-danger" onclick="loadYouTubeVideos()">
+                        <i class="fab fa-youtube me-2"></i>Load Travel Videos
+                    </button>
+                    <div id="youtubeVideos" class="mt-3"></div>
+                </div>
+            </div>
+
+            <!-- AdSense Placeholder -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ad me-2"></i>AdSense Integration Test
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p>AdSense ad placements (placeholders in development):</p>
+                    
+                    <!-- Banner Ad -->
+                    <div class="adsense-container">
+                        <span class="ad-label">Advertisement</span>
+                        <div id="banner-ad" class="ad-banner"></div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success" onclick="loadAdSenseAds()">
+                        <i class="fas fa-ad me-2"></i>Load Ad Units
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Fonts Demo -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-font me-2"></i>Google Fonts Integration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <h1 class="mb-3" style="font-family: 'Poppins', sans-serif;">Poppins Font Family</h1>
+                    <p class="mb-3" style="font-family: 'Inter', sans-serif;">Inter font family for body text - clean and readable for all content types.</p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4>Font Weights (Poppins)</h4>
+                            <p style="font-family: 'Poppins', sans-serif; font-weight: 300;">Light (300)</p>
+                            <p style="font-family: 'Poppins', sans-serif; font-weight: 400;">Regular (400)</p>
+                            <p style="font-family: 'Poppins', sans-serif; font-weight: 500;">Medium (500)</p>
+                            <p style="font-family: 'Poppins', sans-serif; font-weight: 600;">SemiBold (600)</p>
+                            <p style="font-family: 'Poppins', sans-serif; font-weight: 700;">Bold (700)</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h4>Font Weights (Inter)</h4>
+                            <p style="font-family: 'Inter', sans-serif; font-weight: 300;">Light (300)</p>
+                            <p style="font-family: 'Inter', sans-serif; font-weight: 400;">Regular (400)</p>
+                            <p style="font-family: 'Inter', sans-serif; font-weight: 500;">Medium (500)</p>
+                            <p style="font-family: 'Inter', sans-serif; font-weight: 600;">SemiBold (600)</p>
+                            <p style="font-family: 'Inter', sans-serif; font-weight: 700;">Bold (700)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // reCAPTCHA Test
+        function onRecaptchaSuccess(token) {
+            console.log('reCAPTCHA success:', token);
+            document.getElementById('recaptchaResult').innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>reCAPTCHA verified successfully!
+                    <br><small>Token: ${token.substring(0, 20)}...</small>
+                </div>
+            `;
+            document.getElementById('recaptchaResult').style.display = 'block';
+        }
+
+        document.getElementById('recaptchaTestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            try {
+                const response = await fetch('/GoogleServices/TestReCaptcha', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                
+                document.getElementById('recaptchaResult').innerHTML = `
+                    <div class="alert alert-${result.success ? 'success' : 'danger'}">
+                        <strong>${result.message}</strong>
+                        ${result.token ? `<br><small>Token: ${result.token}</small>` : ''}
+                    </div>
+                `;
+                document.getElementById('recaptchaResult').style.display = 'block';
+            } catch (error) {
+                console.error('reCAPTCHA test error:', error);
+            }
+        });
+
+        // Google Analytics Tests
+        function testPageView() {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'page_view', {
+                    page_title: 'Google Services Test Page',
+                    page_location: window.location.href
+                });
+                showAnalyticsResult('Page view tracked successfully!', 'success');
+            } else if (typeof gtmTrack !== 'undefined') {
+                gtmTrack.pageView({
+                    page_title: 'Google Services Test Page',
+                    test_mode: true
+                });
+                showAnalyticsResult('Page view tracked via GTM!', 'success');
+            } else {
+                showAnalyticsResult('Analytics not loaded', 'warning');
+            }
+        }
+
+        function testEvent() {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'test_interaction', {
+                    event_category: 'Google Services Test',
+                    event_label: 'Button Click',
+                    value: 1
+                });
+                showAnalyticsResult('Custom event tracked successfully!', 'success');
+            } else if (typeof gtmTrack !== 'undefined') {
+                gtmTrack.userEngagement('test_click', 'Google Services Test', 'Button Click', 1);
+                showAnalyticsResult('Custom event tracked via GTM!', 'success');
+            } else {
+                showAnalyticsResult('Analytics not loaded', 'warning');
+            }
+        }
+
+        function testConversion() {
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'conversion', {
+                    send_to: 'AW-CONVERSION_ID/CONVERSION_LABEL',
+                    value: 1.0,
+                    currency: 'VND'
+                });
+                showAnalyticsResult('Conversion tracked successfully!', 'success');
+            } else {
+                showAnalyticsResult('Analytics not loaded or conversion not configured', 'warning');
+            }
+        }
+
+        function showAnalyticsResult(message, type) {
+            document.getElementById('analyticsResult').innerHTML = `
+                <div class="alert alert-${type}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>${message}
+                </div>
+            `;
+        }
+
+        // YouTube Test
+        async function loadYouTubeVideos() {
+            try {
+                const response = await fetch('/YouTube/GetTravelVideos?city=Vietnam&maxResults=3');
+                const result = await response.json();
+                
+                if (result.success && result.videos) {
+                    let html = '<div class="row">';
+                    result.videos.forEach(video => {
+                        html += `
+                            <div class="col-md-4 mb-3">
+                                <div class="card">
+                                    <img src="${video.thumbnail}" class="card-img-top" alt="${video.title}">
+                                    <div class="card-body">
+                                        <h6 class="card-title">${video.title}</h6>
+                                        <p class="card-text"><small class="text-muted">${video.channelTitle}</small></p>
+                                        <a href="https://www.youtube.com/watch?v=${video.videoId}" target="_blank" class="btn btn-sm btn-danger">
+                                            <i class="fab fa-youtube me-2"></i>Watch
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    
+                    if (result.isDemo) {
+                        html = '<div class="alert alert-info mb-3">Using demo videos (YouTube API not configured)</div>' + html;
+                    }
+                    
+                    document.getElementById('youtubeVideos').innerHTML = html;
+                } else {
+                    document.getElementById('youtubeVideos').innerHTML = '<div class="alert alert-danger">Failed to load videos</div>';
+                }
+            } catch (error) {
+                console.error('YouTube test error:', error);
+                document.getElementById('youtubeVideos').innerHTML = '<div class="alert alert-danger">Error loading videos</div>';
+            }
+        }
+
+        // AdSense Test
+        function loadAdSenseAds() {
+            if (typeof renderResponsiveAd !== 'undefined') {
+                renderResponsiveAd('1234567890', 'banner-ad');
+                
+                // Show success message
+                const adContainer = document.querySelector('#banner-ad').parentElement;
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success mt-2';
+                successMsg.innerHTML = '<i class="fas fa-check-circle me-2"></i>Ad units loaded successfully!';
+                adContainer.appendChild(successMsg);
+            } else {
+                alert('AdSense functions not available');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Google Services Test Page loaded');
+            
+            // Track page load with GTM if available
+            if (typeof gtmTrack !== 'undefined') {
+                gtmTrack.pageView({
+                    page_title: 'Google Services Test',
+                    page_type: 'test_page'
+                });
+            }
+        });
+    </script>
+}
+}
+else
+{
+    <div class="container mt-4">
+        <div class="alert alert-warning">
+            <h4>Service Configuration Error</h4>
+            <p>Google Services configuration is not available. Please check the controller setup.</p>
+        </div>
+    </div>
+}
+

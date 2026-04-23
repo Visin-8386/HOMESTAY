@@ -1,0 +1,145 @@
+@model WebHS.ViewModels.ClaimViewModel
+@{
+    ViewData["Title"] = "Thêm Claim cho vai trò";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="AddRoleClaim" method="post">
+                <input type="hidden" asp-for="RoleId" />
+                <input type="hidden" asp-for="RoleName" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <div class="mb-3">
+                    <label asp-for="ClaimType" class="form-label">Loại Quyền</label>
+                    <select asp-for="ClaimType" class="form-select">
+                        <option value="">-- Chọn loại quyền --</option>
+                        
+                        <optgroup label="👥 Quản lý người dùng">
+                            <option value="can_manage_users">👤 Quản lý người dùng</option>
+                            <option value="can_manage_roles">🎭 Quản lý vai trò</option>
+                        </optgroup>
+                        
+                        <optgroup label="📊 Báo cáo & Phân tích">
+                            <option value="can_view_reports">📈 Xem báo cáo</option>
+                            <option value="can_access_api_keys">🔑 Truy cập API Keys</option>
+                        </optgroup>
+                        
+                        <optgroup label="🏡 Quản lý Homestay">
+                            <option value="can_manage_properties">🏠 Quản lý bất động sản</option>
+                            <option value="can_approve_listings">✅ Duyệt tin đăng</option>
+                        </optgroup>
+                        
+                        <optgroup label="💬 Kiểm duyệt nội dung">
+                            <option value="can_moderate_reviews">⭐ Kiểm duyệt đánh giá</option>
+                            <option value="can_manage_promotions">🎁 Quản lý khuyến mãi</option>
+                        </optgroup>
+                        
+                        <option value="custom">🛠️ Tùy chỉnh...</option>
+                    </select>
+                    <div id="customClaimType" class="mt-2 d-none">
+                        <input type="text" class="form-control" placeholder="Nhập loại quyền tùy chỉnh (VD: can_custom_action)" />
+                        <small class="form-text text-muted">Sử dụng tiền tố "can_" cho quyền hạn, snake_case</small>
+                    </div>
+                    <span asp-validation-for="ClaimType" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="ClaimValue" class="form-label">Giá trị Quyền</label>
+                    <div class="input-group">
+                        <input asp-for="ClaimValue" class="form-control" value="true" />
+                        <button class="btn btn-outline-success" type="button" onclick="$('#ClaimValue').val('true')">
+                            ✅ Cấp quyền
+                        </button>
+                        <button class="btn btn-outline-danger" type="button" onclick="$('#ClaimValue').val('false')">
+                            ❌ Từ chối
+                        </button>
+                    </div>
+                    <span asp-validation-for="ClaimValue" class="text-danger"></span>
+                    <small class="form-text text-muted">
+                        💡 <strong>true</strong> = Cấp quyền, <strong>false</strong> = Từ chối quyền (hiếm dùng), hoặc giá trị tùy chỉnh
+                    </small>
+                </div>
+                
+                <div class="mb-3">
+                    <a asp-action="RoleClaims" asp-route-roleName="@Model.RoleName" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Thêm Claim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">📖 Hướng dẫn Claims Vai trò</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h6 class="fw-bold text-primary">🎯 Mục đích Claims vai trò:</h6>
+                    <p>Claims vai trò cho phép phân quyền chi tiết hơn so với chỉ dùng tên vai trò.</p>
+                    
+                    <h6 class="fw-bold text-success">✅ Ví dụ sử dụng:</h6>
+                    <ul class="list-unstyled">
+                        <li>🏷️ <strong>Vai trò "Staff"</strong> + <span class="badge bg-danger">can_moderate_reviews</span> thay vì tạo vai trò riêng "ContentModerator"</li>
+                        <li>🏷️ <strong>Vai trò "Manager"</strong> + <span class="badge bg-warning text-dark">can_approve_listings</span> để chỉ manager nào có quyền duyệt</li>
+                        <li>🏷️ <strong>Vai trò "Admin"</strong> + <span class="badge bg-danger">can_access_api_keys</span> để phân quyền truy cập API</li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold text-warning">⚠️ Lưu ý quan trọng:</h6>
+                    <div class="alert alert-warning">
+                        <small>
+                            <strong>Claims vai trò</strong> sẽ tự động áp dụng cho <strong>TẤT CẢ</strong> người dùng thuộc vai trò đó.
+                            <br><br>
+                            Nếu muốn cấp quyền riêng lẻ, hãy dùng <strong>Claims người dùng</strong>.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <h6 class="fw-bold text-info mt-3">🔧 Giá trị Claims nâng cao:</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li>📖 <code>read</code> - Chỉ xem</li>
+                        <li>✏️ <code>write</code> - Xem và chỉnh sửa</li>
+                        <li>🗑️ <code>delete</code> - Xem, sửa và xóa</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <ul class="list-unstyled">
+                        <li>🟢 <code>true</code> - Cấp quyền đầy đủ</li>
+                        <li>🔴 <code>false</code> - Từ chối quyền</li>
+                        <li>🎯 <code>limited</code> - Quyền hạn chế</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#ClaimType').change(function() {
+                if ($(this).val() === 'custom') {
+                    $('#customClaimType').removeClass('d-none');
+                } else {
+                    $('#customClaimType').addClass('d-none');
+                }
+            });
+            
+            $('#customClaimType input').blur(function() {
+                if ($(this).val() !== '') {
+                    $('#ClaimType').val($(this).val());
+                }
+            });
+        });
+    </script>
+}

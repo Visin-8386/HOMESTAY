@@ -1,0 +1,70 @@
+@{
+    ViewData["Title"] = "Test Dropdown Menu";
+}
+
+<div class="container">
+    <h1>Debug Menu Dropdown</h1>
+    
+    <div class="alert alert-info">
+        <h4>Current User Info:</h4>
+        <p><strong>Is Authenticated:</strong> @(User.Identity?.IsAuthenticated ?? false)</p>
+        <p><strong>Username:</strong> @(User.Identity?.Name ?? "Anonymous")</p>
+        <p><strong>Is Host:</strong> @User.IsInRole("Host")</p>
+        <p><strong>Is Admin:</strong> @User.IsInRole("Admin")</p>
+        <p><strong>All Claims:</strong></p>
+        <ul>
+            @foreach(var claim in User.Claims)
+            {
+                <li>@claim.Type: @claim.Value</li>
+            }
+        </ul>
+    </div>
+
+    <div class="alert alert-warning">
+        <h4>Test Dropdown Menu:</h4>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                @if (User.IsInRole("Host"))
+                {
+                    <div class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Quản lý Host (TEST)
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" asp-controller="Host" asp-action="Dashboard">Dashboard</a></li>
+                            <li><a class="dropdown-item" asp-controller="Host" asp-action="Homestays">Quản lý Homestay</a></li>
+                            <li><a class="dropdown-item" asp-controller="Homestay" asp-action="Create">Thêm Homestay</a></li>
+                            <li><a class="dropdown-item" asp-controller="Host" asp-action="ManageBookings">Quản lý đặt phòng</a></li>
+                        </ul>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-white">User is not in Host role</p>
+                }
+            </div>
+        </nav>
+    </div>
+
+    <div class="alert alert-success">
+        <h4>Quick Links for Testing:</h4>
+        <a href="@Url.Action("Homestays", "Host")" class="btn btn-primary">Direct Link: Host Homestays</a>
+        <a href="@Url.Action("Dashboard", "Host")" class="btn btn-info">Direct Link: Host Dashboard</a>
+        <a href="@Url.Action("ManageHomestay", "Host", new { id = 1 })" class="btn btn-warning">Direct Link: Manage Homestay #1</a>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    console.log('Test page loaded');
+    console.log('User is Host:', @Json.Serialize(User.IsInRole("Host")));
+    console.log('User is Admin:', @Json.Serialize(User.IsInRole("Admin")));
+    
+    // Test dropdown functionality
+    $('.dropdown-toggle').on('click', function(e) {
+        e.preventDefault();
+        console.log('Dropdown clicked');
+        $(this).next('.dropdown-menu').toggle();
+    });
+});
+</script>

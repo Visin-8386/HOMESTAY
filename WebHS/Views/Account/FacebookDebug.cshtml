@@ -1,0 +1,245 @@
+@{
+    ViewBag.Title = "Facebook App Debug";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fab fa-facebook"></i> Facebook App Debug & Status</h4>
+                </div>
+                <div class="card-body">
+                    <div id="loading" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Đang kiểm tra Facebook App...</p>
+                    </div>
+                    
+                    <div id="appStatus" style="display: none;">
+                        <!-- App Status sẽ được load bằng JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    checkFacebookAppStatus();
+});
+
+async function checkFacebookAppStatus() {
+    try {
+        const response = await fetch('/Account/FacebookAppStatus');
+        const data = await response.json();
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('appStatus').style.display = 'block';
+        
+        if (data.success) {
+            displayAppStatus(data);
+        } else {
+            displayError(data);
+        }
+    } catch (error) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('appStatus').style.display = 'block';
+        displayError({ error: error.message });
+    }
+}
+
+function displayAppStatus(data) {
+    const statusHtml = `
+        <div class="row">
+            <div class="col-md-6">
+                <h5>📱 App Information</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <td><strong>App ID:</strong></td>
+                        <td><code>${data.appId}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>App Name:</strong></td>
+                        <td>${data.appName}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Live Status:</strong></td>
+                        <td>
+                            <span class="badge ${data.liveStatus === 'LIVE' ? 'bg-success' : 'bg-warning'}">
+                                ${data.liveStatus}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Development Mode:</strong></td>
+                        <td>
+                            <span class="badge ${data.developmentMode ? 'bg-info' : 'bg-success'}">
+                                ${data.developmentMode ? 'ON' : 'OFF'}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>App Domains:</strong></td>
+                        <td>${data.appDomains}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="col-md-6">
+                <h5>🔗 URLs</h5>
+                <table class="table table-bordered">
+                    <tr>
+                        <td><strong>Current URL:</strong></td>
+                        <td><code>${data.currentUrl}</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>OAuth Redirect:</strong></td>
+                        <td><code>${data.currentUrl}/signin-facebook</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Privacy Policy:</strong></td>
+                        <td>${data.privacyPolicyUrl !== 'Not set' ? 
+                            `<a href="${data.privacyPolicyUrl}" target="_blank">${data.privacyPolicyUrl}</a>` : 
+                            '<span class="text-muted">Not set</span>'}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Terms of Service:</strong></td>
+                        <td>${data.termsUrl !== 'Not set' ? 
+                            `<a href="${data.termsUrl}" target="_blank">${data.termsUrl}</a>` : 
+                            '<span class="text-muted">Not set</span>'}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>🔧 Recommendations & Fixes</h5>
+                ${data.recommendations.length > 0 ? 
+                    '<div class="alert alert-warning"><ul class="mb-0">' + 
+                    data.recommendations.map(rec => `<li>${rec}</li>`).join('') + 
+                    '</ul></div>' : 
+                    '<div class="alert alert-success">✅ Facebook App cấu hình đã sẵn sàng!</div>'
+                }
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-12">
+                <h5>📚 Step-by-Step Guide</h5>
+                <div class="accordion" id="guideAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#step1">
+                                Bước 1: Kích hoạt Facebook App
+                            </button>
+                        </h2>
+                        <div id="step1" class="accordion-collapse collapse show">
+                            <div class="accordion-body">
+                                <ol>
+                                    <li>Vào <a href="https://developers.facebook.com/apps/${data.appId}" target="_blank">Facebook Developer Console</a></li>
+                                    <li>Chọn App Settings > Basic</li>
+                                    <li>Cuộn xuống cuối trang, chuyển từ "Development" sang <strong>"Live"</strong></li>
+                                    <li>Hoặc thêm tài khoản test trong App Roles > Roles</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#step2">
+                                Bước 2: Cấu hình HTTPS (cho localhost)
+                            </button>
+                        </h2>
+                        <div id="step2" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <p>Facebook yêu cầu HTTPS. Để test trên localhost:</p>
+                                <ol>
+                                    <li>Tải và cài đặt <a href="https://ngrok.com/download" target="_blank">ngrok</a></li>
+                                    <li>Chạy lệnh: <code>ngrok http 5000</code> (thay 5000 bằng port của bạn)</li>
+                                    <li>Copy HTTPS URL từ ngrok (vd: https://abc123.ngrok.io)</li>
+                                    <li>Cập nhật OAuth Redirect URIs trong Facebook App</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#step3">
+                                Bước 3: Test Facebook Login
+                            </button>
+                        </h2>
+                        <div id="step3" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <div class="d-flex gap-2">
+                                    <a href="/Account/Login" class="btn btn-primary">Test Facebook Login</a>
+                                    <button onclick="testFacebookAPI()" class="btn btn-info">Test Facebook API</button>
+                                    <button onclick="location.reload()" class="btn btn-secondary">Refresh Status</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('appStatus').innerHTML = statusHtml;
+}
+
+function displayError(data) {
+    const errorHtml = `
+        <div class="alert alert-danger">
+            <h5>❌ Error</h5>
+            <p><strong>Error:</strong> ${data.error}</p>
+            ${data.fix ? `<p><strong>Fix:</strong> ${data.fix}</p>` : ''}
+        </div>
+        
+        <div class="mt-3">
+            <h5>🔧 Troubleshooting</h5>
+            <ul>
+                <li>Kiểm tra kết nối internet</li>
+                <li>Kiểm tra Facebook App ID và App Secret trong appsettings.json</li>
+                <li>Đảm bảo Facebook App đã được tạo và cấu hình đúng</li>
+            </ul>
+        </div>
+    `;
+    
+    document.getElementById('appStatus').innerHTML = errorHtml;
+}
+
+async function testFacebookAPI() {
+    try {
+        const response = await fetch('/Account/TestFacebookAPI');
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('✅ Facebook API hoạt động bình thường!\\n' + 
+                  'App: ' + data.appName + '\\n' +
+                  'Token: ' + data.accessToken.substring(0, 20) + '...');
+        } else {
+            alert('❌ Facebook API Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('❌ Test Error: ' + error.message);
+    }
+}
+</script>
+
+<style>
+.table td {
+    vertical-align: middle;
+}
+code {
+    background-color: #f8f9fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+</style>

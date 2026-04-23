@@ -1,0 +1,141 @@
+@using Microsoft.Extensions.Configuration
+@* Google Analytics Configuration *@
+@{
+    var configuration = Context.RequestServices.GetRequiredService<IConfiguration>();
+    var gaTrackingId = configuration["GoogleAnalytics:TrackingId"];
+    var gaEnabled = configuration.GetValue<bool>("GoogleAnalytics:Enabled");
+}
+
+@if (gaEnabled && !string.IsNullOrEmpty(gaTrackingId) && gaTrackingId != "G-XXXXXXXXXX")
+{
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=@gaTrackingId"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '@gaTrackingId', {
+            page_title: '@ViewData["Title"]',
+            page_location: window.location.href,
+            send_page_view: true
+        });
+
+        // Enhanced E-commerce tracking for homestay bookings
+        function trackBookingEvent(action, bookingData) {
+            gtag('event', action, {
+                event_category: 'Booking',
+                event_label: bookingData.homestayName,
+                value: bookingData.amount,
+                currency: 'VND'
+            });
+        }
+
+        // Track homestay view events
+        function trackHomestayView(homestayId, homestayName, price) {
+            gtag('event', 'view_item', {
+                currency: 'VND',
+                value: price,
+                items: [{
+                    item_id: homestayId,
+                    item_name: homestayName,
+                    item_category: 'Homestay',
+                    quantity: 1,
+                    price: price
+                }]
+            });
+        }
+
+        // Track search events
+        function trackSearch(searchTerm, results) {
+            gtag('event', 'search', {
+                search_term: searchTerm,
+                results_count: results
+            });
+        }
+
+        // Track user engagement
+        function trackUserEngagement(action, label) {
+            gtag('event', 'engagement', {
+                event_category: 'User Interaction',
+                event_label: label,
+                engagement_time_msec: Date.now()
+            });
+        }
+
+        // Track conversion events
+        function trackConversion(event_name, value, currency = 'VND') {
+            gtag('event', event_name, {
+                currency: currency,
+                value: value
+            });
+        }
+
+        // Global error tracking
+        window.addEventListener('error', function(e) {
+            gtag('event', 'exception', {
+                description: e.message,
+                fatal: false
+            });
+        });
+    </script>
+
+    <!-- Additional Google Analytics tracking for improved insights -->
+    <script>
+        // Track page performance
+        window.addEventListener('load', function() {
+            var loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            gtag('event', 'timing_complete', {
+                name: 'page_load',
+                value: loadTime
+            });
+        });
+
+        // Track scroll depth
+        var scrollDepth = 0;
+        window.addEventListener('scroll', function() {
+            var currentScroll = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+            if (currentScroll > scrollDepth && currentScroll % 25 === 0) {
+                scrollDepth = currentScroll;
+                gtag('event', 'scroll', {
+                    event_category: 'Engagement',
+                    event_label: scrollDepth + '%'
+                });
+            }
+        });
+    </script>
+}
+else
+{
+    <!-- Development mode - Google Analytics disabled -->
+    <script>
+        // Mock Google Analytics functions for development
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = function() {
+            console.log('Google Analytics disabled in development mode:', arguments);
+        };
+        
+        // Mock tracking functions
+        window.trackBookingEvent = function(action, bookingData) {
+            console.log('GA trackBookingEvent (dev):', action, bookingData);
+        };
+        
+        window.trackHomestayView = function(homestayId, homestayName, price) {
+            console.log('GA trackHomestayView (dev):', {homestayId, homestayName, price});
+        };
+        
+        window.trackSearch = function(searchTerm, results) {
+            console.log('GA trackSearch (dev):', {searchTerm, results});
+        };
+        
+        window.trackUserEngagement = function(action, label) {
+            console.log('GA trackUserEngagement (dev):', {action, label});
+        };
+        
+        window.trackConversion = function(event_name, value, currency) {
+            console.log('GA trackConversion (dev):', {event_name, value, currency});
+        };
+        
+        console.log('Google Analytics disabled in development mode - Tracking ID:', '@gaTrackingId', 'Enabled:', @(gaEnabled.ToString().ToLower()));
+    </script>
+}
+

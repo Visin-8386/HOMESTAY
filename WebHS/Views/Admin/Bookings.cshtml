@@ -1,0 +1,1044 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@using WebHSBookingStatus = WebHS.Models.BookingStatus
+@model WebHS.ViewModels.AdminBookingListViewModel
+
+@{
+    ViewData["Title"] = "Quản Lý Đặt Phòng";
+    Layout = "_Layout_New";
+}
+
+<div class="booking-management">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-12">
+                <div class="modern-card">
+                    <div class="modern-card-header">
+                        <h3 class="modern-card-title">
+                            <i class="fas fa-calendar-check me-2"></i>
+                            Quản Lý Đặt Phòng
+                        </h3>
+                        <div class="header-tools">
+                            <div class="search-box">
+                                <input type="text" id="searchInput" class="search-input" placeholder="Tìm mã đặt phòng, khách hàng..." value="@ViewBag.Search">
+                                <button type="button" class="search-btn" onclick="performSearch()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Excel Export Button -->
+                            <a href="@Url.Action("ExportBookingsToExcel", new { status = ViewBag.Status, search = ViewBag.Search })" class="export-btn" title="Xuất Excel">
+                                <i class="fas fa-file-excel"></i>
+                                <span>Xuất Excel</span>
+                            </a>
+                            
+                            <div class="status-filter">
+                                <button type="button" class="filter-btn dropdown-toggle" data-toggle="dropdown">
+                                    <i class="fas fa-filter me-2"></i>
+                                    Trạng thái: @(ViewBag.Status ?? "Tất cả")
+                                </button>
+                                <div class="filter-dropdown">
+                                    <a class="filter-item" href="@Url.Action("Bookings", new { status = "", search = ViewBag.Search })">Tất cả</a>
+                                    <a class="filter-item" href="@Url.Action("Bookings", new { status = "paid", search = ViewBag.Search })">Đã thanh toán</a>
+                                    <a class="filter-item" href="@Url.Action("Bookings", new { status = "completed", search = ViewBag.Search })">Hoàn thành</a>
+                                    <a class="filter-item" href="@Url.Action("Bookings", new { status = "cancelled", search = ViewBag.Search })">Đã hủy</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desktop Table -->
+                    <div class="table-container d-none d-lg-block">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã đặt phòng</th>
+                                    <th>Khách hàng</th>
+                                    <th>Homestay</th>
+                                <th>Chủ nhà</th>
+                                <th>Ngày nhận/trả</th>
+                                <th>Số khách</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Ngày đặt</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var booking in Model.Bookings)
+                            {
+                                <tr>
+                                    <td><strong>#@booking.Id</strong></td>
+                                    <td>
+                                        <strong>@booking.UserName</strong><br>
+                                        <small class="text-muted">@booking.UserEmail</small>
+                                    </td>
+                                    <td>
+                                        <strong>@booking.HomestayName</strong><br>
+                                        <small class="text-muted">@booking.HomestayLocation</small>
+                                    </td>
+                                    <td>
+                                        <strong>@booking.HostName</strong><br>
+                                        <small class="text-muted">@booking.HostEmail</small>
+                                    </td>
+                                    <td>
+                                        <strong>@booking.CheckInDate.ToString("dd/MM/yyyy")</strong><br>
+                                        <small class="text-muted">đến @booking.CheckOutDate.ToString("dd/MM/yyyy")</small>
+                                    </td>
+                                    <td>@booking.NumberOfGuests khách</td>
+                                    <td>
+                                        @if(booking.DiscountAmount > 0)
+                                        {
+                                            <div>
+                                                <s class="text-muted">@booking.TotalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</s><br>
+                                                <strong class="text-success">@booking.FinalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</strong>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <strong>@booking.FinalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</strong>
+                                        }
+                                    </td>                                    <td>
+                                        @switch(booking.Status)
+                                        {
+                                            case WebHSBookingStatus.Paid:
+                                                <span class="badge bg-info text-white">Đã thanh toán</span>
+                                                break;
+                                            case WebHSBookingStatus.Completed:
+                                                <span class="badge bg-success text-white">Hoàn thành</span>
+                                                break;
+                                            case WebHSBookingStatus.Cancelled:
+                                                <span class="badge bg-danger text-white">Đã hủy</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-secondary text-white">@booking.Status.ToString()</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@booking.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>                                    <td>
+                                        <div class="btn-group">
+                                            <a href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" class="btn btn-info btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            
+                                            <!-- Edit Booking Button -->
+                                            <button type="button" class="btn btn-warning btn-sm" onclick="editBooking(@booking.Id)" title="Sửa đặt phòng">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            
+                                            @if(booking.Status == WebHSBookingStatus.Paid)
+                                            {
+                                                <button type="button" class="btn btn-success btn-sm" onclick="completeBooking(@booking.Id)" title="Hoàn thành">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-danger btn-sm" onclick="cancelBooking(@booking.Id)" title="Hủy">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile/Tablet Card Layout -->
+                <div class="mobile-cards d-lg-none">
+                    @foreach(var booking in Model.Bookings)
+                    {
+                        <div class="booking-card">
+                            <div class="booking-card-header">
+                                <div class="booking-id">
+                                    <strong>#@booking.Id</strong>
+                                </div>
+                                <div class="booking-status">
+                                    @switch(booking.Status)
+                                    {
+                                        case WebHSBookingStatus.Paid:
+                                            <span class="status-badge info">Đã thanh toán</span>
+                                            break;
+                                        case WebHSBookingStatus.Completed:
+                                            <span class="status-badge success">Hoàn thành</span>
+                                            break;
+                                        case WebHSBookingStatus.Cancelled:
+                                            <span class="status-badge danger">Đã hủy</span>
+                                            break;
+                                        default:
+                                            <span class="status-badge secondary">@booking.Status.ToString()</span>
+                                            break;
+                                    }
+                                </div>
+                            </div>
+                            
+                            <div class="booking-card-body">
+                                <div class="booking-info">
+                                    <div class="info-row">
+                                        <div class="info-label">Khách hàng:</div>
+                                        <div class="info-value">
+                                            <strong>@booking.UserName</strong><br>
+                                            <small>@booking.UserEmail</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="info-label">Homestay:</div>
+                                        <div class="info-value">
+                                            <strong>@booking.HomestayName</strong><br>
+                                            <small>@booking.HomestayLocation</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="info-label">Chủ nhà:</div>
+                                        <div class="info-value">
+                                            <strong>@booking.HostName</strong><br>
+                                            <small>@booking.HostEmail</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="info-label">Thời gian:</div>
+                                        <div class="info-value">
+                                            <strong>@booking.CheckInDate.ToString("dd/MM/yyyy")</strong><br>
+                                            <small>đến @booking.CheckOutDate.ToString("dd/MM/yyyy")</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="info-label">Số khách:</div>
+                                        <div class="info-value">@booking.NumberOfGuests khách</div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="info-label">Tổng tiền:</div>
+                                        <div class="info-value">
+                                            @if(booking.DiscountAmount > 0)
+                                            {
+                                                <div>
+                                                    <s class="text-muted">@booking.TotalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</s><br>
+                                                    <strong class="text-success">@booking.FinalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</strong>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <strong>@booking.FinalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</strong>
+                                            }
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="info-label">Ngày đặt:</div>
+                                        <div class="info-value">@booking.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="booking-card-actions">
+                                <a href="@Url.Action("BookingDetails", "Admin", new { id = booking.Id })" class="action-btn view">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Xem</span>
+                                </a>
+                                
+                                <button type="button" class="action-btn edit" onclick="editBooking(@booking.Id)" title="Sửa đặt phòng">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Sửa</span>
+                                </button>
+                                
+                                @if(booking.Status == WebHSBookingStatus.Paid)
+                                {
+                                    <button type="button" class="action-btn success" onclick="completeBooking(@booking.Id)" title="Hoàn thành">
+                                        <i class="fas fa-check"></i>
+                                        <span>Hoàn thành</span>
+                                    </button>
+                                    <button type="button" class="action-btn danger" onclick="cancelBooking(@booking.Id)" title="Hủy">
+                                        <i class="fas fa-times"></i>
+                                        <span>Hủy</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="modern-footer">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="dataTables_info">
+                                Hiển thị @((Model.CurrentPage - 1) * 20 + 1) đến @(Math.Min(Model.CurrentPage * 20, Model.TotalCount)) 
+                                trong tổng số @Model.TotalCount bản ghi
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <ul class="pagination pagination-sm m-0 float-right">
+                                @if(Model.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Bookings", new { page = Model.CurrentPage - 1, status = ViewBag.Status })">«</a>
+                                    </li>
+                                }
+
+                                @for(int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Bookings", new { page = i, status = ViewBag.Status })">@i</a>
+                                    </li>
+                                }
+
+                                @if(Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="@Url.Action("Bookings", new { page = Model.CurrentPage + 1, status = ViewBag.Status })">»</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function performSearch() {
+            var searchTerm = $('#searchInput').val();
+            var currentStatus = '@ViewBag.Status';
+            
+            var url = '@Url.Action("Bookings")?search=' + encodeURIComponent(searchTerm);
+            if (currentStatus) url += '&status=' + currentStatus;
+            
+            window.location.href = url;
+        }
+        
+        // Allow search on Enter key
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which === 13) {
+                performSearch();
+            }
+        });
+
+        function confirmBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn xác nhận đặt phòng này?')) {
+                $.post('@Url.Action("ConfirmBooking")', { bookingId: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function cancelBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn hủy đặt phòng này?')) {
+                $.post('@Url.Action("CancelBooking")', { bookingId: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function completeBooking(id) {
+            if (confirm('Xác nhận hoàn thành đặt phòng này?')) {
+                $.post('@Url.Action("CompleteBooking")', { bookingId: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                });
+            }
+        }        function editBooking(id) {
+            window.location.href = '@Url.Action("EditBooking", "Admin")/' + id;
+        }
+    </script>
+
+    <style>
+        /* Booking Management Modern Styling */
+        .booking-management {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        .modern-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .modern-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .modern-card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header-tools {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            padding: 10px 15px;
+            color: white;
+            width: 200px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .search-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 10px 15px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Export Button */
+        .export-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+            color: white;
+        }
+
+        /* Filter Dropdown */
+        .status-filter {
+            position: relative;
+        }
+
+        .filter-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .filter-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            min-width: 200px;
+            z-index: 1000;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .filter-item {
+            display: block;
+            padding: 12px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .filter-item:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: #667eea;
+        }
+
+        .filter-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Modern Table */
+        .table-container {
+            padding: 0;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        .modern-table thead th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 15px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .modern-table tbody tr {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .modern-table tbody tr:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            transform: scale(1.01);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .modern-table tbody td {
+            padding: 20px 15px;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* Mobile Cards */
+        .mobile-cards {
+            padding: 20px;
+        }
+
+        .booking-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .booking-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .booking-id {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+
+        .status-badge.success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+
+        .status-badge.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .status-badge.secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .booking-card-body {
+            padding: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+            align-items: flex-start;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            width: 30%;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            width: 70%;
+            color: #2d3748;
+        }
+
+        .booking-card-actions {
+            padding: 20px;
+            background: rgba(0,0,0,0.02);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .action-btn.view {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+        }
+
+        .action-btn.edit {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            color: white;
+        }
+
+        .action-btn.success {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+            color: white;
+        }
+
+        .action-btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Modern Footer */
+        .modern-footer {
+            padding: 20px 25px;
+            background: rgba(0,0,0,0.02);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }        /* Responsive */
+        @@media (max-width: 768px) {
+            .booking-management {
+                padding: 10px 0;
+            }
+            
+            .modern-card-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 15px;
+            }
+            
+            .header-tools {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .search-box {
+                width: 100%;
+            }
+            
+            .search-input {
+                width: 100%;
+            }
+            
+            .booking-card {
+                margin-bottom: 15px;
+            }
+            
+            .booking-card-header {
+                padding: 15px;
+            }
+            
+            .booking-card-body {
+                padding: 15px;
+            }
+            
+            .booking-card-actions {
+                padding: 15px;
+                gap: 8px;
+            }
+            
+            .action-btn {
+                min-width: 70px;
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .action-btn span {
+                display: none;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .modern-card-title {
+                font-size: 1.3rem;
+            }
+            
+            .info-row {
+                flex-direction: column;
+                margin-bottom: 12px;
+            }
+            
+            .info-label {
+                width: 100%;
+                margin-bottom: 5px;
+                font-size: 0.8rem;
+            }
+            
+            .info-value {
+                width: 100%;
+            }
+            
+            .booking-id {
+                font-size: 1.1rem;
+            }
+            
+            .status-badge {
+                padding: 6px 12px;
+                font-size: 0.7rem;
+            }
+        }        /* Animations */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @@keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Enhanced Badges */
+        .badge {
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.8rem;
+            padding: 8px 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .badge:hover {
+            transform: scale(1.1);
+        }
+
+        .bg-info {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
+        }
+
+        .bg-success {
+            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%) !important;
+        }
+
+        .bg-danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%) !important;
+        }
+
+        .bg-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%) !important;
+        }
+    </style>
+
+    <script>
+        // Enhanced JavaScript for Booking Management
+        $(document).ready(function() {
+            // Initialize animations
+            initializeBookingPage();
+            
+            // Add ripple effect to action buttons
+            $('.action-btn, .filter-btn, .export-btn').on('click', function(e) {
+                addRippleEffect(this, e);
+            });
+            
+            // Auto-hide dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest('.status-filter').length) {
+                    $('.filter-dropdown').hide();
+                }
+            });
+            
+            $('.filter-btn').on('click', function(e) {
+                e.stopPropagation();
+                $('.filter-dropdown').toggle();
+            });
+        });
+
+        function initializeBookingPage() {
+            // Fade in page elements
+            $('.booking-management').css('opacity', '0').animate({'opacity': '1'}, 800);
+            
+            // Stagger animation for cards/rows
+            $('.booking-card, .modern-table tbody tr').each(function(index) {
+                $(this).css({
+                    'opacity': '0',
+                    'transform': 'translateY(30px)'
+                }).delay(index * 50).animate({
+                    'opacity': '1'
+                }, 600, function() {
+                    $(this).css('transform', 'translateY(0)');
+                });
+            });
+        }
+
+        function addRippleEffect(element, event) {
+            const $element = $(element);
+            const $ripple = $('<div class="ripple"></div>');
+            
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            $ripple.css({
+                width: size + 'px',
+                height: size + 'px',
+                left: x + 'px',
+                top: y + 'px',
+                position: 'absolute',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.6)',
+                transform: 'scale(0)',
+                animation: 'ripple 0.6s linear',
+                pointerEvents: 'none'
+            });
+            
+            $element.append($ripple);
+            
+            setTimeout(() => {
+                $ripple.remove();
+            }, 600);
+        }
+
+        // Enhanced function implementations with loading states
+        function confirmBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn xác nhận đặt phòng này?')) {
+                showLoading();
+                $.post('@Url.Action("ConfirmBooking")', { bookingId: id }, function(data) {
+                    if (data.success) {
+                        showNotification('Xác nhận đặt phòng thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification('Có lỗi xảy ra: ' + data.message, 'error');
+                    }
+                }).fail(function() {
+                    showNotification('Có lỗi xảy ra khi xác nhận đặt phòng.', 'error');
+                }).always(function() {
+                    hideLoading();
+                });
+            }
+        }
+
+        function cancelBooking(id) {
+            if (confirm('Bạn có chắc chắn muốn hủy đặt phòng này?')) {
+                showLoading();
+                $.post('@Url.Action("CancelBooking")', { bookingId: id }, function(data) {
+                    if (data.success) {
+                        showNotification('Hủy đặt phòng thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification('Có lỗi xảy ra: ' + data.message, 'error');
+                    }
+                }).fail(function() {
+                    showNotification('Có lỗi xảy ra khi hủy đặt phòng.', 'error');
+                }).always(function() {
+                    hideLoading();
+                });
+            }
+        }
+
+        function completeBooking(id) {
+            if (confirm('Xác nhận hoàn thành đặt phòng này?')) {
+                showLoading();
+                $.post('@Url.Action("CompleteBooking")', { bookingId: id }, function(data) {
+                    if (data.success) {
+                        showNotification('Hoàn thành đặt phòng thành công!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showNotification('Có lỗi xảy ra: ' + data.message, 'error');
+                    }
+                }).fail(function() {
+                    showNotification('Có lỗi xảy ra khi hoàn thành đặt phòng.', 'error');
+                }).always(function() {
+                    hideLoading();
+                });
+            }
+        }
+
+        function editBooking(id) {
+            showLoading();
+            window.location.href = '@Url.Action("EditBooking", "Admin")/' + id;
+        }
+
+        // Enhanced search function
+        function performSearch() {
+            const searchTerm = $('#searchInput').val();
+            const currentStatus = '@ViewBag.Status';
+            showLoading();
+            window.location.href = '@Url.Action("Bookings")' + '?search=' + encodeURIComponent(searchTerm) + '&status=' + currentStatus;
+        }
+
+        // Enter key search
+        $('#searchInput').on('keypress', function(e) {
+            if (e.which === 13) {
+                performSearch();
+            }
+        });
+
+        // Utility functions
+        function showLoading() {
+            $('body').append('<div class="loading-overlay"><div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div></div>');
+        }
+
+        function hideLoading() {
+            $('.loading-overlay').remove();
+        }
+
+        function showNotification(message, type = 'success') {
+            const bgClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            const $notification = $(`
+                <div class="booking-notification ${bgClass}">
+                    <i class="fas ${icon}"></i>
+                    <span>${message}</span>
+                    <button class="notification-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `);
+            
+            $notification.css({
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                padding: '15px 20px',
+                borderRadius: '10px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                zIndex: '9999',
+                transform: 'translateX(400px)',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+            });
+            
+            $('body').append($notification);
+            
+            setTimeout(() => {
+                $notification.css('transform', 'translateX(0)');
+            }, 100);
+            
+            setTimeout(() => {
+                $notification.css('transform', 'translateX(400px)');
+                setTimeout(() => $notification.remove(), 300);
+            }, 5000);
+            
+            $notification.find('.notification-close').click(function() {
+                $notification.css('transform', 'translateX(400px)');
+                setTimeout(() => $notification.remove(), 300);
+            });
+        }
+    </script>
+}
+
+

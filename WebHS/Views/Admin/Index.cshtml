@@ -1,0 +1,949 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@using WebHSBookingStatus = WebHS.Models.BookingStatus
+@model WebHS.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="admin-dashboard">
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Enhanced Sidebar -->
+            <div class="col-md-3">
+                <div class="sidebar-card">
+                    <div class="card-body">
+                        <h5 class="sidebar-title">
+                            <i class="fas fa-cog me-2"></i>Admin Panel
+                        </h5>
+                        <div class="sidebar-menu">
+                            <a asp-action="Index" class="menu-item active">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Dashboard</span>
+                                <div class="menu-ripple"></div>
+                            </a>
+                            <a asp-action="Users" class="menu-item">
+                                <i class="fas fa-users"></i>
+                                <span>Quản lý người dùng</span>
+                                <div class="menu-ripple"></div>
+                            </a>
+                            <a asp-action="Homestays" class="menu-item">
+                                <i class="fas fa-home"></i>
+                                <span>Quản lý Homestay</span>
+                                <div class="menu-ripple"></div>
+                            </a>
+                            <a asp-action="Bookings" class="menu-item">
+                                <i class="fas fa-calendar-check"></i>
+                                <span>Quản lý đặt phòng</span>
+                                <div class="menu-ripple"></div>
+                            </a>
+                            <a asp-controller="Promotion" asp-action="Index" class="menu-item">
+                                <i class="fas fa-tags"></i>
+                                <span>Quản lý khuyến mãi</span>
+                                <div class="menu-ripple"></div>
+                            </a>
+                            <a asp-action="Reports" class="menu-item">
+                                <i class="fas fa-chart-pie"></i>
+                                <span>Báo cáo</span>
+                                <div class="menu-ripple"></div>
+                            </a>
+                            <div class="menu-divider"></div>
+                            <button type="button" class="menu-item test-data-btn" onclick="createRevenueTestData()">
+                                <i class="fas fa-database"></i>
+                                <span>Tạo dữ liệu test</span>
+                                <div class="menu-ripple"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Main Content -->
+            <div class="col-md-9">
+                <!-- Statistics Cards with Animations -->                <div class="row mb-4 stats-cards">
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card primary">
+                            <div class="stat-card-inner">
+                                <div class="stat-content">
+                                    <div class="stat-number">@Model.TotalUsers</div>
+                                    <div class="stat-label">Tổng người dùng</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                            <a asp-action="Users" class="stat-footer">
+                                <span>Xem chi tiết</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <div class="stat-glow"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card success">
+                            <div class="stat-card-inner">
+                                <div class="stat-content">
+                                    <div class="stat-number">@Model.TotalHomestays</div>
+                                    <div class="stat-label">Tổng Homestay</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-home"></i>
+                                </div>
+                            </div>
+                            <a asp-action="Homestays" class="stat-footer">
+                                <span>Xem chi tiết</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <div class="stat-glow"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card info">
+                            <div class="stat-card-inner">
+                                <div class="stat-content">
+                                    <div class="stat-number">@Model.TotalBookings</div>
+                                    <div class="stat-label">Tổng đặt phòng</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>                            </div>
+                            <a asp-action="Bookings" class="stat-footer">
+                                <span>Xem chi tiết</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <div class="stat-glow"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="stat-card warning">
+                            <div class="stat-card-inner">
+                                <div class="stat-content">
+                                    <div class="stat-number">@Model.TotalRevenue.ToString("N0")</div>
+                                    <div class="stat-label">Tổng doanh thu (VNĐ)</div>
+                                </div>
+                                <div class="stat-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                            </div>
+                            <a asp-action="Reports" class="stat-footer">
+                                <span>Xem báo cáo</span>
+                                <i class="fas fa-arrow-right"></i>
+                            </a>
+                            <div class="stat-glow"></div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (Model.PendingHomestays > 0)
+                {
+                    <div class="alert-card">
+                        <div class="alert-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-content">
+                            <div class="alert-title">Cần xử lý</div>
+                            <div class="alert-message">
+                                Có <strong>@Model.PendingHomestays</strong> homestay đang chờ phê duyệt.
+                                <a asp-action="Homestays" asp-route-status="pending" class="alert-link">Xem ngay</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            <div class="row">
+                <!-- Recent Users -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user-plus me-2"></i>Người dùng mới
+                                </h5>
+                                <a asp-action="Users" class="btn btn-outline-primary btn-sm">Xem tất cả</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.RecentUsers.Any())
+                            {
+                                @foreach (var user in Model.RecentUsers)
+                                {
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="/images/default-avatar.jpg" class="rounded-circle me-3" width="40" height="40">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">@user.FirstName @user.LastName</h6>
+                                            <small class="text-muted">@user.Email</small>
+                                        </div>
+                                        <small class="text-muted">@user.CreatedAt.ToString("dd/MM")</small>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Không có người dùng mới</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Bookings -->
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-calendar-alt me-2"></i>Đặt phòng gần đây
+                                </h5>
+                                <a asp-action="Bookings" class="btn btn-outline-primary btn-sm">Xem tất cả</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            @if (Model.RecentBookings.Any())
+                            {
+                                @foreach (var booking in Model.RecentBookings.Take(5))
+                                {
+                                    <div class="d-flex align-items-center justify-content-between mb-3">
+                                        <div>
+                                            <h6 class="mb-0">@booking.Homestay.Name</h6>
+                                            <small class="text-muted">@booking.User.FirstName @booking.User.LastName</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-@GetStatusColor(booking.Status)">
+                                                @GetStatusText(booking.Status)
+                                            </span>
+                                            <br>
+                                            <small class="text-muted">@booking.CreatedAt.ToString("dd/MM")</small>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Không có đặt phòng mới</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-chart-line me-2"></i>Doanh thu 6 tháng gần đây
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="revenueChart" height="100"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Second Row of Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-xl-6 col-md-6">
+                    <div class="card bg-info text-white shadow">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="h5 mb-0">@Model.TotalPromotions</div>
+                                    <div class="text-white-50 small">Tổng khuyến mãi</div>
+                                </div>
+                                <div class="fa-3x opacity-25">
+                                    <i class="fas fa-tags"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <a asp-controller="Promotion" asp-action="Index" class="card-footer text-white d-flex align-items-center justify-content-between text-decoration-none">
+                            <span class="small">Quản lý khuyến mãi</span>
+                            <div class="small"><i class="fas fa-angle-right"></i></div>
+                        </a>
+                    </div>
+                </div>
+                  <div class="col-xl-6 col-md-6">
+                    <div class="card bg-success text-white shadow">
+                        <div class="card-body">                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <div class="h5 mb-0">@Model.ActivePromotions</div>
+                                    <div class="text-white-75 small">Khuyến mãi đang hoạt động</div>
+                                </div>
+                                <div class="fa-3x opacity-25">
+                                    <i class="fas fa-gift"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <a asp-controller="Promotion" asp-action="Statistics" class="card-footer text-white d-flex align-items-center justify-content-between text-decoration-none">
+                            <span class="small">Xem thống kê</span>
+                            <div class="small"><i class="fas fa-angle-right"></i></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Revenue Chart
+        window.adminRevenueChartInstance = window.adminRevenueChartInstance || null;
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        if (window.adminRevenueChartInstance) {
+            window.adminRevenueChartInstance.destroy();
+        }
+        window.adminRevenueChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(Json.Serialize(Model.RevenueChartLabels)),
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: @Html.Raw(Json.Serialize(Model.RevenueChartData)),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('vi-VN') + ' VNĐ';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        function createRevenueTestData() {
+            if (confirm('Bạn có chắc chắn muốn tạo dữ liệu test doanh thu không? Điều này sẽ tạo 5 booking test với tổng doanh thu khoảng 30 triệu VND.')) {
+                // Gửi yêu cầu đến server để tạo dữ liệu test
+                fetch('@Url.Action("CreateRevenueTestData", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ ' + data.message);
+                        location.reload();
+                    } else {
+                        alert('❌ ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Đã xảy ra lỗi khi tạo dữ liệu test doanh thu.');
+                });
+            }
+        }
+    </script>
+
+    <style>
+        /* Admin Dashboard Modern Styling */
+        .admin-dashboard {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        /* Enhanced Sidebar */
+        .sidebar-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 20px;
+            overflow: hidden;
+        }
+
+        .sidebar-title {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            margin: -24px -24px 20px -24px;
+            border-radius: 20px 20px 0 0;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-menu {
+            padding: 0;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 12px;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: transparent;
+            border: none;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .menu-item i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .menu-item span {
+            font-weight: 500;
+            flex: 1;
+            text-align: left;
+        }
+
+        .menu-item:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+            margin: 15px 0;
+        }
+
+        .test-data-btn {
+            color: #f6ad55 !important;
+        }
+
+        .test-data-btn:hover {
+            background: linear-gradient(135deg, rgba(246, 173, 85, 0.1), rgba(237, 137, 54, 0.1)) !important;
+            color: #ed8936 !important;
+        }
+
+        /* Statistics Cards */
+        .stats-cards {
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border: none;
+            border-radius: 20px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 160px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .stat-card-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 80px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            color: rgba(255,255,255,0.3);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .stat-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 25px;
+            background: rgba(0,0,0,0.1);
+            color: white;
+            text-decoration: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .stat-footer:hover {
+            background: rgba(0,0,0,0.2);
+            color: white;
+        }
+
+        /* Card Colors */
+        .stat-card.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        }
+
+        .stat-card.info {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-glow {
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            animation: rotate 10s linear infinite;
+            pointer-events: none;
+        }
+
+        .stat-card:hover .stat-glow {
+            opacity: 1;        }
+
+        @@keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Alert Card */
+        .alert-card {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.2);
+            border-left: 5px solid #ffc107;
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .alert-icon {
+            font-size: 2rem;
+            color: #f6ad55;
+            margin-right: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #975a16;
+            margin-bottom: 5px;
+        }
+
+        .alert-message {
+            color: #975a16;
+        }
+
+        .alert-link {
+            color: #b7791f;
+            font-weight: 600;
+            text-decoration: none;
+            border-bottom: 2px solid transparent;
+            transition: border-color 0.3s ease;
+        }
+
+        .alert-link:hover {
+            color: #975a16;
+            border-bottom-color: #975a16;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .admin-dashboard {
+                padding: 10px 0;
+            }
+            
+            .sidebar-card {
+                margin-bottom: 20px;
+                position: relative;
+                top: 0;
+            }
+            
+            .stat-card {
+                height: 140px;
+                margin-bottom: 15px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+            
+            .stat-icon {
+                font-size: 2.5rem;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .stat-card {
+                height: 120px;
+                padding: 20px;
+            }
+            
+            .stat-number {
+                font-size: 1.8rem;
+            }
+            
+            .stat-label {
+                font-size: 0.9rem;
+            }
+            
+            .stat-icon {
+                font-size: 2rem;
+            }
+            
+            .menu-item {
+                padding: 12px 15px;
+            }
+            
+            .menu-item span {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Loading Animations */
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @@keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @@keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Initial Animation */
+        .stat-card {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+
+    <script>
+        // Enhanced JavaScript for Admin Dashboard
+        $(document).ready(function() {
+            // Initialize animations
+            initializeDashboard();
+            
+            // Add ripple effect to menu items
+            $('.menu-item').on('click', function(e) {
+                addRippleEffect(this, e);
+            });
+            
+            // Animate stat cards on hover
+            $('.stat-card').hover(
+                function() {
+                    $(this).find('.stat-glow').css('opacity', '1');
+                },
+                function() {
+                    $(this).find('.stat-glow').css('opacity', '0');
+                }
+            );
+            
+            // Counter animation for stat numbers
+            animateCounters();
+        });
+
+        function initializeDashboard() {
+            // Fade in dashboard elements
+            $('.admin-dashboard').css('opacity', '0').animate({'opacity': '1'}, 800);
+            
+            // Stagger animation for stat cards
+            $('.stat-card').each(function(index) {
+                $(this).css({
+                    'opacity': '0',
+                    'transform': 'translateY(30px)'
+                }).delay(index * 100).animate({
+                    'opacity': '1'
+                }, 600, function() {
+                    $(this).css('transform', 'translateY(0)');
+                });
+            });
+        }
+
+        function addRippleEffect(element, event) {
+            const $element = $(element);
+            const $ripple = $('<div class="menu-ripple"></div>');
+            
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            $ripple.css({
+                width: size + 'px',
+                height: size + 'px',
+                left: x + 'px',
+                top: y + 'px',
+                position: 'absolute',
+                borderRadius: '50%',
+                background: 'rgba(255, 255, 255, 0.6)',
+                transform: 'scale(0)',
+                animation: 'ripple 0.6s linear',
+                pointerEvents: 'none'
+            });
+            
+            $element.append($ripple);
+            
+            setTimeout(() => {
+                $ripple.remove();
+            }, 600);
+        }
+
+        function animateCounters() {
+            $('.stat-number').each(function() {
+                const $this = $(this);
+                const countTo = parseInt($this.text().replace(/[^\d]/g, ''));
+                
+                if (!isNaN(countTo)) {
+                    $({ countNum: 0 }).animate({
+                        countNum: countTo
+                    }, {
+                        duration: 2000,
+                        easing: 'swing',
+                        step: function() {
+                            $this.text(Math.floor(this.countNum).toLocaleString('vi-VN'));
+                        },
+                        complete: function() {
+                            $this.text(countTo.toLocaleString('vi-VN'));
+                        }
+                    });
+                }
+            });
+        }
+
+        // Enhanced test data creation function
+        function createRevenueTestData() {
+            const confirmText = 'Bạn có chắc chắn muốn tạo dữ liệu test doanh thu không?\n\n' +
+                              '✨ Điều này sẽ tạo 5 booking test\n' +
+                              '💰 Tổng doanh thu khoảng 30 triệu VND\n' +
+                              '📊 Dữ liệu sẽ xuất hiện trong biểu đồ\n\n' +
+                              'Nhấn OK để tiếp tục...';
+                              
+            if (confirm(confirmText)) {
+                // Show loading animation
+                const $btn = $('.test-data-btn');
+                const originalHtml = $btn.html();
+                $btn.html('<i class="fas fa-spinner fa-spin"></i> <span>Đang tạo...</span>');
+                $btn.prop('disabled', true);
+
+                fetch('@Url.Action("CreateRevenueTestData", "Admin")', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showNotification('✅ ' + data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showNotification('❌ ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('❌ Đã xảy ra lỗi khi tạo dữ liệu test doanh thu.', 'error');
+                })
+                .finally(() => {
+                    $btn.html(originalHtml);
+                    $btn.prop('disabled', false);
+                });
+            }
+        }
+
+        // Enhanced notification system
+        function showNotification(message, type = 'success') {
+            const bgClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            const $notification = $(`
+                <div class="dashboard-notification ${bgClass}">
+                    <i class="fas ${icon}"></i>
+                    <span>${message}</span>
+                    <button class="notification-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `);
+            
+            // Add notification styles
+            $notification.css({
+                position: 'fixed',
+                top: '20px',
+                right: '20px',
+                padding: '15px 20px',
+                borderRadius: '10px',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: '500',
+                zIndex: '9999',
+                transform: 'translateX(400px)',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+            });
+            
+            $('body').append($notification);
+            
+            // Animate in
+            setTimeout(() => {
+                $notification.css('transform', 'translateX(0)');
+            }, 100);
+            
+            // Auto hide
+            setTimeout(() => {
+                $notification.css('transform', 'translateX(400px)');
+                setTimeout(() => $notification.remove(), 300);
+            }, 5000);
+            
+            // Close button
+            $notification.find('.notification-close').click(function() {
+                $notification.css('transform', 'translateX(400px)');
+                setTimeout(() => $notification.remove(), 300);
+            });
+        }
+    </script>
+}
+
+@functions {    private string GetStatusColor(WebHSBookingStatus status)
+    {
+        return status switch
+        {
+            WebHSBookingStatus.Paid => "warning",
+            WebHSBookingStatus.Completed => "primary",
+            WebHSBookingStatus.Cancelled => "danger",
+            _ => "secondary"
+        };
+    }
+    
+    private string GetStatusText(WebHSBookingStatus status)
+    {
+        return status switch
+        {
+            WebHSBookingStatus.Paid => "Đã thanh toán",
+            WebHSBookingStatus.Completed => "Đã hoàn thành",
+            WebHSBookingStatus.Cancelled => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+}
+
+

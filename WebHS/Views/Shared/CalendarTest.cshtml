@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Test</title>
+    <style>
+        .visual-calendar {
+            max-width: 400px;
+            margin: 20px;
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-top: 10px;
+        }
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .calendar-day:hover {
+            background-color: #f0f0f0;
+        }
+        .calendar-day.past {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .calendar-day.booked {
+            background-color: #dc3545 !important;
+            color: white !important;
+            cursor: not-allowed;
+        }
+        .calendar-day.available {
+            background-color: #28a745;
+            color: white;
+        }
+        .legend {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 2px;
+        }
+        .legend-available { background-color: #28a745; }
+        .legend-booked { background-color: #dc3545; }
+        .legend-past { background-color: #f8f9fa; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="visual-calendar">
+        <h3>Calendar Test - Homestay ID: 9</h3>
+        <div class="calendar-header">
+            <button id="prevMonth" type="button">‹</button>
+            <span id="currentMonth"></span>
+            <button id="nextMonth" type="button">›</button>
+        </div>
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- Calendar will be generated here -->
+        </div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color legend-available"></div>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-booked"></div>
+                <span>Booked</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color legend-past"></div>
+                <span>Past</span>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin: 20px;">
+        <h4>Debug Info:</h4>
+        <pre id="debugInfo"></pre>
+    </div>
+
+    <script>
+        let bookedDates = [];
+        let currentDate = new Date();
+        
+        function loadBookedDates() {
+            const url = '/Booking/GetBookedDates/9';
+            console.log('🔄 Loading booked dates from:', url);
+            
+            fetch(url)
+                .then(response => {
+                    console.log('📡 API Response Status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('📊 API Response Data:', data);
+                    document.getElementById('debugInfo').textContent = `API Response: ${JSON.stringify(data, null, 2)}`;
+                    
+                    if (Array.isArray(data)) {
+                        bookedDates = data;
+                        console.log('✅ Updated bookedDates array:', bookedDates);
+                        generateCalendar();
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ Error loading booked dates:', error);
+                    document.getElementById('debugInfo').textContent = `Error: ${error.message}`;
+                });
+        }
+        
+        function generateCalendar() {
+            console.log('🎨 Generating calendar with booked dates:', bookedDates);
+            
+            const grid = document.getElementById('calendarGrid');
+            const monthLabel = document.getElementById('currentMonth');
+            
+            if (!grid || !monthLabel) {
+                console.error('❌ Calendar elements not found!');
+                return;
+            }
+            
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            monthLabel.textContent = new Date(year, month).toLocaleDateString('vi-VN', { 
+                month: 'long', 
+                year: 'numeric' 
+            });
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            grid.innerHTML = '';
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day';
+                cell.textContent = day;
+                
+                const cellDate = new Date(year, month, day);
+                cellDate.setHours(0, 0, 0, 0);
+                const dateStr = cellDate.toLocaleDateString('en-CA'); // YYYY-MM-DD format
+                
+                console.log(`Day ${day}: ${dateStr}, isBooked: ${bookedDates.includes(dateStr)}`);
+                
+                if (cellDate < today) {
+                    cell.classList.add('past');
+                } else if (bookedDates.includes(dateStr)) {
+                    cell.classList.add('booked');
+                    console.log(`🔴 Day ${day} marked as BOOKED`);
+                } else {
+                    cell.classList.add('available');
+                }
+                
+                grid.appendChild(cell);
+            }
+            
+            console.log('✅ Calendar generated with', bookedDates.length, 'booked dates');
+        }
+        
+        function initializeCalendar() {
+            document.getElementById('prevMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                generateCalendar();
+            });
+            
+            document.getElementById('nextMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                generateCalendar();
+            });
+            
+            generateCalendar();
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOM loaded, initializing calendar test...');
+            initializeCalendar();
+            loadBookedDates();
+        });
+    </script>
+</body>
+</html>

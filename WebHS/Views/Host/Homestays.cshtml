@@ -1,0 +1,180 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model IEnumerable<WebHS.ViewModels.HomestayCardViewModel>
+
+@{
+    ViewData["Title"] = "Quản Lý Homestay";
+    Layout = "_Layout_New";
+}
+
+<div class="container-fluid">
+    @Html.AntiForgeryToken()
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Quản Lý Homestay</h3>
+                    <div class="card-tools">
+                        <!-- Excel Export Button -->
+                        <a href="@Url.Action("ExportHomestaysToExcel")" class="btn btn-success btn-sm mr-2" title="Xuất Excel">
+                            <i class="fas fa-file-excel"></i> Xuất Excel
+                        </a>
+                        <a href="@Url.Action("Create", "Homestay")" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Thêm Homestay Mới
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    @if(!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                            <h4>Chưa có homestay nào</h4>
+                            <p class="text-muted">Bạn chưa có homestay nào. Hãy tạo homestay đầu tiên của bạn!</p>
+                            <a href="@Url.Action("Create", "Homestay")" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Tạo Homestay Đầu Tiên
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row">
+                            @foreach(var homestay in Model)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">                        <div class="position-relative">
+                            @if(!string.IsNullOrEmpty(homestay.PrimaryImage))
+                            {
+                                <img src="@homestay.PrimaryImage" class="card-img-top" alt="@homestay.Name" style="height: 200px; object-fit: cover;">
+                            }
+                            else
+                            {
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <i class="fas fa-home fa-3x text-muted"></i>
+                                </div>
+                            }
+                                              <div class="position-absolute" style="top: 10px; right: 10px;">
+                                                @if(homestay.IsApproved && homestay.IsActive)
+                                                {
+                                                    <span class="badge bg-success text-white">Đã duyệt</span>
+                                                }
+                                                else if(!homestay.IsApproved && homestay.IsActive)
+                                                {
+                                                    <span class="badge bg-warning text-dark">Chờ duyệt</span>
+                                                }
+                                                else if(!homestay.IsActive)
+                                                {
+                                                    <span class="badge bg-secondary text-white">Tạm ngưng</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger text-white">Đã từ chối</span>
+                                                }
+                                            </div>
+                                            
+                                            <div class="position-absolute" style="bottom: 10px; left: 10px;">
+                                                @if (!string.IsNullOrEmpty(homestay.YouTubeVideoId))
+                                                {
+                                                    <span class="badge bg-danger text-white" title="Có video YouTube">
+                                                        <i class="fab fa-youtube"></i> Video
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="card-body d-flex flex-column">
+                                            <h5 class="card-title">@homestay.Name</h5>
+                                            <p class="card-text text-muted small">
+                                                <i class="fas fa-map-marker-alt"></i> @homestay.City, @homestay.State
+                                            </p>
+                                            <p class="card-text">
+                                                <small class="text-muted">
+                                                    @homestay.MaxGuests khách • @homestay.Bedrooms phòng ngủ • @homestay.Bathrooms phòng tắm
+                                                </small>
+                                            </p>
+                                            
+                                            <p class="card-text mb-1">
+                                                <span class="badge bg-info text-dark">
+                                                    <i class="fas fa-calendar-check"></i> Tổng đặt phòng: @homestay.TotalBookings
+                                                </span>
+                                            </p>
+                                            
+                                            <div class="mt-auto">
+                                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                                    <strong class="text-primary">@homestay.PricePerNight.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))/đêm</strong>
+                                                    <div class="text-warning">
+                                                        @if(homestay.AverageRating > 0)
+                                                        {
+                                                            @for(int i = 1; i <= 5; i++)
+                                                            {
+                                                                <i class="fas fa-star @(i <= homestay.AverageRating ? "" : "text-muted")"></i>
+                                                            }
+                                                            <small class="text-muted">(@homestay.ReviewCount)</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <small class="text-muted">Chưa có đánh giá</small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                  <div class="btn-group w-100">
+                                                    <a href="@Url.Action("ManageHomestay", new { id = homestay.Id })" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-cog"></i> Quản lý
+                                                    </a>
+                                                    <a href="@Url.Action("Details", "Homestay", new { id = homestay.Id })" class="btn btn-outline-info btn-sm">
+                                                        <i class="fas fa-eye"></i> Xem
+                                                    </a>
+                                                    <a href="@Url.Action("Edit", "Homestay", new { id = homestay.Id })" class="btn btn-outline-warning btn-sm">
+                                                        <i class="fas fa-edit"></i> Sửa
+                                                    </a>
+                                                    <a href="@Url.Action("AllBookings", "Host")" class="btn btn-outline-success btn-sm">
+                                                        <i class="fas fa-calendar-check"></i> Đặt phòng
+                                                    </a>
+                                                      @if(homestay.IsActive)
+                                                    {
+                                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="toggleStatus(@homestay.Id, false)" title="Tạm ngưng homestay" aria-label="Tạm ngưng homestay">
+                                                            <i class="fas fa-pause"></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="toggleStatus(@homestay.Id, true)" title="Kích hoạt homestay" aria-label="Kích hoạt homestay">
+                                                            <i class="fas fa-play"></i>
+                                                        </button>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleStatus(homestayId, isActive) {
+            var message = isActive ? 'Bạn có muốn kích hoạt lại homestay này?' : 'Bạn có muốn tạm ngưng homestay này?';
+            if (confirm(message)) {
+                $.post('@Url.Action("ToggleStatus")', { 
+                    id: homestayId, 
+                    isActive: isActive,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+

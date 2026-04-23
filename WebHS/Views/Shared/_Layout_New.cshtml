@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en" class="h-100">
+<head>    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Đặt phòng homestay chất lượng cao tại Việt Nam. Trải nghiệm du lịch địa phương với giá cả hợp lý." />
+    <meta name="keywords" content="homestay, đặt phòng, du lịch, Việt Nam, accommodation" />
+    <meta name="author" content="WebHS Homestay Booking" />
+    <meta name="robots" content="index, follow" />
+    <title>@ViewData["Title"] - Homestay Booking</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebHS.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    
+    <!-- Cache Busting Meta Tags -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
+    @await RenderSectionAsync("Styles", required: false)
+    <style>
+        /* Google Fonts Integration */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        h1, h2, h3, h4, h5, h6, .display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+            font-family: 'Poppins', 'Inter', sans-serif;
+            font-weight: 600;
+        }
+        
+        .btn {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+          .navbar-brand {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+        }        /* Admin Badge Styles */
+        #admin-dropdown-badge {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            background: #dc3545 !important;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: pulse-red 2s infinite;
+        }
+
+        @@keyframes pulse-red {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* Position relative for dropdown parent */
+        .navbar-nav .dropdown > .nav-link {
+            position: relative;
+        }
+
+        /* Chat AI Widget Styles */
+        .chat-ai-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+
+        .chat-ai-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-ai-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0, 123, 255, 0.4);
+        }
+
+        .chat-ai-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-ai-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-ai-header h6 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .chat-ai-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chat-ai-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-ai-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 350px;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-message.ai {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .chat-message.user .message-content {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.ai .message-content {
+            background: #f1f3f4;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-ai-input {
+            padding: 15px 20px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-ai-input input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            padding: 8px 15px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-ai-input input:focus {
+            border-color: #007bff;
+        }
+
+        .chat-send-btn {
+            background: #007bff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .chat-send-btn:hover {
+            background: #0056b3;
+        }
+
+        .chat-send-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px 15px;
+            background: #f1f3f4;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            max-width: 80%;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .typing-dots {
+            display: inline-block;
+        }        .typing-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+
+        @@keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+
+        /* Layout Styles - Fixed navbar layout */
+        html, body {
+            height: 100%;
+        }
+          body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-top: 80px; /* Increased for better spacing */
+        }
+        
+        main {
+            flex: 1 0 auto;
+        }
+        
+        .content-wrapper {
+            padding-top: 20px;
+        }
+          /* Adjust for email confirmation notification */
+        .email-confirmation-notification + main .content-wrapper {
+            padding-top: 90px;
+        }/* Navbar Dropdown Styles - Bootstrap 5 Compatible */
+        .navbar-nav .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            min-width: 200px;
+            z-index: 1000;
+            border: 1px solid rgba(0,0,0,.125);
+            border-radius: 0.375rem;
+            background-color: #fff;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Ensure dropdown appears above other content */
+        .navbar-nav .dropdown {
+            position: relative;
+        }
+        
+        .navbar {
+            z-index: 1050;
+        }/* Dropdown arrow */
+        .dropdown-toggle::after {
+            margin-left: 0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+        
+        footer {
+            flex-shrink: 0;
+        }
+        
+        /* Enhanced UI */
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            transition: all 0.15s ease-in-out;
+        }
+        
+        .card:hover {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-1px);
+        }/* Enhanced Navbar Styles */
+        .navbar-dark .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #fff !important;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .navbar-dark .navbar-nav .nav-link:hover {
+            color: #fff !important;
+        }
+        
+        .navbar-dark .navbar-nav .dropdown-menu {
+            background-color: #343a40;
+            border: 1px solid #495057;
+        }
+        
+        .navbar-dark .navbar-nav .dropdown-item {
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar-dark .navbar-nav .dropdown-item:hover {
+            background-color: #495057;
+            color: #fff;
+        }
+        
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        /* Alert Styles */
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+        }
+        
+        /* Responsive Styles */
+        @@media (max-width: 576px) {
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+            
+            .navbar-dark .navbar-nav .nav-link {
+                font-size: 0.9rem;
+            }
+            
+            .navbar-dark .navbar-nav .dropdown-menu {
+                min-width: 150px;
+            }
+        }
+    </style>
+    
+    <!-- Google Tag Manager -->
+    <partial name="_GoogleTagManager" />
+    
+    <!-- Google Analytics -->
+    <partial name="_GoogleAnalytics" />
+    
+    <!-- Google reCAPTCHA -->
+    <partial name="_GoogleReCaptcha" />
+    
+    <!-- Google AdSense -->
+    <partial name="_GoogleAdSense" />
+    
+    <!-- Google Structured Data -->
+    <partial name="_GoogleStructuredData" />
+</head>
+<body class="d-flex flex-column h-100">
+    <!-- Google Tag Manager (noscript) -->
+    <partial name="_GoogleTagManagerBody" />
+    
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark fixed-top">
+            <div class="container">                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-home"></i> Homestay Booking
+                </a><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" 
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation menu" title="Mở/đóng menu điều hướng">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Homestay" asp-action="Index">Danh sách Homestay</a>
+                        </li>                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Review" asp-action="AllReviews">Đánh giá</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="YouTube" asp-action="HomestayVideos">
+                                <i class="fas fa-video"></i> Video Homestay
+                            </a>
+                        </li>                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Messaging" asp-action="Index">
+                                    <i class="fas fa-comments"></i> Tin nhắn
+                                    <span id="unread-messages-badge" class="badge bg-danger ms-1" style="display: none;">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Chat" asp-action="Index">
+                                    <i class="fas fa-robot"></i> Chat AI
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="About">Về Chúng Tôi</a>
+                        </li>
+                        @if (User.IsInRole("Host"))
+                        {                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Quản lý Host
+                                </a>                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Host" asp-action="Dashboard">Dashboard</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Host" asp-action="Homestays">Homestay của tôi</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Homestay" asp-action="Create">Thêm Homestay</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Host" asp-action="AllBookings">Tổng đặt phòng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Host" asp-action="Reviews">Đánh giá đã nhận</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" asp-controller="Host" asp-action="MessageTemplates">
+                                        <i class="fas fa-envelope-open-text me-2"></i>Mẫu Tin Nhắn
+                                    </a></li>
+                                </ul>
+                            </li>
+                        }                        @if (User.IsInRole("Admin"))
+                        {                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Quản trị
+                                    <span id="admin-dropdown-badge" class="badge bg-danger ms-1" style="display: none; border-radius: 50%; width: 8px; height: 8px; padding: 0;"></span>
+                                </a><ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Dashboard Admin</a></li>                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Users">Quản lý người dùng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Homestays">Quản lý Homestay</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Bookings">Quản lý đặt phòng</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Promotion" asp-action="Index">Quản lý khuyến mãi</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Messaging" asp-action="AdminRequests">
+                                        <i class="fas fa-envelope me-2"></i>Yêu cầu nhắn tin
+                                        <span id="admin-requests-badge" class="badge bg-warning ms-1" style="display: none;">0</span>
+                                    </a></li>
+                                    <li><a class="dropdown-item" asp-controller="Admin" asp-action="Reports">Báo cáo</a></li>
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity!.IsAuthenticated)
+                        {                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-user"></i> @User.Identity.Name
+                                    @{
+                                        var userRole = "User";
+                                        var badgeClass = "bg-secondary";
+                                        if (User.IsInRole("Admin"))
+                                        {
+                                            userRole = "Admin";
+                                            badgeClass = "bg-danger";
+                                        }
+                                        else if (User.IsInRole("Host"))
+                                        {
+                                            userRole = "Host";
+                                            badgeClass = "bg-success";
+                                        }
+                                    }
+                                    <span class="badge @badgeClass ms-1">@userRole</span>
+                                </a>
+                                <ul class="dropdown-menu">                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Thông tin cá nhân</a></li>                                    <li><a class="dropdown-item" asp-controller="Booking" asp-action="MyBookings">Booking của tôi</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Messaging" asp-action="Index">
+                                        <i class="fas fa-comments me-2"></i>Tin nhắn
+                                        <span id="unreadMessagesCount" class="badge bg-danger ms-1" style="display: none;"></span>
+                                    </a></li>
+                                    @if (!User.IsInRole("Admin"))
+                                    {
+                                        <li><a class="dropdown-item" href="javascript:void(0)" onclick="requestAdminMessage()">
+                                            <i class="fas fa-headset me-2"></i>Nhắn tin với Admin
+                                        </a></li>
+                                    }
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form method="post" asp-controller="Account" asp-action="Logout">
+                                            <button type="submit" class="dropdown-item">Đăng xuất</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>    </header>
+
+    <!-- Email Confirmation Notification -->
+    @await Component.InvokeAsync("EmailConfirmationNotification")
+      <main role="main" class="flex-fill">
+        <div class="content-wrapper">
+            @if (TempData["Message"] != null)
+            {            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Message"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo" title="Đóng thông báo thành công"></button>
+                </div>
+            }
+            
+            @if (TempData["Error"] != null)
+            {            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng thông báo" title="Đóng thông báo lỗi"></button>
+                </div>
+            }
+            
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Admin Message Request Modal -->
+    @if (User.Identity!.IsAuthenticated && !User.IsInRole("Admin"))
+    {
+        <div class="modal fade" id="adminMessageModal" tabindex="-1" aria-labelledby="adminMessageModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="adminMessageModalLabel">
+                            <i class="fas fa-headset me-2"></i>Nhắn tin với Admin
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="adminMessageText" class="form-label">Tin nhắn cho Admin:</label>
+                            <textarea class="form-control" id="adminMessageText" rows="4" placeholder="Nhập câu hỏi hoặc yêu cầu hỗ trợ của bạn..."></textarea>
+                            <div class="form-text">Admin sẽ nhận được thông báo và phản hồi bạn sớm nhất có thể.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="button" class="btn btn-primary" onclick="sendAdminMessageRequest()">
+                            <i class="fas fa-paper-plane me-2"></i>Gửi yêu cầu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Homestay Booking</h5>
+                    <p>Nền tảng đặt phòng homestay hàng đầu Việt Nam</p>
+                </div>
+                <div class="col-md-3">
+                    <h6>Liên kết</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="@Url.Action("About", "Home")" class="text-white-50">Về chúng tôi</a></li>
+                        <li><a href="#" class="text-white-50">Điều khoản</a></li>
+                        <li><a href="#" class="text-white-50">Chính sách</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h6>Hỗ trợ</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white-50">Trung tâm trợ giúp</a></li>
+                        <li><a href="#" class="text-white-50">Liên hệ</a></li>
+                        <li><a href="#" class="text-white-50">Báo cáo</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="text-center">
+                <small>&copy; 2024 - Homestay Booking - All rights reserved</small>
+            </div>
+        </div>
+    </footer>    <!-- Chat AI Widget -->
+    <div class="chat-ai-widget">
+        <button class="chat-ai-button" id="chatAiToggle" title="Chat với AI">
+            <i class="fas fa-comments"></i>
+        </button>
+        
+        <div class="chat-ai-window" id="chatAiWindow">
+            <div class="chat-ai-header">
+                <h6><i class="fas fa-robot me-2"></i>Trợ lý AI</h6>
+                <button class="chat-ai-close" id="chatAiClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="chat-ai-messages" id="chatAiMessages">
+                <div class="chat-message ai">
+                    <div class="message-content">
+                        Xin chào! Tôi là trợ lý AI của Homestay Booking. Tôi có thể giúp bạn:
+                        <br>• Tìm kiếm homestay phù hợp
+                        <br>• Giải đáp thắc mắc về đặt phòng
+                        <br>• Hỗ trợ sử dụng website
+                        <br><br>Bạn cần hỗ trợ gì ạ?
+                    </div>
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">AI đang trả lời</div>
+            </div>
+            
+            <div class="chat-ai-input">
+                <input type="text" id="chatAiInput" placeholder="Nhập câu hỏi của bạn..." maxlength="500">
+                <button class="chat-send-btn" id="chatSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <!-- Admin Badge Update Script -->
+    <script>
+        $(document).ready(function() {
+            // Update admin badge if user is admin
+            @if (User.IsInRole("Admin"))
+            {
+                <text>
+                updateAdminBadge();
+                // Update every 30 seconds
+                setInterval(updateAdminBadge, 30000);
+                </text>
+            }
+        });
+
+        function updateAdminBadge() {
+            $.ajax({
+                url: '@Url.Action("GetPendingAdminRequestsCount", "Messaging")',
+                type: 'GET',
+                success: function(data) {
+                    if (data.success && data.count > 0) {
+                        $('#admin-dropdown-badge').show();
+                        $('#admin-requests-badge').text(data.count).show();
+                    } else {
+                        $('#admin-dropdown-badge').hide();
+                        $('#admin-requests-badge').hide();
+                    }
+                },
+                error: function() {
+                    console.error('Failed to get admin requests count');
+                }
+            });
+        }
+    </script>
+    
+    <!-- Chat AI Script -->
+    <script>
+        $(document).ready(function() {
+            const chatToggle = $('#chatAiToggle');
+            const chatWindow = $('#chatAiWindow');
+            const chatClose = $('#chatAiClose');
+            const chatMessages = $('#chatAiMessages');
+            const chatInput = $('#chatAiInput');
+            const sendBtn = $('#chatSendBtn');
+            const typingIndicator = $('#typingIndicator');
+            
+            // Toggle chat window
+            chatToggle.click(function() {
+                chatWindow.toggle();
+                if (chatWindow.is(':visible')) {
+                    chatInput.focus();
+                    scrollToBottom();
+                }
+            });
+            
+            // Close chat window
+            chatClose.click(function() {
+                chatWindow.hide();
+            });
+            
+            // Send message on Enter key
+            chatInput.keypress(function(e) {
+                if (e.which === 13 && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // Send message on button click
+            sendBtn.click(function() {
+                sendMessage();
+            });
+            
+            // Send message function
+            function sendMessage() {
+                const message = chatInput.val().trim();
+                if (!message) return;
+                
+                // Add user message
+                addMessage(message, 'user');
+                chatInput.val('');
+                sendBtn.prop('disabled', true);
+                
+                // Show typing indicator
+                typingIndicator.show();
+                scrollToBottom();
+                
+                // Simulate AI response (replace with actual API call)
+                setTimeout(function() {
+                    typingIndicator.hide();
+                    const aiResponse = generateAIResponse(message);
+                    addMessage(aiResponse, 'ai');
+                    sendBtn.prop('disabled', false);
+                    scrollToBottom();
+                }, 1000 + Math.random() * 2000);
+            }
+            
+            // Add message to chat
+            function addMessage(text, sender) {
+                const messageHtml = `
+                    <div class="chat-message ${sender}">
+                        <div class="message-content">
+                            ${text}
+                        </div>
+                    </div>
+                `;
+                chatMessages.append(messageHtml);
+            }
+            
+            // Scroll to bottom
+            function scrollToBottom() {
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
+            
+            // Generate AI response (simple rule-based responses)
+            function generateAIResponse(userMessage) {
+                const message = userMessage.toLowerCase();
+                
+                // Homestay search responses
+                if (message.includes('tìm') || message.includes('homestay') || message.includes('đặt phòng')) {
+                    return 'Để tìm homestay phù hợp, bạn có thể:<br>• Sử dụng thanh tìm kiếm trên trang chủ<br>• Lọc theo vị trí, giá cả, tiện nghi<br>• Xem danh sách homestay nổi bật<br>• Đọc đánh giá từ khách hàng khác<br><br>Bạn muốn tìm homestay ở đâu ạ?';
+                }
+                
+                // Booking process responses
+                if (message.includes('đặt') || message.includes('booking') || message.includes('thanh toán')) {
+                    return 'Quy trình đặt phòng gồm:<br>1. Chọn homestay và ngày ở<br>2. Điền thông tin khách hàng<br>3. Xác nhận đặt phòng<br>4. Thanh toán online<br>5. Nhận xác nhận qua email<br><br>Bạn cần hỗ trợ bước nào ạ?';
+                }
+                
+                // Account/login responses
+                if (message.includes('đăng nhập') || message.includes('tài khoản') || message.includes('đăng ký')) {
+                    return 'Về tài khoản:<br>• Đăng ký tài khoản để đặt phòng dễ dàng<br>• Theo dõi lịch sử đặt phòng<br>• Nhận thông báo và ưu đãi<br>• Trở thành Host để cho thuê<br><br>Bạn cần hỗ trợ gì về tài khoản ạ?';
+                }
+                
+                // General pricing responses
+                if (message.includes('giá') || message.includes('phí') || message.includes('chi phí')) {
+                    return 'Về giá cả:<br>• Giá homestay tùy thuộc vào vị trí, tiện nghi<br>• Có thể có phí dịch vụ và thuế<br>• Áp dụng mã giảm giá nếu có<br>• Thanh toán an toàn qua cổng thanh toán<br><br>Bạn muốn xem giá homestay nào ạ?';
+                }
+                
+                // Support responses
+                if (message.includes('hỗ trợ') || message.includes('giúp') || message.includes('liên hệ')) {
+                    return 'Các cách liên hệ hỗ trợ:<br>• Chat trực tiếp với tôi<br>• Email: support@homestay.com<br>• Hotline: 1900-xxxx<br>• Fanpage Facebook<br><br>Tôi có thể giúp gì khác cho bạn?';
+                }
+                
+                // Greetings
+                if (message.includes('xin chào') || message.includes('hello') || message.includes('hi')) {
+                    return 'Xin chào! Rất vui được hỗ trợ bạn. Tôi có thể giúp bạn tìm homestay, giải đáp thắc mắc về đặt phòng hoặc hướng dẫn sử dụng website. Bạn cần hỗ trợ gì ạ?';
+                }
+                
+                // Thanks
+                if (message.includes('cảm ơn') || message.includes('thanks') || message.includes('thank you')) {
+                    return 'Rất vui được giúp đỡ bạn! Nếu có thêm câu hỏi nào khác, đừng ngại hỏi tôi nhé. Chúc bạn có trải nghiệm tuyệt vời với Homestay Booking! 😊';
+                }
+                
+                // Default response
+                const responses = [
+                    'Tôi hiểu bạn đang hỏi về điều này. Bạn có thể cung cấp thêm chi tiết để tôi hỗ trợ tốt hơn không ạ?',
+                    'Đây là câu hỏi thú vị! Tôi sẽ cố gắng giúp bạn. Bạn có thể nói rõ hơn về vấn đề này không?',
+                    'Tôi có thể giúp bạn về việc tìm homestay, đặt phòng, hoặc sử dụng website. Bạn cần hỗ trợ vấn đề gì cụ thể ạ?',
+                    'Để tôi hỗ trợ bạn tốt nhất, bạn có thể nói rõ hơn về câu hỏi của mình không ạ?'
+                ];
+                
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+            
+            // Close chat when clicking outside
+            $(document).click(function(e) {
+                if (!$(e.target).closest('.chat-ai-widget').length) {
+                    chatWindow.hide();
+                }
+            });
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+

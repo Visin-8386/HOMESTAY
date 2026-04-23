@@ -1,0 +1,43 @@
+@model WebHS.ViewModels.BookingDetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết đặt phòng";
+    Layout = "_Layout_New";
+}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="row g-0">
+                    <div class="col-md-5 d-flex align-items-center justify-content-center bg-light rounded-start-4">
+                        <img src="@Model.PrimaryImage" alt="Homestay" class="img-fluid rounded-4 m-3" style="max-height:260px;object-fit:cover;">
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-4">
+                            <h3 class="card-title mb-2">@Model.HomestayName</h3>
+                            <div class="mb-2 text-muted"><i class="fas fa-map-marker-alt me-1"></i> @Model.HomestayLocation</div>
+                            <hr>
+                            <div class="mb-2"><b>Khách hàng:</b> @Model.UserName</div>
+                            <div class="mb-2"><b>Email:</b> @Model.UserEmail</div>
+                            <div class="mb-2"><b>Số điện thoại:</b> @Model.UserPhone</div>
+                            <div class="mb-2"><b>Check-in:</b> @Model.CheckInDate.ToString("dd/MM/yyyy")</div>
+                            <div class="mb-2"><b>Check-out:</b> @Model.CheckOutDate.ToString("dd/MM/yyyy")</div>
+                            <div class="mb-2"><b>Số khách:</b> <span class="host-guests-badge"><span>@Model.NumberOfGuests</span> <i class="fas fa-user-friends"></i></span></div>
+                            <div class="mb-2"><b>Trạng thái:</b> <span class="booking-badge @Model.Status.ToString().ToLower()">@Model.Status</span></div>
+                            <div class="mb-2"><b>Tổng tiền:</b> <span class="fw-bold">@Model.FinalAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</span></div>
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <div class="mb-2"><b>Giảm giá:</b> <span class="text-success">-@Model.DiscountAmount.ToString("C0", System.Globalization.CultureInfo.GetCultureInfo("vi-VN"))</span></div>
+                            }
+                            <div class="mt-4">
+                                <a href="@Url.Action("AllBookings")" class="btn btn-outline-primary w-100" style="white-space:normal;">
+                                    <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="/css/host-bookings.css" />

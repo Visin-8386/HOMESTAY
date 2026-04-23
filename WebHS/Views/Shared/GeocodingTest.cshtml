@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Geocoding - Tìm Tọa Độ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .result-card {
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .coordinate-display {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .copy-btn {
+            margin-left: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <h2 class="text-center mb-4">🗺️ Tìm Tọa Độ Địa Chỉ</h2>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="addressInput" class="form-label">Nhập địa chỉ:</label>
+                            <input type="text" class="form-control" id="addressInput" 
+                                   placeholder="Ví dụ: 227 Nguyễn Văn Cừ, Phường 4, Quận 5, TP.HCM"
+                                   value="">
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="searchAddress()">
+                                🔍 Tìm Tọa Độ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="loading" id="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tìm...</span>
+                    </div>
+                    <p class="mt-2">Đang tìm tọa độ...</p>
+                </div>
+
+                <div id="results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function searchAddress() {
+            const address = document.getElementById('addressInput').value.trim();
+            if (!address) {
+                alert('Vui lòng nhập địa chỉ!');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            loading.style.display = 'block';
+            results.innerHTML = '';
+
+            try {
+                // Gọi API compare để lấy tất cả kết quả
+                const response = await fetch(`/api/GeocodingDebug/compare?address=${encodeURIComponent(address)}`);
+                const data = await response.json();
+
+                loading.style.display = 'none';
+                displayResults(data);
+            } catch (error) {
+                loading.style.display = 'none';
+                results.innerHTML = `
+                    <div class="alert alert-danger">
+                        <strong>Lỗi:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function displayResults(data) {
+            const results = document.getElementById('results');
+            
+            let html = `
+                <div class="result-card">
+                    <h5>📍 Kết quả tìm kiếm cho: <em>"${data.originalAddress}"</em></h5>
+                    <hr>
+            `;
+
+            // Google Maps Results
+            if (data.googleMaps.success) {
+                html += `
+                    <div class="mb-4">
+                        <h6>🎯 Google Maps API</h6>
+                        <div class="coordinate-display">
+                            Tọa độ: ${data.googleMaps.latitude}, ${data.googleMaps.longitude}
+                            <button class="btn btn-sm btn-outline-primary copy-btn" 
+                                    onclick="copyToClipboard('${data.googleMaps.latitude}, ${data.googleMaps.longitude}')">
+                                📋 Copy
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <a href="${data.googleMaps.googleMapsUrl}" target="_blank" class="btn btn-sm btn-success">
+                                🌍 Xem trên Google Maps
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="mb-4">
+                        <h6>🎯 Google Maps API</h6>
+                        <div class="text-danger">❌ Không tìm thấy tọa độ</div>
+                    </div>
+                `;
+            }
+
+            // Nominatim Results
+            if (data.nominatim.success) {
+                html += `
+                    <div class="mb-4">
+                        <h6>🗺️ OpenStreetMap (Nominatim)</h6>
+                        <div class="coordinate-display">
+                            Tọa độ: ${data.nominatim.latitude}, ${data.nominatim.longitude}
+                            <button class="btn btn-sm btn-outline-primary copy-btn" 
+                                    onclick="copyToClipboard('${data.nominatim.latitude}, ${data.nominatim.longitude}')">
+                                📋 Copy
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <a href="${data.nominatim.googleMapsUrl}" target="_blank" class="btn btn-sm btn-success">
+                                🌍 Xem trên Google Maps
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="mb-4">
+                        <h6>🗺️ OpenStreetMap (Nominatim)</h6>
+                        <div class="text-danger">❌ Không tìm thấy tọa độ</div>
+                    </div>
+                `;
+            }
+
+            // Hybrid Results
+            if (data.hybrid.success) {
+                html += `
+                    <div class="mb-4">
+                        <h6>🔄 Hybrid Service (App đang dùng)</h6>
+                        <div class="coordinate-display">
+                            Tọa độ: ${data.hybrid.latitude}, ${data.hybrid.longitude}
+                            <button class="btn btn-sm btn-outline-primary copy-btn" 
+                                    onclick="copyToClipboard('${data.hybrid.latitude}, ${data.hybrid.longitude}')">
+                                📋 Copy
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <a href="${data.hybrid.googleMapsUrl}" target="_blank" class="btn btn-sm btn-success">
+                                🌍 Xem trên Google Maps
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="mb-4">
+                        <h6>🔄 Hybrid Service (App đang dùng)</h6>
+                        <div class="text-danger">❌ Không tìm thấy tọa độ</div>
+                    </div>
+                `;
+            }
+
+            html += `
+                    <div class="mt-4">
+                        <small class="text-muted">
+                            💡 <strong>Hướng dẫn so sánh:</strong><br>
+                            1. Copy tọa độ từ kết quả trên<br>
+                            2. Mở Google Maps → Paste tọa độ vào ô search<br>
+                            3. Hoặc click "Xem trên Google Maps" để mở trực tiếp
+                        </small>
+                    </div>
+                </div>
+            `;
+
+            results.innerHTML = html;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Đã copy tọa độ: ' + text);
+            }, function(err) {
+                console.error('Không thể copy: ', err);
+            });
+        }
+
+        // Enter key support
+        document.getElementById('addressInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchAddress();
+            }
+        });
+    </script>
+</body>
+</html>
+

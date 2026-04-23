@@ -1,0 +1,159 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "Chỉnh sửa thông tin cá nhân";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Chỉnh sửa thông tin cá nhân
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="text-center mb-4">
+                            <div class="profile-picture-preview mb-3">
+                                @if (!string.IsNullOrEmpty(Model.CurrentProfilePicture))
+                                {
+                                    <img id="profilePreview" src="@Model.CurrentProfilePicture" alt="Profile Picture" 
+                                         class="img-fluid rounded-circle border" style="width: 150px; height: 150px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div id="profilePreview" class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto border"
+                                         style="width: 150px; height: 150px;">
+                                        <i class="fas fa-user fa-3x text-white"></i>
+                                    </div>
+                                }
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="ProfilePictureFile" class="form-label fw-semibold">Ảnh đại diện</label>
+                                <input asp-for="ProfilePictureFile" type="file" class="form-control" id="profilePictureInput" 
+                                       accept="image/*" onchange="previewProfilePicture(this)">
+                                <div class="form-text">Chọn ảnh có định dạng JPG, PNG hoặc GIF (tối đa 5MB)</div>
+                                <span asp-validation-for="ProfilePictureFile" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Personal Information -->
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label fw-semibold">Họ <span class="text-danger">*</span></label>
+                                <input asp-for="FirstName" class="form-control" placeholder="Nhập họ của bạn">
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label fw-semibold">Tên <span class="text-danger">*</span></label>
+                                <input asp-for="LastName" class="form-control" placeholder="Nhập tên của bạn">
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Email" class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="email@example.com">
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhoneNumber" class="form-label fw-semibold">Số điện thoại</label>
+                                <input asp-for="PhoneNumber" type="tel" class="form-control" placeholder="0xxxxxxxxx">
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label fw-semibold">Địa chỉ</label>
+                            <input asp-for="Address" class="form-control" placeholder="Nhập địa chỉ của bạn">
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Bio" class="form-label fw-semibold">Giới thiệu</label>
+                            <textarea asp-for="Bio" class="form-control" rows="4" 
+                                      placeholder="Hãy giới thiệu về bản thân bạn..."></textarea>
+                            <div class="form-text">Tối đa 500 ký tự</div>
+                            <span asp-validation-for="Bio" class="text-danger"></span>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Profile", "Account")" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Lưu thay đổi
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        function previewProfilePicture(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const preview = document.getElementById('profilePreview');
+                    
+                    // If current preview is a div (placeholder), replace it with img
+                    if (preview.tagName === 'DIV') {
+                        const newImg = document.createElement('img');
+                        newImg.id = 'profilePreview';
+                        newImg.className = 'img-fluid rounded-circle border';
+                        newImg.style.cssText = 'width: 150px; height: 150px; object-fit: cover;';
+                        newImg.src = e.target.result;
+                        newImg.alt = 'Profile Picture';
+                        preview.parentNode.replaceChild(newImg, preview);
+                    } else {
+                        preview.src = e.target.result;
+                    }
+                };
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Character counter for bio
+        const bioTextarea = document.querySelector('textarea[name="Bio"]');
+        if (bioTextarea) {
+            const charCountDiv = document.createElement('div');
+            charCountDiv.className = 'form-text text-end';
+            charCountDiv.style.marginTop = '5px';
+            
+            function updateCharCount() {
+                const currentLength = bioTextarea.value.length;
+                charCountDiv.textContent = `${currentLength}/500 ký tự`;
+                
+                if (currentLength > 500) {
+                    charCountDiv.className = 'form-text text-end text-danger';
+                } else if (currentLength > 450) {
+                    charCountDiv.className = 'form-text text-end text-warning';
+                } else {
+                    charCountDiv.className = 'form-text text-end text-muted';
+                }
+            }
+            
+            bioTextarea.parentNode.appendChild(charCountDiv);
+            bioTextarea.addEventListener('input', updateCharCount);
+            updateCharCount(); // Initial count
+        }
+    </script>
+}
+

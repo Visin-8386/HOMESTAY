@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = ViewData["Title"]?.ToString() ?? "Test Authorization";
+    Layout = "~/Views/Shared/_Layout_New.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="card-title text-center mb-4">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        @ViewData["Title"]
+                    </h1>
+                    
+                    <div class="alert alert-success text-center" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>
+                        @ViewData["Message"]
+                    </div>
+                    
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-user me-2"></i>
+                                    Thông tin người dùng
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Email:</strong> @User.Identity.Name</p>
+                                <p><strong>Vai trò:</strong> 
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <span class="badge bg-danger">Admin</span>
+                                    }
+                                    @if (User.IsInRole("Host"))
+                                    {
+                                        <span class="badge bg-warning">Host</span>
+                                    }
+                                    @if (User.IsInRole("User"))
+                                    {
+                                        <span class="badge bg-info">User</span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    
+                    <div class="mt-4">
+                        <h5>Test các trang khác:</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="list-group">
+                                    <a href="@Url.Action("AdminOnly", "TestAuth")" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-crown text-danger me-2"></i>
+                                        Trang Admin Only
+                                    </a>
+                                    <a href="@Url.Action("HostOnly", "TestAuth")" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-home text-warning me-2"></i>
+                                        Trang Host Only
+                                    </a>
+                                    <a href="@Url.Action("UserOnly", "TestAuth")" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-user text-info me-2"></i>
+                                        Trang User Only
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="list-group">
+                                    <a href="@Url.Action("HostOrUser", "TestAuth")" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-users text-success me-2"></i>
+                                        Trang Host hoặc User
+                                    </a>
+                                    <a href="@Url.Action("Public", "TestAuth")" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-globe text-secondary me-2"></i>
+                                        Trang Public
+                                    </a>
+                                    <a href="@Url.Action("Index", "Admin")" class="list-group-item list-group-item-action">
+                                        <i class="fas fa-cog text-dark me-2"></i>
+                                        Admin Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                            <i class="fas fa-home me-2"></i>
+                            Về trang chủ
+                        </a>
+                        
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a href="@Url.Action("Logout", "Account")" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Đăng xuất
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account")" class="btn btn-outline-success ms-2">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Đăng nhập
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

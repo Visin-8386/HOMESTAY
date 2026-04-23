@@ -1,0 +1,162 @@
+@model WebHS.ViewModels.EditBookingViewModel
+
+@{
+    ViewData["Title"] = "Sửa Đặt Phòng";
+    Layout = "_Layout_New";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Sửa Đặt Phòng #@Model.Id</h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Bookings")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <form asp-action="EditBooking" method="post">
+                    <div class="card-body">
+                        @if (TempData["SuccessMessage"] != null)
+                        {
+                            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                @TempData["SuccessMessage"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        }
+
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="UserId" type="hidden" />
+                        <input asp-for="HomestayId" type="hidden" />
+
+                        <div class="row">
+                            <!-- Booking Information -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Thông tin đặt phòng</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Homestay</label>
+                                            <input type="text" class="form-control" value="@Model.HomestayName" readonly>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">Khách hàng</label>
+                                            <input type="text" class="form-control" value="@Model.UserName (@Model.UserEmail)" readonly>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label asp-for="CheckInDate" class="form-label"></label>
+                                                    <input asp-for="CheckInDate" type="date" class="form-control" />
+                                                    <span asp-validation-for="CheckInDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label asp-for="CheckOutDate" class="form-label"></label>
+                                                    <input asp-for="CheckOutDate" type="date" class="form-control" />
+                                                    <span asp-validation-for="CheckOutDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="NumberOfGuests" class="form-label"></label>
+                                            <input asp-for="NumberOfGuests" type="number" class="form-control" min="1" max="50" />
+                                            <span asp-validation-for="NumberOfGuests" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="Status" class="form-label"></label>
+                                            <select asp-for="Status" class="form-select">
+                                                <option value="@WebHS.Models.BookingStatus.Paid">Đã thanh toán</option>
+                                                <option value="@WebHS.Models.BookingStatus.Completed">Hoàn thành</option>
+                                                <option value="@WebHS.Models.BookingStatus.Cancelled">Đã hủy</option>
+                                            </select>
+                                            <span asp-validation-for="Status" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payment Information -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Thông tin thanh toán</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label asp-for="TotalAmount" class="form-label"></label>
+                                            <div class="input-group">
+                                                <input asp-for="TotalAmount" type="number" class="form-control" step="0.01" min="0" />
+                                                <span class="input-group-text">VNĐ</span>
+                                            </div>
+                                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="DiscountAmount" class="form-label"></label>
+                                            <div class="input-group">
+                                                <input asp-for="DiscountAmount" type="number" class="form-control" step="0.01" min="0" />
+                                                <span class="input-group-text">VNĐ</span>
+                                            </div>
+                                            <span asp-validation-for="DiscountAmount" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="FinalAmount" class="form-label"></label>
+                                            <div class="input-group">
+                                                <input asp-for="FinalAmount" type="number" class="form-control" step="0.01" min="0" />
+                                                <span class="input-group-text">VNĐ</span>
+                                            </div>
+                                            <span asp-validation-for="FinalAmount" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label asp-for="Notes" class="form-label"></label>
+                                            <textarea asp-for="Notes" class="form-control" rows="4" placeholder="Ghi chú thêm về đặt phòng..."></textarea>
+                                            <span asp-validation-for="Notes" class="text-danger"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Lưu thay đổi
+                        </button>
+                        <a href="@Url.Action("Bookings")" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto calculate final amount when total or discount changes
+        function calculateFinalAmount() {
+            const totalAmount = parseFloat($('#TotalAmount').val()) || 0;
+            const discountAmount = parseFloat($('#DiscountAmount').val()) || 0;
+            const finalAmount = Math.max(0, totalAmount - discountAmount);
+            $('#FinalAmount').val(finalAmount.toFixed(2));
+        }
+
+        $(document).ready(function() {
+            $('#TotalAmount, #DiscountAmount').on('input', calculateFinalAmount);
+        });
+    </script>
+}

@@ -1,0 +1,52 @@
+@{
+    ViewData["Title"] = "Test Menu";
+    Layout = "_Layout_New";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h4>Menu Test</h4>
+        </div>
+        <div class="card-body">            <p><strong>User ID:</strong> @ViewBag.UserId</p>
+            @* <p><strong>Is Host:</strong> @ViewBag.IsHost</p> *@
+            <p><strong>Is Admin:</strong> @ViewBag.IsAdmin</p>
+            <p><strong>User Roles:</strong></p>
+            <ul>
+                @if (ViewBag.UserRoles != null)
+                {
+                    @foreach (var role in (ViewBag.UserRoles as List<string>) ?? new List<string>())
+                    {
+                        <li>@role</li>
+                    }
+                }
+            </ul>
+            
+            <div class="mt-4">
+                <h5>Menu Links Test:</h5>
+                <div class="list-group">
+                    <a href="@Url.Action("Dashboard", "Host")" class="list-group-item list-group-item-action">Host Dashboard</a>
+                    <a href="@Url.Action("Homestays", "Host")" class="list-group-item list-group-item-action">Quản lý Homestay</a>
+                    <a href="@Url.Action("Create", "Homestay")" class="list-group-item list-group-item-action">Thêm Homestay</a>
+                    <a href="@Url.Action("ManageBookings", "Host")" class="list-group-item list-group-item-action">Quản lý đặt phòng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>        console.log('User ID:', '@ViewBag.UserId');
+        @* console.log('Is Host:', @ViewBag.IsHost.ToString().ToLower()); *@
+        console.log('Is Admin:', @ViewBag.IsAdmin.ToString().ToLower());
+        console.log('User Roles:', @Html.Raw(Json.Serialize(ViewBag.UserRoles)));
+        
+        // Test dropdown functionality
+        $(document).ready(function() {
+            console.log('Testing dropdown...');
+            $('.dropdown-toggle').each(function() {
+                console.log('Found dropdown:', $(this).text());
+            });
+        });
+    </script>
+}

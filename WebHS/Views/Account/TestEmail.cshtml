@@ -1,0 +1,97 @@
+@{
+    ViewData["Title"] = "Test Email";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope-open-text me-2"></i>
+                        Test Email Configuration
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @TempData["Error"]
+                        </div>
+                    }
+
+                    <form asp-action="TestEmail" method="post">
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-semibold">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">
+                                    <i class="fas fa-envelope text-muted"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       placeholder="Enter test email address" required>
+                            </div>
+                            <div class="form-text">
+                                Email sẽ được gửi đến địa chỉ này để test cấu hình SMTP
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Send Test Email
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Configuration Info -->
+            <div class="card mt-3 border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thông tin cấu hình
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <p class="mb-2">
+                            <strong>SMTP Server:</strong> @{
+                                var emailSettings = ViewBag.EmailSettings as WebHS.Services.EmailSettings;
+                            }
+                            Kiểm tra file appsettings.json
+                        </p>
+                        <p class="mb-2">
+                            <strong>Environment:</strong> 
+                            @if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                            {
+                                <span class="badge bg-warning">Development</span>
+                                <br><small>Email chỉ được log ra console trong Development mode</small>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Production</span>
+                            }
+                        </p>
+                        <p class="mb-0">
+                            <strong>Hướng dẫn:</strong> 
+                            <a href="~/EMAIL_SETUP_GUIDE.md" target="_blank" class="text-info">
+                                Xem hướng dẫn cấu hình email
+                            </a>
+                        </p>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

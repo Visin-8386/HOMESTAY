@@ -1,0 +1,186 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.UserProfileViewModel
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
+<div class="container mt-4">
+    <!-- Success/Error Messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="profile-avatar mb-3">                                @if (!string.IsNullOrEmpty(Model.User.ProfilePicture))
+                                {
+                                    <img src="@Model.User.ProfilePicture" alt="Profile Picture" 
+                                         class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+                                }
+                                else
+                                {
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                         style="width: 150px; height: 150px;">
+                                        <i class="fas fa-user fa-4x text-white"></i>
+                                    </div>
+                                }
+                            </div>
+                            <h5 class="text-primary">@Model.User.FullName</h5>                            <p class="text-muted">
+                                <i class="fas fa-envelope me-1"></i>@Model.User.Email
+                            </p>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Tên</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @Model.User.FirstName
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Họ</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @Model.User.LastName
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Email</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @Model.User.Email
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Số điện thoại</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "Chưa cập nhật" : Model.User.PhoneNumber)
+                                    </div>
+                                </div>                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Địa chỉ</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @(string.IsNullOrEmpty(Model.User.Address) ? "Chưa cập nhật" : Model.User.Address)
+                                    </div>
+                                </div>@if (!string.IsNullOrEmpty(Model.User.Bio))
+                                {
+                                    <div class="col-12 mb-3">
+                                        <label class="form-label fw-semibold text-muted">Giới thiệu</label>
+                                        <div class="border rounded p-2 bg-light">
+                                            @Model.User.Bio
+                                        </div>
+                                    </div>
+                                }
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Ngày tham gia</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @Model.User.CreatedAt.ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label fw-semibold text-muted">Trạng thái tài khoản</label>
+                                    <div class="border rounded p-2 bg-light">
+                                        @if (Model.User.IsActive)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle me-1"></i>Đang hoạt động
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle me-1"></i>Đã khóa
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Action Buttons -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="@Url.Action("EditProfile", "Account")" class="btn btn-primary">
+                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa thông tin
+                                </a>
+                                <a href="@Url.Action("ChangePassword", "Account")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-key me-2"></i>Đổi mật khẩu
+                                </a>
+                                <a href="@Url.Action("Index", "Booking")" class="btn btn-outline-info">
+                                    <i class="fas fa-calendar-alt me-2"></i>Đặt phòng của tôi
+                                </a>
+                                @if (User.IsInRole("Host"))
+                                {
+                                    <a href="@Url.Action("Dashboard", "Host")" class="btn btn-outline-warning">
+                                        <i class="fas fa-home me-2"></i>Quản lý homestay
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- User Statistics -->
+            <div class="row mt-4">
+                <div class="col-md-4">                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-check fa-2x text-primary mb-2"></i>
+                            <h5 class="mb-1">@Model.TotalBookings</h5>
+                            <small class="text-muted">Tổng đặt phòng</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body text-center">
+                            <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                            <h5 class="mb-1">@Model.TotalReviews</h5>
+                            <small class="text-muted">Đánh giá đã viết</small>
+                        </div>
+                    </div>
+                </div>
+                @if (User.IsInRole("Host"))
+                {
+                    <div class="col-md-4">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-home fa-2x text-success mb-2"></i>
+                                <h5 class="mb-1">@Model.TotalHomestays</h5>
+                                <small class="text-muted">Homestay của tôi</small>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Add any profile-specific JavaScript here
+        console.log('Profile page loaded successfully');
+    </script>
+}
+

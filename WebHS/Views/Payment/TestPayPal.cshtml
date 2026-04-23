@@ -1,0 +1,153 @@
+@{
+    ViewData["Title"] = "PayPal Payment Test";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fab fa-paypal"></i> PayPal Payment Integration Test
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>Lỗi:</strong> @ViewBag.Error
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <strong>Thành công!</strong> PayPal payment URL đã được tạo.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Thông tin thanh toán:</h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Số tiền (VND):</span>
+                                        <strong class="text-success">@ViewBag.VNDAmount</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Số tiền (USD):</span>
+                                        <strong class="text-info">@ViewBag.USDAmount</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span>Transaction ID:</span>
+                                        <code>@ViewBag.TransactionId</code>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>PayPal Sandbox Test:</h5>
+                                <div class="mb-3">
+                                    <p class="text-muted">
+                                        Sử dụng thông tin tài khoản PayPal sandbox để test:
+                                    </p>
+                                    <div class="card bg-light">
+                                        <div class="card-body p-2">
+                                            <small>
+                                                <strong>Email:</strong> sb-test@personal.example.com<br>
+                                                <strong>Password:</strong> test1234
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="@ViewBag.PaymentUrl" class="btn btn-primary btn-lg" target="_blank">
+                                <i class="fab fa-paypal"></i> Thanh toán với PayPal
+                            </a>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6>Cách test:</h6>
+                            <ol class="small text-muted">
+                                <li>Click vào nút "Thanh toán với PayPal" để mở cửa sổ PayPal</li>
+                                <li>Đăng nhập bằng tài khoản sandbox hoặc tạo tài khoản test</li>
+                                <li>Hoàn tất thanh toán trong PayPal</li>
+                                <li>Bạn sẽ được chuyển về trang kết quả thanh toán</li>
+                            </ol>
+                        </div>
+                    }
+
+                    <div class="mt-4 text-center">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">
+                            <i class="fas fa-home"></i> Về trang chủ
+                        </a>
+                        <a href="@Url.Action("Checkout", "Payment", new { bookingId = 1 })" class="btn btn-info">
+                            <i class="fas fa-credit-card"></i> Test Payment Flow
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">PayPal Configuration Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Environment:</span>
+                                    <span class="badge bg-warning">Sandbox</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Client ID:</span>
+                                    <span class="badge bg-success">Configured</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Client Secret:</span>
+                                    <span class="badge bg-success">Configured</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Return URL:</span>
+                                    <span class="badge bg-info">localhost:5000</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Cancel URL:</span>
+                                    <span class="badge bg-info">localhost:5000</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between">
+                                    <span>Currency:</span>
+                                    <span class="badge bg-primary">USD (Auto-convert)</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+    .list-group-item {
+        border-left: none;
+        border-right: none;
+    }
+    .list-group-item:first-child {
+        border-top: none;
+    }
+    .list-group-item:last-child {
+        border-bottom: none;
+    }
+</style>

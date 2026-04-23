@@ -1,0 +1,196 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@* Google Tag Manager Integration *@
+@{
+    var gtmContainerId = Configuration["GoogleTagManager:ContainerId"];
+    var gtmEnabled = Configuration.GetValue<bool>("GoogleTagManager:Enabled");
+}
+
+@if (gtmEnabled && !string.IsNullOrEmpty(gtmContainerId) && gtmContainerId != "GTM-XXXXXXX")
+{
+    <!-- Google Tag Manager -->
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','@gtmContainerId');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Enhanced GTM Data Layer -->
+    <script>
+        // Initialize dataLayer if not exists
+        window.dataLayer = window.dataLayer || [];
+
+        // GTM Helper functions
+        function gtmPush(event, data) {
+            window.dataLayer.push(Object.assign({
+                event: event,
+                timestamp: new Date().toISOString()
+            }, data || {}));
+        }
+
+        // Page view tracking
+        gtmPush('page_view', {
+            page_title: '@ViewData["Title"]',
+            page_location: window.location.href,
+            page_path: window.location.pathname
+        });
+
+        // User engagement tracking
+        function trackUserEngagement(action, category, label, value) {
+            gtmPush('user_engagement', {
+                engagement_action: action,
+                engagement_category: category,
+                engagement_label: label,
+                engagement_value: value
+            });
+        }
+
+        // E-commerce tracking for homestay bookings
+        function trackHomestayView(homestayData) {
+            gtmPush('view_item', {
+                currency: 'VND',
+                value: homestayData.price,
+                items: [{
+                    item_id: homestayData.id,
+                    item_name: homestayData.name,
+                    item_category: 'Homestay',
+                    item_category2: homestayData.city,
+                    price: homestayData.price,
+                    quantity: 1
+                }]
+            });
+        }
+
+        function trackBookingStart(homestayData) {
+            gtmPush('begin_checkout', {
+                currency: 'VND',
+                value: homestayData.totalAmount,
+                items: [{
+                    item_id: homestayData.id,
+                    item_name: homestayData.name,
+                    item_category: 'Homestay',
+                    item_category2: homestayData.city,
+                    price: homestayData.pricePerNight,
+                    quantity: homestayData.nights
+                }]
+            });
+        }
+
+        function trackBookingComplete(bookingData) {
+            gtmPush('purchase', {
+                transaction_id: bookingData.id,
+                currency: 'VND',
+                value: bookingData.totalAmount,
+                items: [{
+                    item_id: bookingData.homestayId,
+                    item_name: bookingData.homestayName,
+                    item_category: 'Homestay',
+                    item_category2: bookingData.city,
+                    price: bookingData.pricePerNight,
+                    quantity: bookingData.nights
+                }]
+            });
+        }
+
+        // Search tracking
+        function trackSearch(searchTerm, searchCategory, resultsCount) {
+            gtmPush('search', {
+                search_term: searchTerm,
+                search_category: searchCategory,
+                search_results: resultsCount
+            });
+        }
+
+        // Form tracking
+        function trackFormSubmission(formName, formType) {
+            gtmPush('form_submit', {
+                form_name: formName,
+                form_type: formType
+            });
+        }
+
+        // Error tracking
+        function trackError(errorMessage, errorType, errorLocation) {
+            gtmPush('exception', {
+                description: errorMessage,
+                error_type: errorType,
+                error_location: errorLocation,
+                fatal: false
+            });
+        }
+
+        // Scroll depth tracking
+        let maxScrollDepth = 0;
+        window.addEventListener('scroll', function() {
+            const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+            if (scrollPercent > maxScrollDepth && scrollPercent % 25 === 0) {
+                maxScrollDepth = scrollPercent;
+                gtmPush('scroll', {
+                    scroll_depth: scrollPercent
+                });
+            }
+        });
+
+        // Video tracking (for YouTube integration)
+        function trackVideoPlay(videoId, videoTitle) {
+            gtmPush('video_start', {
+                video_id: videoId,
+                video_title: videoTitle,
+                video_provider: 'YouTube'
+            });
+        }
+
+        function trackVideoComplete(videoId, videoTitle) {
+            gtmPush('video_complete', {
+                video_id: videoId,
+                video_title: videoTitle,
+                video_provider: 'YouTube'
+            });
+        }
+
+        // Make functions globally available
+        window.gtmTrack = {
+            pageView: function(data) { gtmPush('page_view', data); },
+            userEngagement: trackUserEngagement,
+            homestayView: trackHomestayView,
+            bookingStart: trackBookingStart,
+            bookingComplete: trackBookingComplete,
+            search: trackSearch,
+            formSubmit: trackFormSubmission,
+            error: trackError,
+            videoPlay: trackVideoPlay,
+            videoComplete: trackVideoComplete
+        };
+    </script>
+}
+else
+{
+    <!-- Development mode - GTM disabled -->
+    <script>
+        // Mock GTM functions for development
+        window.dataLayer = window.dataLayer || [];
+        window.gtmTrack = {
+            pageView: function(data) { console.log('GTM pageView:', data); },
+            userEngagement: function(action, category, label, value) { 
+                console.log('GTM userEngagement:', {action, category, label, value}); 
+            },
+            homestayView: function(data) { console.log('GTM homestayView:', data); },
+            bookingStart: function(data) { console.log('GTM bookingStart:', data); },
+            bookingComplete: function(data) { console.log('GTM bookingComplete:', data); },
+            search: function(term, category, count) { 
+                console.log('GTM search:', {term, category, count}); 
+            },
+            formSubmit: function(name, type) { console.log('GTM formSubmit:', {name, type}); },
+            error: function(message, type, location) { 
+                console.log('GTM error:', {message, type, location}); 
+            },
+            videoPlay: function(id, title) { console.log('GTM videoPlay:', {id, title}); },
+            videoComplete: function(id, title) { console.log('GTM videoComplete:', {id, title}); }
+        };
+        console.log('Google Tag Manager disabled in development mode');
+    </script>
+}
+

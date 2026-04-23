@@ -1,0 +1,205 @@
+@{
+    ViewData["Title"] = "Xóa dữ liệu cá nhân - Đom Đóm Dream";
+    Layout = "_Layout_New";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <h1 class="text-center mb-4">
+                        <span class="text-danger">🗑️ Xóa dữ liệu cá nhân</span>
+                    </h1>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Quyền của bạn:</strong> Theo quy định bảo vệ dữ liệu cá nhân, bạn có quyền yêu cầu xóa hoàn toàn dữ liệu cá nhân khỏi hệ thống của chúng tôi.
+                    </div>
+
+                    <div class="delete-data-content">
+                        <h2>🔍 Dữ liệu nào sẽ được xóa?</h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h4>Thông tin tài khoản:</h4>
+                                <ul>
+                                    <li>Họ tên, email, số điện thoại</li>
+                                    <li>Ảnh đại diện</li>
+                                    <li>Địa chỉ và thông tin liên hệ</li>
+                                    <li>Lịch sử đăng nhập</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h4>Dữ liệu hoạt động:</h4>
+                                <ul>
+                                    <li>Lịch sử đặt phòng</li>
+                                    <li>Đánh giá và nhận xét</li>
+                                    <li>Homestay đã đăng tải</li>
+                                    <li>Tin nhắn và trao đổi</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h2>📋 Cách thức xóa dữ liệu</h2>
+                        
+                        <div class="method-card mb-3">
+                            <h4 class="text-primary">🔧 Phương pháp 1: Tự xóa trong ứng dụng</h4>
+                            <ol>
+                                <li>Đăng nhập vào tài khoản của bạn</li>
+                                <li>Vào <strong>Cài đặt tài khoản</strong></li>
+                                <li>Chọn <strong>"Xóa tài khoản vĩnh viễn"</strong></li>
+                                <li>Xác nhận bằng mật khẩu</li>
+                                <li>Nhấn <strong>"Xóa hoàn toàn"</strong></li>
+                            </ol>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a href="#" class="btn btn-danger" onclick="confirmDeleteAccount()">
+                                    <i class="fas fa-trash"></i> Xóa tài khoản ngay
+                                </a>
+                            }
+                        </div>
+
+                        <div class="method-card mb-3">
+                            <h4 class="text-success">📧 Phương pháp 2: Gửi yêu cầu qua email</h4>
+                            <p>Gửi email đến: <strong><a href="mailto:visin5749@gmail.com?subject=Yêu cầu xóa dữ liệu cá nhân&body=Tôi yêu cầu xóa toàn bộ dữ liệu cá nhân liên quan đến tài khoản email này khỏi hệ thống Đom Đóm Dream.%0D%0A%0D%0AHọ tên: [Nhập họ tên]%0D%0AEmail tài khoản: [Nhập email]%0D%0ASố điện thoại: [Nhập số điện thoại]%0D%0A%0D%0ACảm ơn!">visin5749@gmail.com</a></strong></p>
+                            <p><strong>Tiêu đề:</strong> Yêu cầu xóa dữ liệu cá nhân</p>
+                            <p><strong>Nội dung cần có:</strong></p>
+                            <ul>
+                                <li>Họ tên đầy đủ</li>
+                                <li>Email tài khoản cần xóa</li>
+                                <li>Số điện thoại (nếu có)</li>
+                                <li>Lý do xóa dữ liệu</li>
+                            </ul>
+                        </div>
+
+                        <div class="method-card mb-3">
+                            <h4 class="text-info">📞 Phương pháp 3: Gọi hotline</h4>
+                            <p><strong>Số điện thoại:</strong> <a href="tel:+84123456789">(+84) 123-456-789</a></p>
+                            <p><strong>Giờ làm việc:</strong> 8:00 - 17:00 (Thứ 2 - Thứ 6)</p>
+                            <p><strong>Thông tin cần chuẩn bị:</strong></p>
+                            <ul>
+                                <li>CMND/CCCD để xác minh danh tính</li>
+                                <li>Email và số điện thoại đăng ký</li>
+                                <li>Thông tin tài khoản</li>
+                            </ul>
+                        </div>
+
+                        <h2>⏱️ Thời gian xử lý</h2>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <strong>Ngay lập tức:</strong> Xóa qua ứng dụng
+                            </div>
+                            <div class="timeline-item">
+                                <strong>1-3 ngày làm việc:</strong> Xác minh yêu cầu qua email/điện thoại
+                            </div>
+                            <div class="timeline-item">
+                                <strong>7-30 ngày:</strong> Xóa hoàn toàn khỏi hệ thống và backup
+                            </div>
+                        </div>
+
+                        <h2>⚠️ Lưu ý quan trọng</h2>
+                        <div class="alert alert-warning">
+                            <h5>Dữ liệu có thể được giữ lại:</h5>
+                            <ul>
+                                <li><strong>Giao dịch tài chính:</strong> Theo quy định pháp luật về kế toán (5 năm)</li>
+                                <li><strong>Tranh chấp pháp lý:</strong> Cho đến khi giải quyết xong</li>
+                                <li><strong>An ninh hệ thống:</strong> Log bảo mật (tối đa 1 năm)</li>
+                                <li><strong>Dữ liệu ẩn danh:</strong> Thống kê không định danh</li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-danger">
+                            <h5>Hậu quả của việc xóa dữ liệu:</h5>
+                            <ul>
+                                <li>❌ Không thể khôi phục tài khoản</li>
+                                <li>❌ Mất toàn bộ lịch sử đặt phòng</li>
+                                <li>❌ Mất đánh giá và xếp hạng</li>
+                                <li>❌ Không thể truy cập dịch vụ</li>
+                            </ul>
+                        </div>
+
+                        <h2>📞 Hỗ trợ</h2>
+                        <p>Nếu bạn có thắc mắc về quy trình xóa dữ liệu, vui lòng liên hệ:</p>
+                        <div class="contact-info">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><i class="fas fa-envelope"></i> <strong>Email:</strong> <a href="mailto:visin5749@gmail.com">visin5749@gmail.com</a></p>
+                                    <p><i class="fas fa-phone"></i> <strong>Hotline:</strong> <a href="tel:+84123456789">(+84) 123-456-789</a></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><i class="fas fa-clock"></i> <strong>Giờ làm việc:</strong> 8:00 - 17:00</p>
+                                    <p><i class="fas fa-calendar"></i> <strong>Ngày làm việc:</strong> Thứ 2 - Thứ 6</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <p><small class="text-muted">Cập nhật lần cuối: 11/06/2025</small></p>
+                            <a asp-action="Terms" class="btn btn-link">← Quay lại Điều khoản sử dụng</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDeleteAccount() {
+            if (confirm('⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA TÀI KHOẢN?\n\nHành động này KHÔNG THỂ HOÀN TÁC!\n\n✅ Nhấn OK để tiếp tục\n❌ Nhấn Cancel để hủy')) {
+                if (confirm('🚨 XÁC NHẬN LẦN CUỐI!\n\nToàn bộ dữ liệu sẽ bị xóa vĩnh viễn:\n• Thông tin cá nhân\n• Lịch sử đặt phòng\n• Đánh giá và nhận xét\n• Homestay đã đăng\n\nBạn có chắc chắn không?')) {
+                    // Redirect to account deletion page
+                    window.location.href = '/Account/DeleteAccount';
+                }
+            }
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .delete-data-content h2 {
+            color: #dc3545;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #dc3545;
+            padding-bottom: 0.5rem;
+        }
+        
+        .delete-data-content h4 {
+            color: #6c757d;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .method-card {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #007bff;
+        }
+        
+        .timeline-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .contact-info {
+            background: #e7f3ff;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .contact-info p {
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-info i {
+            color: #007bff;
+            width: 20px;
+        }
+    </style>
+}
+

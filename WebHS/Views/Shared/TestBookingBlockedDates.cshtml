@@ -1,0 +1,148 @@
+@page
+@using Microsoft.AspNetCore.Authorization
+@using WebHS.Services
+@{
+    ViewData["Title"] = "Test Booking & BlockedDates Logic";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4><i class="fas fa-test-tube"></i> Test Booking & BlockedDates Logic</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Test Actions</h5>
+                    <div class="btn-group-vertical w-100 mb-3" role="group">
+                        <button type="button" class="btn btn-info" onclick="syncBlockedDates()">
+                            <i class="fas fa-sync"></i> Sync BlockedDates with Bookings
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="checkBookedDates(4)">
+                            <i class="fas fa-calendar-check"></i> Check Booked Dates for Homestay #4
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="listAllBlockedDates()">
+                            <i class="fas fa-list"></i> List All BlockedDates
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="createTestBooking()">
+                            <i class="fas fa-plus"></i> Create Test Booking
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Results</h5>
+                    <div id="results" class="border p-3" style="min-height: 300px; background-color: #f8f9fa;">
+                        <em>Click a test action to see results...</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function logResult(message, data = null) {
+    const resultsDiv = document.getElementById('results');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    let logHtml = `<div class="mb-2">
+        <strong>[${timestamp}]</strong> ${message}
+    `;
+    
+    if (data) {
+        logHtml += `<pre class="mt-2 p-2 bg-light border rounded">${JSON.stringify(data, null, 2)}</pre>`;
+    }
+    
+    logHtml += '</div><hr>';
+    
+    resultsDiv.innerHTML = logHtml + resultsDiv.innerHTML;
+}
+
+async function syncBlockedDates() {
+    try {
+        logResult('🔄 Starting sync of BlockedDates with Bookings...');
+        
+        const response = await fetch('/Booking/SyncBlockedDates', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            logResult('✅ Sync completed successfully!', data);
+        } else {
+            logResult('❌ Sync failed', data);
+        }
+    } catch (error) {
+        logResult('💥 Error during sync', { error: error.message });
+    }
+}
+
+async function checkBookedDates(homestayId) {
+    try {
+        logResult(`🔍 Checking booked dates for Homestay #${homestayId}...`);
+        
+        const response = await fetch(`/Booking/GetBookedDates?homestayId=${homestayId}`);
+        const data = await response.json();
+        
+        logResult(`📅 Found ${Array.isArray(data) ? data.length : 0} booked dates`, data);
+    } catch (error) {
+        logResult('💥 Error checking booked dates', { error: error.message });
+    }
+}
+
+async function listAllBlockedDates() {
+    try {
+        logResult('📋 Fetching all BlockedDates...');
+        
+        const response = await fetch('/Booking/GetAllBlockedDates');
+        const data = await response.json();
+        
+        logResult(`📊 Found ${Array.isArray(data) ? data.length : 0} blocked dates`, data);
+    } catch (error) {
+        logResult('💥 Error fetching blocked dates', { error: error.message });
+    }
+}
+
+async function createTestBooking() {
+    try {
+        logResult('🏠 Creating test booking...');
+        
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dayAfter = new Date();
+        dayAfter.setDate(dayAfter.getDate() + 3);
+        
+        const bookingData = {
+            HomestayId: 4,
+            CheckInDate: tomorrow.toISOString().split('T')[0],
+            CheckOutDate: dayAfter.toISOString().split('T')[0],
+            NumberOfGuests: 2,
+            Notes: 'Test booking created from test page'
+        };
+        
+        logResult('📝 Booking data prepared', bookingData);
+        
+        // Since we can't directly create booking without user auth, 
+        // let's just show what would be created
+        logResult('ℹ️ This would create a booking and corresponding BlockedDates', {
+            message: 'To test actual booking creation, use the main booking form while logged in',
+            expectedBlockedDates: [
+                bookingData.CheckInDate,
+                new Date(tomorrow.getTime() + 86400000).toISOString().split('T')[0]
+            ]
+        });
+        
+    } catch (error) {
+        logResult('💥 Error creating test booking', { error: error.message });
+    }
+}
+
+// Clear results
+function clearResults() {
+    document.getElementById('results').innerHTML = '<em>Results cleared...</em>';
+}
+</script>

@@ -1,0 +1,239 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@using WebHSBookingStatus = WebHS.Models.BookingStatus
+@model WebHS.ViewModels.BookingListViewModel
+@{
+    ViewData["Title"] = "Đặt phòng của tôi";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Đặt phòng của tôi</h2>
+                <a asp-controller="Homestay" asp-action="Index" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Đặt phòng mới
+                </a>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="mb-4">
+                <div class="btn-group" role="group">
+                    <a href="@Url.Action("Index", new { status = "all" })" 
+                       class="btn @(Model.Status == "all" ? "btn-primary" : "btn-outline-primary")">
+                        Tất cả
+                    </a>
+                    <a href="@Url.Action("Index", new { status = "Pending" })" 
+                       class="btn @(Model.Status == "Pending" ? "btn-primary" : "btn-outline-primary")">
+                        Chờ xác nhận
+                    </a>
+                    <a href="@Url.Action("Index", new { status = "Confirmed" })" 
+                       class="btn @(Model.Status == "Confirmed" ? "btn-primary" : "btn-outline-primary")">
+                        Đã xác nhận
+                    </a>
+                    <a href="@Url.Action("Index", new { status = "CheckedIn" })" 
+                       class="btn @(Model.Status == "CheckedIn" ? "btn-primary" : "btn-outline-primary")">
+                        Đã checkin
+                    </a>
+                    <a href="@Url.Action("Index", new { status = "CheckedOut" })" 
+                       class="btn @(Model.Status == "CheckedOut" ? "btn-primary" : "btn-outline-primary")">
+                        Đã checkout
+                    </a>
+                    <a href="@Url.Action("Index", new { status = "Cancelled" })" 
+                       class="btn @(Model.Status == "Cancelled" ? "btn-primary" : "btn-outline-primary")">
+                        Đã hủy
+                    </a>
+                </div>
+            </div>
+
+            @if (Model.Bookings.Any())
+            {
+                <!-- Bookings List -->
+                <div class="row">
+                    @foreach (var booking in Model.Bookings)
+                    {
+                        <div class="col-lg-6 mb-4">
+                            <div class="card shadow-sm border-0">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="@(!string.IsNullOrEmpty(booking.PrimaryImage) ? booking.PrimaryImage : "/images/default-homestay.jpg")" 
+                                             class="img-fluid h-100" alt="@booking.HomestayName" style="object-fit: cover;">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h5 class="card-title mb-0">@booking.HomestayName</h5>
+                                                <span class="badge bg-@GetStatusColor(booking.Booking.Status)">
+                                                    @GetStatusText(booking.Booking.Status)
+                                                </span>
+                                            </div>
+                                            
+                                            <p class="card-text">
+                                                <small class="text-muted">Chủ nhà: @booking.HostName</small>
+                                            </p>
+                                            
+                                            <div class="mb-2">
+                                                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                                <span>@booking.Booking.CheckInDate.ToString("dd/MM/yyyy") - @booking.Booking.CheckOutDate.ToString("dd/MM/yyyy")</span>
+                                            </div>
+                                            
+                                            <div class="mb-2">
+                                                <i class="fas fa-users text-primary me-2"></i>
+                                                <span>@booking.Booking.NumberOfGuests khách</span>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                                <i class="fas fa-money-bill-wave text-primary me-2"></i>
+                                                <span class="fw-bold">@booking.Booking.FinalAmount.ToString("N0") VNĐ</span>
+                                            </div>
+                                            
+                                            <div class="d-flex gap-2">
+                                                <a asp-action="Details" asp-route-id="@booking.Booking.Id" class="btn btn-outline-primary btn-sm">
+                                                    <i class="fas fa-eye me-1"></i>Chi tiết
+                                                </a>
+                                                
+                                                @if (booking.CanCancel)
+                                                {
+                                                    <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                            onclick="cancelBooking(@booking.Booking.Id)">
+                                                        <i class="fas fa-times me-1"></i>Hủy
+                                                    </button>
+                                                }
+                                                
+                                                @if (booking.CanReview)
+                                                {
+                                                    <a asp-controller="Review" asp-action="Create" asp-route-bookingId="@booking.Booking.Id" 
+                                                       class="btn btn-outline-warning btn-sm">
+                                                        <i class="fas fa-star me-1"></i>Đánh giá
+                                                    </a>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { status = Model.Status, page = Model.Page - 1 })">Trước</a>
+                            </li>
+                            
+                            @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.Page ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { status = Model.Status, page = i })">@i</a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { status = Model.Status, page = Model.Page + 1 })">Tiếp</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                    <h4>Chưa có đặt phòng nào</h4>
+                    <p class="text-muted">Hãy khám phá những homestay tuyệt vời và đặt phòng ngay!</p>
+                    <a asp-controller="Homestay" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Tìm homestay
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận hủy đặt phòng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy đặt phòng này không?</p>
+                <p class="text-muted small">Lưu ý: Việc hủy phòng có thể phát sinh phí theo chính sách của chủ nhà.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" id="confirmCancel">Xác nhận hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let bookingIdToCancel = null;
+        
+        function cancelBooking(bookingId) {
+            bookingIdToCancel = bookingId;
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+        
+        document.getElementById('confirmCancel').addEventListener('click', function() {
+            if (bookingIdToCancel) {
+                fetch(`/Booking/Cancel/${bookingIdToCancel}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra khi hủy đặt phòng');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi hủy đặt phòng');
+                });
+                
+                var modal = bootstrap.Modal.getInstance(document.getElementById('cancelModal'));
+                modal.hide();
+            }
+        });
+    </script>
+}
+
+@functions {
+    private string GetStatusColor(WebHSBookingStatus status)
+    {
+        return status switch
+        {
+            WebHSBookingStatus.Paid => "warning",
+            WebHSBookingStatus.Completed => "primary",
+            WebHSBookingStatus.Cancelled => "danger",
+            _ => "secondary"
+        };
+    }
+    
+    private string GetStatusText(WebHSBookingStatus status)
+    {
+        return status switch
+        {
+            WebHSBookingStatus.Paid => "Đã thanh toán",
+            WebHSBookingStatus.Completed => "Đã hoàn thành",
+            WebHSBookingStatus.Cancelled => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+}
+
+

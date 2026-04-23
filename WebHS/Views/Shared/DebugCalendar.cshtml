@@ -1,0 +1,182 @@
+@{
+    ViewData["Title"] = "Debug Calendar System";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-info text-white">
+            <h4><i class="fas fa-bug"></i> Debug Calendar & Booking System</h4>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Debug Actions for Homestay #9</h5>
+                    <div class="btn-group-vertical w-100 mb-3" role="group">
+                        <button type="button" class="btn btn-primary" onclick="checkBookings()">
+                            <i class="fas fa-search"></i> Check Bookings in Database
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="checkBlockedDates()">
+                            <i class="fas fa-calendar-times"></i> Check BlockedDates
+                        </button>
+                        <button type="button" class="btn btn-warning" onclick="getBookedDatesAPI()">
+                            <i class="fas fa-api"></i> Test GetBookedDates API
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="createTestBooking()">
+                            <i class="fas fa-plus"></i> Create Test Booking
+                        </button>
+                        <button type="button" class="btn btn-info" onclick="syncSystem()">
+                            <i class="fas fa-sync"></i> Sync Entire System
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="clearResults()">
+                            <i class="fas fa-trash"></i> Clear Results
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Debug Results</h5>
+                    <div id="results" class="border p-3" style="min-height: 400px; background-color: #f8f9fa; overflow-y: auto; max-height: 600px;">
+                        <em>Click a debug action to see results...</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function logResult(title, data = null, type = 'info') {
+    const resultsDiv = document.getElementById('results');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    let iconClass = 'fas fa-info-circle';
+    let colorClass = 'text-info';
+    
+    switch(type) {
+        case 'success': iconClass = 'fas fa-check-circle'; colorClass = 'text-success'; break;
+        case 'error': iconClass = 'fas fa-exclamation-circle'; colorClass = 'text-danger'; break;
+        case 'warning': iconClass = 'fas fa-exclamation-triangle'; colorClass = 'text-warning'; break;
+    }
+    
+    let logHtml = `<div class="mb-2 border-start border-3 border-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} ps-2">
+        <div class="d-flex align-items-center mb-1">
+            <i class="${iconClass} ${colorClass} me-2"></i>
+            <strong>[${timestamp}]</strong>
+            <span class="ms-2">${title}</span>
+        </div>
+    `;
+    
+    if (data) {
+        logHtml += `<pre class="mt-2 p-2 bg-light border rounded small">${JSON.stringify(data, null, 2)}</pre>`;
+    }
+    
+    logHtml += '</div><hr>';
+    
+    resultsDiv.innerHTML = logHtml + resultsDiv.innerHTML;
+}
+
+async function checkBookings() {
+    try {
+        logResult('🔍 Checking bookings in database...', null, 'info');
+        
+        const response = await fetch('/Booking/EnsureTestBookings/9');
+        const data = await response.json();
+        
+        if (data.success) {
+            logResult('✅ Bookings check completed', data, 'success');
+        } else {
+            logResult('❌ Bookings check failed', data, 'error');
+        }
+    } catch (error) {
+        logResult('💥 Error checking bookings', { error: error.message }, 'error');
+    }
+}
+
+async function checkBlockedDates() {
+    try {
+        logResult('📅 Checking BlockedDates...', null, 'info');
+        
+        const response = await fetch('/Booking/GetAllBlockedDates');
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+            const homestay9Dates = data.filter(bd => bd.HomestayId === 9);
+            logResult(`📊 Found ${homestay9Dates.length} BlockedDates for Homestay #9`, {
+                total: data.length,
+                homestay9: homestay9Dates
+            }, 'success');
+        } else {
+            logResult('❌ Failed to get BlockedDates', data, 'error');
+        }
+    } catch (error) {
+        logResult('💥 Error checking BlockedDates', { error: error.message }, 'error');
+    }
+}
+
+async function getBookedDatesAPI() {
+    try {
+        logResult('🔌 Testing GetBookedDates API...', null, 'info');
+        
+        const response = await fetch('/Booking/GetBookedDates?homestayId=9');
+        const data = await response.json();
+        
+        if (Array.isArray(data)) {
+            logResult(`📈 GetBookedDates API returned ${data.length} dates`, data, 'success');
+        } else {
+            logResult('❌ GetBookedDates API error', data, 'error');
+        }
+    } catch (error) {
+        logResult('💥 Error testing API', { error: error.message }, 'error');
+    }
+}
+
+async function createTestBooking() {
+    try {
+        logResult('🏗️ Creating test booking...', null, 'info');
+        
+        // First ensure test bookings exist
+        const response = await fetch('/Booking/EnsureTestBookings/9', { method: 'GET' });
+        const data = await response.json();
+        
+        logResult('📝 Test booking creation result', data, data.success ? 'success' : 'warning');
+        
+        // Then sync blocked dates
+        await syncSystem();
+        
+    } catch (error) {
+        logResult('💥 Error creating test booking', { error: error.message }, 'error');
+    }
+}
+
+async function syncSystem() {
+    try {
+        logResult('🔄 Syncing entire system...', null, 'info');
+        
+        const response = await fetch('/Booking/SyncBlockedDates', { method: 'POST' });
+        const data = await response.json();
+        
+        if (data.success) {
+            logResult('✅ System sync completed', data, 'success');
+            
+            // Check results after sync
+            setTimeout(async () => {
+                await getBookedDatesAPI();
+            }, 1000);
+        } else {
+            logResult('❌ System sync failed', data, 'error');
+        }
+    } catch (error) {
+        logResult('💥 Error syncing system', { error: error.message }, 'error');
+    }
+}
+
+function clearResults() {
+    document.getElementById('results').innerHTML = '<em>Results cleared...</em>';
+}
+
+// Auto-run initial checks
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        checkBookings();
+    }, 500);
+});
+</script>

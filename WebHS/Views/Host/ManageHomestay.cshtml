@@ -1,0 +1,500 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.HomestayDetailViewModel
+
+@{
+    ViewData["Title"] = "Quản Lý Homestay: " + Model.Homestay.Name;
+    Layout = "_Layout_New";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>@Model.Homestay.Name</h2>
+                    <div class="d-flex align-items-center">
+                        @if(Model.Homestay.IsApproved && Model.Homestay.IsActive)
+                        {
+                            <span class="badge bg-success me-2">Đã duyệt</span>
+                        }
+                        else if(!Model.Homestay.IsApproved && Model.Homestay.IsActive)
+                        {
+                            <span class="badge bg-warning text-dark me-2">Chờ duyệt</span>
+                        }
+                        else if(!Model.Homestay.IsActive)
+                        {
+                            <span class="badge bg-secondary me-2">Tạm ngưng</span>
+                        }
+                        
+                        @if (!string.IsNullOrEmpty(Model.Homestay.YouTubeVideoId))
+                        {
+                            <span class="badge bg-danger me-2">
+                                <i class="fab fa-youtube"></i> Có video
+                            </span>
+                        }
+                        
+                        <small class="text-muted">
+                            ID: @Model.Homestay.Id | Tạo: @Model.Homestay.CreatedAt.ToString("dd/MM/yyyy")
+                        </small>
+                    </div>
+                </div>
+                <div>
+                    <a href="@Url.Action("Homestays")" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                    <a href="@Url.Action("Details", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-outline-info me-2" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Xem trang công khai
+                    </a>
+                    <a href="@Url.Action("Edit", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Chỉnh sửa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column - Main Content -->
+        <div class="col-lg-8">
+            
+            <!-- Quick Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center bg-primary text-white">
+                        <div class="card-body">
+                            <h4>@Model.Homestay.PricePerNight.ToString("N0")</h4>
+                            <small>VNĐ/đêm</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-info text-white">
+                        <div class="card-body">
+                            <h4>@(Model.AverageRating > 0 ? Model.AverageRating.ToString("F1") : "0")</h4>
+                            <small>Điểm đánh giá</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-success text-white">
+                        <div class="card-body">
+                            <h4>@(Model.ReviewBookings?.Count() ?? 0)</h4>
+                            <small>Đánh giá</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-warning text-white">
+                        <div class="card-body">
+                            <h4>@Model.Homestay.MaxGuests</h4>
+                            <small>Khách tối đa</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- YouTube Video Section -->
+            @if (!string.IsNullOrEmpty(Model.Homestay.YouTubeVideoId))
+            {
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fab fa-youtube text-danger me-2"></i>Video giới thiệu</h5>
+                        <div>
+                            <a href="https://www.youtube.com/watch?v=@Model.Homestay.YouTubeVideoId" target="_blank" class="btn btn-sm btn-outline-danger">
+                                <i class="fab fa-youtube"></i> Xem trên YouTube
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="ratio ratio-16x9">
+                            <iframe src="https://www.youtube.com/embed/@Model.Homestay.YouTubeVideoId?rel=0&modestbranding=1" 
+                                    title="Video giới thiệu homestay" 
+                                    allowfullscreen
+                                    class="rounded">
+                            </iframe>
+                        </div>
+                        <div class="mt-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <strong>Video ID:</strong> @Model.Homestay.YouTubeVideoId
+                                </small>
+                                <div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="copyVideoId()">
+                                        <i class="fas fa-copy"></i> Copy ID
+                                    </button>
+                                    <a href="@Url.Action("Edit", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-edit"></i> Thay đổi video
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card mb-4 border-dashed">
+                    <div class="card-body text-center">
+                        <i class="fab fa-youtube fa-3x text-muted mb-3"></i>
+                        <h5>Chưa có video giới thiệu</h5>
+                        <p class="text-muted">Thêm video YouTube để thu hút khách hàng</p>
+                        <a href="@Url.Action("Edit", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Thêm video
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <!-- Images Gallery -->
+            @if (Model.Images?.Any() == true)
+            {
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5><i class="fas fa-images me-2"></i>Hình ảnh (@Model.Images.Count)</h5>
+                        <a href="@Url.Action("Edit", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i> Quản lý hình ảnh
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            @foreach (var image in Model.Images.Take(6))
+                            {
+                                <div class="col-4 col-md-2">
+                                    <img src="@image.ImageUrl" class="img-fluid rounded shadow-sm" 
+                                         style="height: 80px; width: 100%; object-fit: cover; cursor: pointer;"
+                                         onclick="showImageModal('@image.ImageUrl', '@Model.Homestay.Name')">
+                                </div>
+                            }
+                            @if (Model.Images.Count > 6)
+                            {
+                                <div class="col-4 col-md-2">
+                                    <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                         style="height: 80px; cursor: pointer;"
+                                         onclick="showAllImages()">
+                                        <span class="text-muted">+@(Model.Images.Count - 6)</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle me-2"></i>Thông tin cơ bản</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Địa chỉ:</dt>
+                                <dd class="col-sm-8">@Model.Homestay.Address</dd>
+                                
+                                <dt class="col-sm-4">Thành phố:</dt>
+                                <dd class="col-sm-8">@Model.Homestay.City, @Model.Homestay.State</dd>
+                                
+                                <dt class="col-sm-4">Mã bưu điện:</dt>
+                                <dd class="col-sm-8">@(Model.Homestay.ZipCode ?? "Chưa có")</dd>
+                                
+                                <dt class="col-sm-4">Quốc gia:</dt>
+                                <dd class="col-sm-8">@Model.Homestay.Country</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">Phòng ngủ:</dt>
+                                <dd class="col-sm-8">@Model.Homestay.Bedrooms</dd>
+                                
+                                <dt class="col-sm-4">Phòng tắm:</dt>
+                                <dd class="col-sm-8">@Model.Homestay.Bathrooms</dd>
+                                
+                                <dt class="col-sm-4">Khách tối đa:</dt>
+                                <dd class="col-sm-8">@Model.Homestay.MaxGuests người</dd>
+                                
+                                <dt class="col-sm-4">Cập nhật:</dt>
+                                <dd class="col-sm-8">@(Model.Homestay.UpdatedAt?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            @if (!string.IsNullOrEmpty(Model.Homestay.Description))
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-align-left me-2"></i>Mô tả</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>@Model.Homestay.Description</p>
+                    </div>
+                </div>
+            }
+
+            <!-- Amenities -->
+            @if (Model.Amenities?.Any() == true)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-star me-2"></i>Tiện nghi (@Model.Amenities.Count())</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var amenity in Model.Amenities)
+                            {
+                                <div class="col-6 col-md-4 mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>@amenity.Name
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Right Column - Actions & Quick Info -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-tools me-2"></i>Thao tác nhanh</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("Edit", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>Chỉnh sửa thông tin
+                        </a>
+                        <a href="@Url.Action("Calendar", "Pricing", new { id = Model.Homestay.Id })" class="btn btn-warning">
+                            <i class="fas fa-calendar-alt me-2"></i>Quản lý giá & lịch
+                        </a>
+                        <a href="@Url.Action("Details", "Homestay", new { id = Model.Homestay.Id })" class="btn btn-info" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>Xem trang công khai
+                        </a>
+                        
+                        <hr>
+                        
+                        @if (Model.Homestay.IsActive)
+                        {
+                            <button class="btn btn-outline-danger" onclick="toggleHomestayStatus(@Model.Homestay.Id, false)">
+                                <i class="fas fa-pause me-2"></i>Tạm ngưng hoạt động
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-success" onclick="toggleHomestayStatus(@Model.Homestay.Id, true)">
+                                <i class="fas fa-play me-2"></i>Kích hoạt lại
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-line me-2"></i>Hiệu suất</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary">@(Model.AverageRating > 0 ? Model.AverageRating.ToString("F1") : "0")</h4>
+                                <small class="text-muted">Điểm đánh giá</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success">@(Model.ReviewBookings?.Count() ?? 0)</h4>
+                            <small class="text-muted">Số đánh giá</small>
+                        </div>
+                    </div>
+                    
+                    @if (Model.AverageRating > 0)
+                    {
+                        <div class="mt-3">
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: @((Model.AverageRating / 5) * 100)%"></div>
+                            </div>
+                            <small class="text-muted">@Model.AverageRating/5 sao</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Reviews -->
+            @if (Model.ReviewBookings?.Any() == true)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-comments me-2"></i>Đánh giá gần đây</h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var review in Model.ReviewBookings.Take(3))
+                        {
+                            <div class="mb-3 @(Model.ReviewBookings.Take(3).Last() != review ? "border-bottom pb-3" : "")">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <strong>@review.User.FirstName @review.User.LastName</strong>
+                                    <div class="text-warning">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= review.ReviewRating ? "" : "text-muted") fa-sm"></i>
+                                        }
+                                    </div>
+                                </div>
+                                <p class="mb-1 small">@review.ReviewComment</p>
+                                <small class="text-muted">@review.ReviewCreatedAt?.ToString("dd/MM/yyyy")</small>
+                            </div>
+                        }
+                        
+                        @if (Model.ReviewBookings.Count() > 3)
+                        {
+                            <div class="text-center">
+                                <small class="text-muted">và @(Model.ReviewBookings.Count() - 3) đánh giá khác...</small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalTitle">Hình ảnh</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="">
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function copyVideoId() {
+            const videoId = '@Model.Homestay.YouTubeVideoId';
+            navigator.clipboard.writeText(videoId).then(function() {
+                // Show success toast
+                showToast('Đã copy Video ID: ' + videoId, 'success');
+            }).catch(function() {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = videoId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showToast('Đã copy Video ID: ' + videoId, 'success');
+            });
+        }
+
+        function showImageModal(imageSrc, title) {
+            document.getElementById('modalImage').src = imageSrc;
+            document.getElementById('imageModalTitle').textContent = title;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
+
+        function showAllImages() {
+            // This would open a gallery view - can be implemented later
+            alert('Tính năng xem tất cả hình ảnh sẽ được phát triển trong tương lai');
+        }
+
+        function toggleHomestayStatus(id, isActive) {
+            const action = isActive ? 'kích hoạt' : 'tạm ngưng';
+            if (confirm(`Bạn có chắc muốn ${action} homestay này?`)) {
+                // AJAX call to toggle status
+                fetch(`/Host/ToggleHomestayStatus/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                    },
+                    body: JSON.stringify({ isActive: isActive })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi cập nhật trạng thái');
+                });
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close ms-2" onclick="this.parentElement.remove()"></button>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 3000);
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .border-dashed {
+            border: 2px dashed #dee2e6 !important;
+        }
+        
+        .card-img-top {
+            transition: transform 0.2s ease-in-out;
+        }
+        .card-img-top:hover {
+            transform: scale(1.05);
+        }
+        
+        .progress {
+            border-radius: 10px;
+        }
+        
+        .dl-horizontal dt {
+            text-align: left;
+        }
+        
+        .badge {
+            font-size: 0.75em;
+        }
+        
+        .card-header h5 {
+            margin-bottom: 0;
+        }
+        
+        @@media (max-width: 768px) {
+            .col-lg-4 {
+                margin-top: 2rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn-group .btn {
+                border-radius: 0.375rem !important;
+                margin-bottom: 0.25rem;
+            }
+        }
+    </style>
+}

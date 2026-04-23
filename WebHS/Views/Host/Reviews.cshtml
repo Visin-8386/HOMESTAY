@@ -1,0 +1,152 @@
+@model IEnumerable<WebHS.ViewModels.HostReviewViewModel>
+@{
+    ViewData["Title"] = "Đánh Giá Đã Nhận";
+    Layout = "_Layout_New";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-star mr-2"></i>
+                        Đánh Giá Đã Nhận
+                    </h3>
+                    <div class="card-tools">
+                        <span class="badge badge-info">@Model.Count() đánh giá</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var review in Model)
+                            {
+                                <div class="col-lg-6 col-12 mb-4">
+                                    <div class="card border-left-primary h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <div>
+                                                    <h5 class="card-title mb-1">@review.HomestayName</h5>
+                                                    <small class="text-muted">@review.GuestName</small>
+                                                </div>
+                                                <div class="text-right">
+                                                    <div class="rating mb-1">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= review.Rating)
+                                                            {
+                                                                <i class="fas fa-star text-warning"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="far fa-star text-muted"></i>
+                                                            }
+                                                        }
+                                                    </div>
+                                                    <small class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                                </div>
+                                            </div>
+                                            
+                                            @if (!string.IsNullOrEmpty(review.Comment))
+                                            {
+                                                <blockquote class="blockquote mb-3">
+                                                    <p class="mb-0 font-italic">"@review.Comment"</p>
+                                                </blockquote>
+                                            }
+                                            
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar-check mr-1"></i>
+                                                        Check-in: @review.CheckInDate.ToString("dd/MM/yyyy")
+                                                    </small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar-times mr-1"></i>
+                                                        Check-out: @review.CheckOutDate.ToString("dd/MM/yyyy")
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        @if (Model.Count() > 0)
+                        {
+                            <div class="mt-4">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="card bg-info text-white">
+                                            <div class="card-body text-center">
+                                                <h4>@Model.Average(r => r.Rating).ToString("F1")</h4>
+                                                <small>Điểm trung bình</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-success text-white">
+                                            <div class="card-body text-center">
+                                                <h4>@Model.Count(r => r.Rating >= 4)</h4>
+                                                <small>Đánh giá tích cực (≥4 sao)</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="card bg-warning text-white">
+                                            <div class="card-body text-center">
+                                                <h4>@Model.Count(r => !string.IsNullOrEmpty(r.Comment))</h4>
+                                                <small>Có bình luận</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-star-half-alt fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Chưa có đánh giá nào</h4>
+                            <p class="text-muted">Các đánh giá từ khách hàng sẽ xuất hiện ở đây.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .border-left-primary {
+            border-left: 4px solid #007bff !important;
+        }
+        
+        .rating .fas, .rating .far {
+            font-size: 1.1rem;
+        }
+        
+        .blockquote {
+            border-left: 4px solid #e9ecef;
+            padding-left: 1rem;
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 0.25rem;
+        }
+        
+        .card.h-100 {
+            transition: transform 0.2s ease;
+        }
+        
+        .card.h-100:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+}

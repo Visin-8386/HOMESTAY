@@ -1,0 +1,40 @@
+@{
+    ViewData["Title"] = "Authentication Debug";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Authentication Debug</h4>
+                </div>
+                <div class="card-body">
+                    <p>This page helps debug authentication issues.</p>
+                    
+                    <div class="mb-3">
+                        <a href="/Account/DebugAuth" class="btn btn-primary">Check Authentication State</a>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Test External Login</h5>
+                        <a href="/Account/ExternalLogin?provider=Google" class="btn btn-danger">
+                            <i class="fab fa-google"></i> Test Google Login
+                        </a>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6>Common Issues:</h6>
+                        <ul>
+                            <li>Check that <code>http://localhost:5000/signin-google</code> is added to Google Console as an authorized redirect URI</li>
+                            <li>Verify Google Client ID and Client Secret are correct</li>
+                            <li>Ensure authentication scheme is properly configured</li>
+                            <li>Check browser developer tools for any console errors</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

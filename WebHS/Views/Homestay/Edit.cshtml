@@ -1,0 +1,932 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.EditHomestayViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Homestay";
+    Layout = "_Layout_New";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Chỉnh Sửa Homestay</h4>
+                    <p class="text-muted mb-0">Cập nhật thông tin homestay của bạn</p>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <!-- Basic Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Thông tin cơ bản</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label asp-for="Name" class="form-label">Tên homestay *</label>
+                                        <input asp-for="Name" class="form-control" placeholder="Nhập tên homestay">
+                                        <span asp-validation-for="Name" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="PricePerNight" class="form-label">Giá mỗi đêm (VNĐ) *</label>
+                                        <input asp-for="PricePerNight" type="number" class="form-control" placeholder="0" min="0" step="1000">
+                                        <span asp-validation-for="PricePerNight" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Description" class="form-label">Mô tả *</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết về homestay của bạn"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Location Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Thông tin địa điểm</h5>
+                            
+                            <div class="form-group">
+                                <label asp-for="Address" class="form-label">Địa chỉ *</label>
+                                <input asp-for="Address" class="form-control" placeholder="Số nhà, tên đường">
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Country" class="form-label">Quốc gia *</label>
+                                        <input asp-for="Country" class="form-control" value="Vietnam" readonly>
+                                        <span asp-validation-for="Country" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="City" class="form-label">Tỉnh/Thành phố *</label>
+                                        <select id="provinceSelect" class="form-control">
+                                            <option value="">-- Chọn tỉnh/thành phố --</option>
+                                        </select>
+                                        <input asp-for="City" type="hidden" id="provinceName" />
+                                        <span asp-validation-for="City" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="District" class="form-label">Quận/Huyện *</label>
+                                        <select id="districtSelect" class="form-control" disabled>
+                                            <option value="">-- Chọn quận/huyện --</option>
+                                        </select>
+                                        <input asp-for="District" type="hidden" id="districtName" />
+                                        <span asp-validation-for="District" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Ward" class="form-label">Phường/Xã *</label>
+                                        <select id="wardSelect" class="form-control" disabled>
+                                            <option value="">-- Chọn phường/xã --</option>
+                                        </select>
+                                        <input asp-for="Ward" type="hidden" id="wardName" />
+                                        <span asp-validation-for="Ward" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ZipCode" class="form-label">Mã bưu điện *</label>
+                                        <input asp-for="ZipCode" class="form-control" placeholder="Mã bưu điện">
+                                        <span asp-validation-for="ZipCode" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="State" class="form-label">Khu vực</label>
+                                        <input asp-for="State" class="form-control" readonly placeholder="Tự động xác định">
+                                        <span asp-validation-for="State" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Latitude" class="form-label">Vĩ độ</label>
+                                        <input asp-for="Latitude" type="number" step="any" class="form-control" placeholder="Tự động phát hiện">
+                                        <span asp-validation-for="Latitude" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Longitude" class="form-label">Kinh độ</label>
+                                        <input asp-for="Longitude" type="number" step="any" class="form-control" placeholder="Tự động phát hiện">
+                                        <span asp-validation-for="Longitude" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property Details -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Chi tiết căn hộ</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="MaxGuests" class="form-label">Số khách tối đa *</label>
+                                        <input asp-for="MaxGuests" type="number" class="form-control" min="1" max="50">
+                                        <span asp-validation-for="MaxGuests" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Bedrooms" class="form-label">Số phòng ngủ *</label>
+                                        <input asp-for="Bedrooms" type="number" class="form-control" min="1" max="20">
+                                        <span asp-validation-for="Bedrooms" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Bathrooms" class="form-label">Số phòng tắm *</label>
+                                        <input asp-for="Bathrooms" type="number" class="form-control" min="1" max="20">
+                                        <span asp-validation-for="Bathrooms" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Amenities -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Tiện nghi</h5>
+                            
+                            <div class="row" id="amenities-container">
+                                @if (ViewBag.Amenities != null)
+                                {
+                                    @foreach (var amenity in (IEnumerable<WebHS.Models.Amenity>)ViewBag.Amenities)
+                                    {
+                                        <div class="col-md-6 col-lg-4 mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       name="AmenityIds" value="@amenity.Id" id="amenity_@amenity.Id"
+                                                       @(Model.AmenityIds != null && Model.AmenityIds.Contains(amenity.Id) ? "checked" : "") />
+                                                <label class="form-check-label" for="amenity_@amenity.Id">
+                                                    <i class="@amenity.Icon me-2"></i>
+                                                    @amenity.Name
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Existing Images -->
+                        @if (Model.ExistingImages.Any())
+                        {
+                            <div class="mb-4">
+                                <h5 class="text-primary border-bottom pb-2">Hình ảnh hiện tại</h5>
+                                
+                                <div class="row" id="existing-images-container">
+                                    @foreach (var image in Model.ExistingImages)
+                                    {
+                                        <div class="col-md-4 col-lg-3 mb-3" data-image-id="@image.Id">
+                                            <div class="card">
+                                                <img src="@image.ImageUrl" class="card-img-top" alt="Homestay Image" style="height: 150px; object-fit: cover;">
+                                                <div class="card-body p-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" 
+                                                               name="ImagesToDelete" value="@image.Id" id="delete_@image.Id">
+                                                        <label class="form-check-label text-danger" for="delete_@image.Id">
+                                                            <small>Xóa hình này</small>
+                                                        </label>
+                                                    </div>
+                                                    @if (image.IsPrimary)
+                                                    {
+                                                        <span class="badge bg-primary">Ảnh chính</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+
+                        <!-- New Images Upload -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Thêm hình ảnh mới</h5>
+                            
+                            <div class="form-group">
+                                <label asp-for="Images" class="form-label">Chọn hình ảnh</label>
+                                <input asp-for="Images" type="file" class="form-control" multiple accept="image/*" id="image-upload">
+                                <div class="form-text">Chọn nhiều hình ảnh để hiển thị homestay của bạn. Định dạng: JPG, PNG, GIF. Kích thước tối đa: 5MB mỗi ảnh.</div>
+                                <span asp-validation-for="Images" class="text-danger"></span>
+                            </div>                            <!-- Image Preview Container -->
+                            <div class="row mt-3" id="image-preview-container"></div>
+                        </div>
+
+                        <!-- Media & Video Section -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Media & Video (Tùy chọn)</h5>
+                            
+                            <div class="form-group">
+                                <label asp-for="YouTubeVideoId" class="form-label">
+                                    YouTube Video ID 
+                                    <small class="text-muted">(không bắt buộc)</small>
+                                </label>
+                                <input asp-for="YouTubeVideoId" class="form-control" placeholder="Ví dụ: dQw4w9WgXcQ" maxlength="50">
+                                <span asp-validation-for="YouTubeVideoId" class="text-danger"></span>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Nhập ID video YouTube để hiển thị video giới thiệu homestay. 
+                                    <br>
+                                    <strong>Cách lấy Video ID:</strong> Từ URL "https://www.youtube.com/watch?v=<strong>dQw4w9WgXcQ</strong>", chỉ cần lấy phần sau "v="
+                                </small>
+                                
+                                <!-- Video Preview -->
+                                <div id="videoPreview" class="mt-3" style="display: none;">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Xem trước video:</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="videoContainer" class="ratio ratio-16x9">
+                                                <!-- Video embed sẽ được load tại đây -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Homestays", "Host")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submit-btn">
+                                <i class="fas fa-save"></i> Cập nhật Homestay
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        $(document).ready(function() {
+            // Load countries on page load and set existing values
+            loadCountries();
+            
+            // Cascading dropdown functionality
+            $('#countrySelect').on('change', function() {
+                var countryId = $(this).val();
+                var countryText = $(this).find('option:selected').text();
+                $('#countryName').val(countryText);
+                
+                // Clear and disable dependent dropdowns
+                clearAndDisableSelect('#provinceSelect', '-- Chọn tỉnh/thành phố --');
+                clearAndDisableSelect('#districtSelect', '-- Chọn quận/huyện --');
+                clearAndDisableSelect('#wardSelect', '-- Chọn phường/xã --');
+                
+                if (countryId) {
+                    loadProvinces(countryId);
+                }
+            });
+            
+            $('#provinceSelect').on('change', function() {
+                var provinceId = $(this).val();
+                var provinceText = $(this).find('option:selected').text();
+                $('#provinceName').val(provinceText);
+                $('#stateName').val(getRegionFromProvince(provinceText));
+                
+                // Clear and disable dependent dropdowns
+                clearAndDisableSelect('#districtSelect', '-- Chọn quận/huyện --');
+                clearAndDisableSelect('#wardSelect', '-- Chọn phường/xã --');
+                
+                if (provinceId) {
+                    loadDistricts(provinceId);
+                }
+            });
+            
+            $('#districtSelect').on('change', function() {
+                var districtId = $(this).val();
+                var districtText = $(this).find('option:selected').text();
+                $('#districtName').val(districtText);
+                
+                // Clear and disable dependent dropdown
+                clearAndDisableSelect('#wardSelect', '-- Chọn phường/xã --');
+                
+                if (districtId) {
+                    loadWards(districtId);
+                }
+            });
+            
+            $('#wardSelect').on('change', function() {
+                var wardText = $(this).find('option:selected').text();
+                $('#wardName').val(wardText);
+            });
+            
+            // Functions for loading data
+            function loadCountries() {
+                $.get('/api/address/countries')
+                    .done(function(data) {
+                        var select = $('#countrySelect');
+                        select.empty().append('<option value="">-- Chọn quốc gia --</option>');
+                        
+                        $.each(data, function(index, country) {
+                            var option = $('<option></option>')
+                                .attr('value', country.id)
+                                .text(country.name);
+                            select.append(option);
+                        });
+                        
+                        // Auto-select Vietnam if available
+                        var vietnamOption = select.find('option:contains("Vietnam")');
+                        if (vietnamOption.length > 0) {
+                            vietnamOption.prop('selected', true);
+                            $('#countrySelect').trigger('change');
+                        }
+                    })
+                    .fail(function() {
+                        console.error('Failed to load countries');
+                    });
+            }
+            
+            function loadProvinces(countryId) {
+                $('#provinceSelect').prop('disabled', true);
+                
+                $.get('/api/address/provinces/' + countryId)
+                    .done(function(data) {
+                        var select = $('#provinceSelect');
+                        select.empty().append('<option value="">-- Chọn tỉnh/thành phố --</option>');
+                        
+                        $.each(data, function(index, province) {
+                            var option = $('<option></option>')
+                                .attr('value', province.id)
+                                .text(province.name);
+                            select.append(option);
+                        });
+                        
+                        select.prop('disabled', false);
+                    })
+                    .fail(function() {
+                        console.error('Failed to load provinces');
+                        $('#provinceSelect').prop('disabled', false);
+                    });
+            }
+            
+            function loadDistricts(provinceId) {
+                $('#districtSelect').prop('disabled', true);
+                
+                $.get('/api/address/districts/' + provinceId)
+                    .done(function(data) {
+                        var select = $('#districtSelect');
+                        select.empty().append('<option value="">-- Chọn quận/huyện --</option>');
+                        
+                        $.each(data, function(index, district) {
+                            var option = $('<option></option>')
+                                .attr('value', district.id)
+                                .text(district.name);
+                            select.append(option);
+                        });
+                        
+                        select.prop('disabled', false);
+                    })
+                    .fail(function() {
+                        console.error('Failed to load districts');
+                        $('#districtSelect').prop('disabled', false);
+                    });
+            }
+            
+            function loadWards(districtId) {
+                $('#wardSelect').prop('disabled', true);
+                
+                $.get('/api/address/wards/' + districtId)
+                    .done(function(data) {
+                        var select = $('#wardSelect');
+                        select.empty().append('<option value="">-- Chọn phường/xã --</option>');
+                        
+                        $.each(data, function(index, ward) {
+                            var option = $('<option></option>')
+                                .attr('value', ward.id)
+                                .text(ward.name);
+                            select.append(option);
+                        });
+                        
+                        select.prop('disabled', false);
+                    })
+                    .fail(function() {
+                        console.error('Failed to load wards');
+                        $('#wardSelect').prop('disabled', false);
+                    });
+            }
+            
+            function clearAndDisableSelect(selector, placeholder) {
+                var select = $(selector);
+                select.empty().append('<option value="">' + placeholder + '</option>');
+                select.prop('disabled', true);
+            }
+            
+            function getRegionFromProvince(provinceName) {
+                // Simple mapping of provinces to regions
+                var northProvinces = ['Hà Nội', 'Hải Phòng', 'Quảng Ninh', 'Bắc Giang', 'Bắc Ninh', 'Hải Dương', 'Hưng Yên', 'Thái Bình', 'Nam Định', 'Ninh Bình', 'Vĩnh Phúc', 'Hà Nam', 'Hòa Bình', 'Sơn La', 'Điện Biên', 'Lai Châu', 'Lào Cai', 'Yên Bái', 'Phú Thọ', 'Tuyên Quang', 'Hà Giang', 'Cao Bằng', 'Bắc Kạn', 'Lạng Sơn', 'Thái Nguyên'];
+                var centralProvinces = ['Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
+                
+                if (northProvinces.some(p => provinceName.includes(p))) {
+                    return 'Miền Bắc';
+                } else if (centralProvinces.some(p => provinceName.includes(p))) {
+                    return 'Miền Trung';
+                } else {
+                    return 'Miền Nam';
+                }
+            }
+
+            // Image upload preview
+            $('#image-upload').on('change', function() {
+                const files = this.files;
+                const previewContainer = $('#image-preview-container');
+                previewContainer.empty();
+
+                if (files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+                            
+                            reader.onload = function(e) {
+                                const previewHtml = `
+                                    <div class="col-md-4 col-lg-3 mb-3">
+                                        <div class="card">
+                                            <img src="${e.target.result}" class="card-img-top" alt="Preview" style="height: 150px; object-fit: cover;">
+                                            <div class="card-body p-2">
+                                                <small class="text-muted">${file.name}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                previewContainer.append(previewHtml);
+                            };
+                            
+                            reader.readAsDataURL(file);
+                        }
+                    }
+                }
+            });
+
+            // Form validation
+            $('form').on('submit', function(e) {
+                let isValid = true;
+                const requiredFields = ['Name', 'Description', 'Address', 'City', 'State', 'ZipCode', 'PricePerNight', 'MaxGuests', 'Bedrooms', 'Bathrooms'];
+                
+                requiredFields.forEach(function(field) {
+                    const input = $(`[name="${field}"]`);
+                    if (!input.val() || input.val().trim() === '') {
+                        isValid = false;
+                        input.addClass('is-invalid');
+                    } else {
+                        input.removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+                    return false;
+                }
+
+                // Show loading state
+                $('#submit-btn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang cập nhật...');
+            });
+
+            // Real-time validation
+            $('input[required], textarea[required]').on('blur', function() {
+                if ($(this).val().trim() === '') {
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            // Auto-detect location coordinates (placeholder for future geocoding implementation)
+            $('#City, #State, #Address').on('blur', function() {
+                // Future implementation: Use geocoding service to auto-detect coordinates
+                // based on address, city, and state
+                console.log('Address changed - implement geocoding here');
+            });
+
+            // Existing image deletion visual feedback
+            $('input[name="ImagesToDelete"]').on('change', function() {
+                const imageCard = $(this).closest('.card');
+                if ($(this).is(':checked')) {
+                    imageCard.addClass('opacity-50 border-danger');
+                    imageCard.find('.card-img-top').addClass('grayscale');
+                } else {
+                    imageCard.removeClass('opacity-50 border-danger');
+                    imageCard.find('.card-img-top').removeClass('grayscale');
+                }
+            });
+
+            // External Address API Service
+            class ExternalAddressService {
+                constructor() {
+                    this.baseUrl = 'https://provinces.open-api.vn/api';
+                    this.cache = new Map();
+                }
+
+                async getProvinces() {
+                    const cacheKey = 'provinces';
+                    if (this.cache.has(cacheKey)) {
+                        return this.cache.get(cacheKey);
+                    }
+
+                    try {
+                        const response = await fetch(`${this.baseUrl}/p/`);
+                        const data = await response.json();
+                        
+                        const provinces = data.map(p => ({
+                            code: p.code, // Keep as number
+                            name: p.name
+                        }));
+
+                        this.cache.set(cacheKey, provinces);
+                        return provinces;
+                    } catch (error) {
+                        console.error('Error loading provinces:', error);
+                        return [];
+                    }
+                }
+
+                async getDistricts(provinceCode) {
+                    const cacheKey = `districts_${provinceCode}`;
+                    if (this.cache.has(cacheKey)) {
+                        return this.cache.get(cacheKey);
+                    }
+
+                    try {
+                        const response = await fetch(`${this.baseUrl}/p/${provinceCode}?depth=2`);
+                        const data = await response.json();
+                        
+                        const districts = data.districts ? data.districts.map(d => ({
+                            code: d.code, // Keep as number
+                            name: d.name
+                        })) : [];
+
+                        this.cache.set(cacheKey, districts);
+                        return districts;
+                    } catch (error) {
+                        console.error('Error loading districts:', error);
+                        return [];
+                    }
+                }
+
+                async getWards(districtCode) {
+                    const cacheKey = `wards_${districtCode}`;
+                    if (this.cache.has(cacheKey)) {
+                        return this.cache.get(cacheKey);
+                    }
+
+                    try {
+                        const response = await fetch(`${this.baseUrl}/d/${districtCode}?depth=2`);
+                        const data = await response.json();
+                        
+                        const wards = data.wards ? data.wards.map(w => ({
+                            code: w.code, // Keep as number
+                            name: w.name
+                        })) : [];
+
+                        this.cache.set(cacheKey, wards);
+                        return wards;
+                    } catch (error) {
+                        console.error('Error loading wards:', error);
+                        return [];
+                    }
+                }
+            }
+
+            const addressService = new ExternalAddressService();
+
+            // Initialize address form for edit
+            async function initializeEditAddressForm() {
+                try {
+                    const provinces = await addressService.getProvinces();
+                    populateSelect('#provinceSelect', provinces, '-- Chọn tỉnh/thành phố --');
+                    $('#provinceSelect').prop('disabled', false);
+
+                    // Set current values if they exist
+                    const currentCity = '@Model.City';
+                    const currentDistrict = '@Model.District';
+                    const currentWard = '@Model.Ward';
+
+                    if (currentCity) {
+                        // Find matching province by name (with flexible matching)
+                        const province = provinces.find(p => {
+                            const apiName = p.name.toLowerCase();
+                            const currentName = currentCity.toLowerCase();
+                            
+                            // Direct match
+                            if (apiName === currentName) return true;
+                            
+                            // Remove prefixes for matching
+                            const cleanApiName = apiName
+                                .replace(/^(thành phố|tỉnh)\s+/i, '')
+                                .replace(/\s+/g, ' ')
+                                .trim();
+                            const cleanCurrentName = currentName
+                                .replace(/^(thành phố|tỉnh)\s+/i, '')
+                                .replace(/\s+/g, ' ')
+                                .trim();
+                            
+                            return cleanApiName === cleanCurrentName ||
+                                   apiName.includes(cleanCurrentName) ||
+                                   cleanCurrentName.includes(cleanApiName);
+                        });
+                        
+                        if (province) {
+                            $('#provinceSelect').val(province.code);
+                            $('#provinceName').val(province.name);
+                            
+                            // Load districts for this province
+                            const districts = await addressService.getDistricts(province.code);
+                            populateSelect('#districtSelect', districts, '-- Chọn quận/huyện --');
+                            $('#districtSelect').prop('disabled', false);
+
+                            if (currentDistrict) {
+                                // Find matching district by name (with flexible matching)
+                                const district = districts.find(d => {
+                                    const apiName = d.name.toLowerCase();
+                                    const currentName = currentDistrict.toLowerCase();
+                                    
+                                    return apiName === currentName ||
+                                           apiName.includes(currentName) ||
+                                           currentName.includes(apiName);
+                                });
+                                
+                                if (district) {
+                                    $('#districtSelect').val(district.code);
+                                    $('#districtName').val(district.name);
+                                    
+                                    // Load wards for this district
+                                    const wards = await addressService.getWards(district.code);
+                                    populateSelect('#wardSelect', wards, '-- Chọn phường/xã --');
+                                    $('#wardSelect').prop('disabled', false);
+
+                                    if (currentWard) {
+                                        // Find matching ward by name (with flexible matching)
+                                        const ward = wards.find(w => {
+                                            const apiName = w.name.toLowerCase();
+                                            const currentName = currentWard.toLowerCase();
+                                            
+                                            return apiName === currentName ||
+                                                   apiName.includes(currentName) ||
+                                                   currentName.includes(apiName);
+                                        });
+                                        
+                                        if (ward) {
+                                            $('#wardSelect').val(ward.code);
+                                            $('#wardName').val(ward.name);
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            console.warn('Could not find matching province for:', currentCity);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to initialize address form:', error);
+                    alert('Không thể tải danh sách địa chỉ. Vui lòng thử lại sau.');
+                }
+            }
+
+            function populateSelect(selector, data, placeholder) {
+                const select = $(selector);
+                select.empty().append(`<option value="">${placeholder}</option>`);
+                
+                data.forEach(item => {
+                    select.append(`<option value="${item.code}">${item.name}</option>`);
+                });
+            }
+
+            function getRegionFromProvince(provinceName) {
+                const northernProvinces = ['Hà Nội', 'Hải Phòng', 'Quảng Ninh', 'Bắc Giang', 'Bắc Ninh', 'Hải Dương', 'Hưng Yên', 'Thái Bình', 'Nam Định', 'Ninh Bình', 'Vĩnh Phúc', 'Hà Nam', 'Hòa Bình', 'Sơn La', 'Điện Biên', 'Lai Châu', 'Lào Cai', 'Yên Bái', 'Phú Thọ', 'Tuyên Quang', 'Hà Giang', 'Cao Bằng', 'Bắc Kạn', 'Lạng Sơn', 'Thái Nguyên'];
+                const centralProvinces = ['Thanh Hóa', 'Nghệ An', 'Hà Tĩnh', 'Quảng Bình', 'Quảng Trị', 'Thừa Thiên Huế', 'Đà Nẵng', 'Quảng Nam', 'Quảng Ngãi', 'Bình Định', 'Phú Yên', 'Khánh Hòa', 'Ninh Thuận', 'Bình Thuận', 'Kon Tum', 'Gia Lai', 'Đắk Lắk', 'Đắk Nông', 'Lâm Đồng'];
+                const southernProvinces = ['Bình Phước', 'Tây Ninh', 'Bình Dương', 'Đồng Nai', 'Bà Rịa - Vũng Tàu', 'Hồ Chí Minh', 'Long An', 'Tiền Giang', 'Bến Tre', 'Trà Vinh', 'Vĩnh Long', 'Đồng Tháp', 'An Giang', 'Kiên Giang', 'Cần Thơ', 'Hậu Giang', 'Sóc Trăng', 'Bạc Liêu', 'Cà Mau'];
+
+                if (northernProvinces.includes(provinceName)) {
+                    return 'Miền Bắc';
+                } else if (centralProvinces.includes(provinceName)) {
+                    return 'Miền Trung';
+                } else if (southernProvinces.includes(provinceName)) {
+                    return 'Miền Nam';
+                }
+                return 'Khác';
+            }
+
+            // Event handlers
+            $('#provinceSelect').on('change', async function() {
+                const provinceCode = $(this).val();
+                const provinceText = $(this).find('option:selected').text();
+                
+                // Update hidden field and region
+                $('#provinceName').val(provinceText);
+                $('#State').val(getRegionFromProvince(provinceText));
+                
+                // Reset dependent dropdowns
+                $('#districtSelect').empty().append('<option value="">-- Chọn quận/huyện --</option>').prop('disabled', true);
+                $('#wardSelect').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', true);
+                $('#districtName').val('');
+                $('#wardName').val('');
+                
+                if (provinceCode) {
+                    try {
+                        const districts = await addressService.getDistricts(provinceCode);
+                        populateSelect('#districtSelect', districts, '-- Chọn quận/huyện --');
+                        $('#districtSelect').prop('disabled', false);
+                    } catch (error) {
+                        console.error('Failed to load districts:', error);
+                        alert('Không thể tải danh sách quận/huyện. Vui lòng thử lại.');
+                    }
+                }
+            });
+
+            $('#districtSelect').on('change', async function() {
+                const districtCode = $(this).val();
+                const districtText = $(this).find('option:selected').text();
+                
+                // Update hidden field
+                $('#districtName').val(districtText);
+                
+                // Reset dependent dropdown
+                $('#wardSelect').empty().append('<option value="">-- Chọn phường/xã --</option>').prop('disabled', true);
+                $('#wardName').val('');
+                
+                if (districtCode) {
+                    try {
+                        const wards = await addressService.getWards(districtCode);
+                        populateSelect('#wardSelect', wards, '-- Chọn phường/xã --');
+                        $('#wardSelect').prop('disabled', false);
+                    } catch (error) {
+                        console.error('Failed to load wards:', error);
+                        alert('Không thể tải danh sách phường/xã. Vui lòng thử lại.');
+                    }
+                }
+            });            $('#wardSelect').on('change', function() {
+                const wardText = $(this).find('option:selected').text();
+                $('#wardName').val(wardText);
+            });
+
+            // Initialize address form on page load
+            initializeEditAddressForm();
+            
+            // YouTube Video Preview functionality
+            initializeYouTubePreview();
+        });
+        
+        // YouTube Video Preview functionality
+        function initializeYouTubePreview() {
+            const videoIdInput = document.getElementById('YouTubeVideoId');
+            const videoPreview = document.getElementById('videoPreview');
+            const videoContainer = document.getElementById('videoContainer');
+            let debounceTimer;
+            
+            if (videoIdInput) {
+                // Show preview for existing value on page load
+                if (videoIdInput.value && videoIdInput.value.trim()) {
+                    showVideoPreview(videoIdInput.value.trim());
+                }
+                
+                // Handle input changes with debounce
+                videoIdInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const videoId = this.value.trim();
+                    
+                    if (videoId) {
+                        // Show loading state
+                        videoPreview.style.display = 'block';
+                        videoContainer.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Đang tải...</span></div><p class="mt-2 text-muted">Đang tải video...</p></div>';
+                        
+                        // Debounce to avoid too many requests
+                        debounceTimer = setTimeout(() => {
+                            if (isValidYouTubeVideoId(videoId)) {
+                                showVideoPreview(videoId);
+                            } else {
+                                showVideoError('ID video không hợp lệ. Vui lòng kiểm tra lại.');
+                            }
+                        }, 1000);
+                    } else {
+                        videoPreview.style.display = 'none';
+                    }
+                });
+            }
+        }
+        
+        function isValidYouTubeVideoId(videoId) {
+            // YouTube video ID is typically 11 characters long and contains only letters, numbers, hyphens, and underscores
+            const regex = /^[a-zA-Z0-9_-]{11}$/;
+            return regex.test(videoId);
+        }
+        
+        function showVideoPreview(videoId) {
+            const videoContainer = document.getElementById('videoContainer');
+            const videoPreview = document.getElementById('videoPreview');
+            
+            // Create iframe with YouTube embed
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+            iframe.title = 'Video Preview';
+            iframe.allowfullscreen = true;
+            iframe.className = 'rounded';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            
+            // Clear container and add iframe
+            videoContainer.innerHTML = '';
+            videoContainer.appendChild(iframe);
+            videoPreview.style.display = 'block';
+            
+            // Add success message
+            setTimeout(() => {
+                const existingMessage = videoPreview.querySelector('.alert');
+                if (existingMessage) {
+                    existingMessage.remove();
+                }
+                
+                const successMessage = document.createElement('div');
+                successMessage.className = 'alert alert-success mt-2';
+                successMessage.innerHTML = '<i class="fas fa-check-circle me-2"></i>Video đã được tải thành công!';
+                videoPreview.appendChild(successMessage);
+                
+                // Remove success message after 3 seconds
+                setTimeout(() => {
+                    if (successMessage.parentNode) {
+                        successMessage.remove();
+                    }
+                }, 3000);
+            }, 1000);
+        }
+        
+        function showVideoError(message) {
+            const videoContainer = document.getElementById('videoContainer');
+            const videoPreview = document.getElementById('videoPreview');
+            
+            videoContainer.innerHTML = `
+                <div class="text-center p-4">
+                    <i class="fas fa-exclamation-triangle text-warning fa-2x mb-3"></i>
+                    <p class="text-muted">${message}</p>
+                    <small class="text-muted">
+                        <strong>Lưu ý:</strong> Video ID thường có 11 ký tự, ví dụ: dQw4w9WgXcQ
+                    </small>
+                </div>
+            `;
+            videoPreview.style.display = 'block';
+        }
+    </script>
+
+    <style>
+        .grayscale {
+            filter: grayscale(100%);
+        }
+        
+        .opacity-50 {
+            opacity: 0.5;
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        
+        .card-img-top {
+            transition: all 0.3s ease;
+        }
+        
+        .border-danger {
+            border-color: #dc3545 !important;
+        }
+        
+        #image-preview-container .card {
+            transition: transform 0.2s;
+        }
+        
+        #image-preview-container .card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+}
+
+

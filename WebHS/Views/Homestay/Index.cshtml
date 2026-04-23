@@ -1,0 +1,2171 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.HomestayListViewModel
+@* Updated model binding *@
+@{
+    ViewData["Title"] = "Danh sách Homestay";
+}
+
+<div class="container-fluid">    <!-- Search Section -->
+    <div class="search-section py-5 mb-4">
+        <div class="container">            <div class="text-center mb-4">
+                <h1 class="display-4 fw-bold mb-2">
+                    <i class="fas fa-home me-3"></i>Tìm Homestay Hoàn Hảo
+                </h1>
+                <p class="lead">
+                    <i class="fas fa-map-marked-alt me-2"></i>Khám phá những không gian nghỉ dưỡng tuyệt vời nhất
+                </p>
+            </div>
+            <form asp-action="Index" method="get" class="row g-3">                <div class="col-md-3">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-map-marker-alt me-2"></i>Địa điểm
+                    </label>
+                    <input asp-for="SearchModel.Location" class="form-control" placeholder="Nhập thành phố, tỉnh...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-calendar-check me-2"></i>Ngày nhận
+                    </label>
+                    <input asp-for="SearchModel.CheckInDate" type="date" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-calendar-times me-2"></i>Ngày trả
+                    </label>
+                    <input asp-for="SearchModel.CheckOutDate" type="date" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold">
+                        <i class="fas fa-users me-2"></i>Số khách
+                    </label>
+                    <select asp-for="SearchModel.NumberOfGuests" class="form-select">
+                        <option value="1">1 khách</option>
+                        <option value="2">2 khách</option>
+                        <option value="3">3 khách</option>
+                        <option value="4">4 khách</option>
+                        <option value="5">5+ khách</option>
+                    </select>
+                </div>                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search me-2"></i>Tìm kiếm
+                    </button>                    <button type="button" class="btn btn-outline-light filter-btn" data-bs-toggle="collapse" data-bs-target="#advancedFilters">
+                        <i class="fas fa-filter me-2"></i>Bộ lọc
+                    </button>
+                </div>
+            </form>
+
+            <!-- Advanced Filters -->
+            <div class="collapse mt-4" id="advancedFilters">
+                <div class="card advanced-filters border-0 shadow-lg">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-sliders-h me-2"></i>Bộ lọc nâng cao
+                        </h5>                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-dollar-sign me-2"></i>Giá từ
+                                </label>
+                                <input asp-for="SearchModel.MinPrice" type="number" class="form-control" placeholder="0">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Giá đến
+                                </label>
+                                <input asp-for="SearchModel.MaxPrice" type="number" class="form-control" placeholder="5,000,000">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-building me-2"></i>Loại nhà
+                                </label>
+                                <select asp-for="SearchModel.HomestayType" class="form-select">
+                                    <option value="">Tất cả</option>
+                                    <option value="House">🏠 Nhà riêng</option>
+                                    <option value="Apartment">🏢 Căn hộ</option>
+                                    <option value="Villa">🏰 Biệt thự</option>
+                                    <option value="Bungalow">🏖️ Bungalow</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-sort me-2"></i>Sắp xếp
+                                </label>
+                                <select asp-for="SearchModel.SortBy" class="form-select">
+                                    <option value="price_asc">💰 Giá thấp đến cao</option>
+                                    <option value="price_desc">💎 Giá cao đến thấp</option>
+                                    <option value="rating">⭐ Đánh giá cao nhất</option>
+                                    <option value="newest">🆕 Mới nhất</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>        </div>
+    </div>
+
+    <!-- Features & Stats Section -->
+    <div class="features-section py-5">
+        <div class="container">
+            <!-- Stats Cards -->
+            <div class="row mb-5">
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" data-target="@Model.TotalCount">0</h3>
+                            <p class="stat-label">Homestay Chất Lượng</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" data-target="15000">0</h3>
+                            <p class="stat-label">Khách Hàng Hài Lòng</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" data-target="98">0</h3>
+                            <p class="stat-label">% Đánh Giá Tích Cực</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="stat-card text-center">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 class="stat-number" data-target="24">0</h3>
+                            <p class="stat-label">Giờ Hỗ Trợ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Highlight -->
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-6">
+                    <div class="feature-content">
+                        <h2 class="feature-title">
+                            <i class="fas fa-gem me-3"></i>Tại Sao Chọn Chúng Tôi?
+                        </h2>
+                        <div class="feature-list">
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h5>Đảm Bảo An Toàn</h5>
+                                    <p>Tất cả homestay được kiểm duyệt kỹ lưỡng để đảm bảo chất lượng</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h5>Giá Tốt Nhất</h5>
+                                    <p>Cam kết giá tốt nhất thị trường với nhiều ưu đãi hấp dẫn</p>
+                                </div>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <div class="feature-text">
+                                    <h5>Hỗ Trợ 24/7</h5>
+                                    <p>Đội ngũ chăm sóc khách hàng sẵn sàng hỗ trợ bạn mọi lúc</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="feature-animation">
+                        <div class="floating-elements">
+                            <div class="floating-card card-1">
+                                <i class="fas fa-heart"></i>
+                                <span>Yêu thích</span>
+                            </div>
+                            <div class="floating-card card-2">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>Địa điểm đẹp</span>
+                            </div>
+                            <div class="floating-card card-3">
+                                <i class="fas fa-wifi"></i>
+                                <span>WiFi miễn phí</span>
+                            </div>
+                            <div class="floating-card card-4">
+                                <i class="fas fa-coffee"></i>
+                                <span>Tiện nghi</span>
+                            </div>
+                            <div class="floating-card card-5">
+                                <i class="fas fa-camera"></i>
+                                <span>View đẹp</span>
+                            </div>
+                        </div>
+                        <div class="central-graphic">
+                            <div class="house-icon">
+                                <i class="fas fa-home"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Destinations -->
+            <div class="popular-destinations mb-5">
+                <div class="text-center mb-4">
+                    <h2 class="section-title">
+                        <i class="fas fa-fire me-3"></i>Điểm Đến Phổ Biến
+                    </h2>
+                    <p class="section-subtitle">Khám phá những địa điểm du lịch được yêu thích nhất</p>
+                </div>                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.unsplash.com/photo-1555400820-4d5a5a8e3b3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hà Nội" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQxIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2ZmNzA3MDtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmY5MDQzO3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkaWVudDEpIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDBweCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7EkOG6oWkgTeG7k2MgSOG6oWkgSGFuIDwvdGV4dD4KPC9zdmc+'">
+                                <div class="destination-overlay">
+                                    <h4>Hà Nội</h4>
+                                    <p>125 homestay</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Hồ Chí Minh" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQyIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzY2N2VlYTtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNzY0YmEyO3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkaWVudDIpIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDBweCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5UUC4gSOG7kyBDaMOtIE1pbmg8L3RleHQ+Cjwvc3ZnPg=='">
+                                <div class="destination-overlay">
+                                    <h4>TP. Hồ Chí Minh</h4>
+                                    <p>89 homestay</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Đà Nẵng" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQzIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6IzU2YWIyZjtzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojYThlNmNmO3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkaWVudDMpIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDBweCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj7EkMOgIE7hurVuZzwvdGV4dD4KPC9zdmc+'">
+                                <div class="destination-overlay">
+                                    <h4>Đà Nẵng</h4>
+                                    <p>67 homestay</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="destination-card">
+                            <div class="destination-image">
+                                <img src="https://images.unsplash.com/photo-1598974077733-84ca04f48b1c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Sa Pa" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQ0IiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2ZmNDE2YztzdG9wLW9wYWNpdHk6MSIgLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZmY0YjJiO3N0b3Atb3BhY2l0eToxIiAvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmFkaWVudDQpIiAvPgogIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iNDBweCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGR5PSIuM2VtIj5TYSBQYTwvdGV4dD4KPC9zdmc+'">
+                                <div class="destination-overlay">
+                                    <h4>Sa Pa</h4>
+                                    <p>43 homestay</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h2 class="mb-0 page-title">
+                @if (!string.IsNullOrEmpty(Model.SearchModel.Location))
+                {
+                    <span>Homestay tại @Model.SearchModel.Location</span>
+                }
+                else
+                {
+                    <span>Tất cả Homestay</span>
+                }
+                <small class="text-muted">(@Model.TotalCount kết quả)</small>
+            </h2>
+        </div>
+
+        @if (Model.Homestays.Any())
+        {
+            <div class="row">
+                @foreach (var homestay in Model.Homestays)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 shadow-sm border-0 homestay-card">
+                            <div class="position-relative">
+                                <img src="@(!string.IsNullOrEmpty(homestay.PrimaryImage) ? homestay.PrimaryImage : "/images/default-homestay.jpg")" 
+                                     class="card-img-top" alt="@homestay.Name" style="height: 200px; object-fit: cover;">
+                                <div class="position-absolute top-0 end-0 m-2">
+                                    @if (homestay.AverageRating > 0)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-star"></i> @homestay.AverageRating.ToString("F1")
+                                        </span>
+                                    }
+                                </div>                                <div class="position-absolute bottom-0 start-0 m-2">
+                                    <span class="badge bg-primary">@homestay.HomestayType</span>
+                                    @if (!string.IsNullOrEmpty(homestay.YouTubeVideoId))
+                                    {
+                                        <span class="badge bg-danger ms-1" title="Có video giới thiệu">
+                                            <i class="fab fa-youtube"></i>
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">@homestay.Name</h5>
+                                <p class="card-text text-muted small mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>@homestay.City, @homestay.State
+                                </p>
+                                <p class="card-text flex-grow-1">@homestay.Description</p>                                <div class="d-flex justify-content-between align-items-center mt-auto">
+                                    <div>
+                                        <span class="h5 price-highlight mb-0">@homestay.PricePerNight.ToString("N0") VNĐ</span>
+                                        <small class="text-muted">/đêm</small>
+                                    </div>
+                                    <a asp-action="Details" asp-route-id="@homestay.Id" class="btn btn-outline-primary">
+                                        <i class="fas fa-eye me-2"></i>Xem chi tiết
+                                    </a>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-users me-1"></i>@homestay.MaxGuests khách
+                                        <i class="fas fa-bed ms-2 me-1"></i>@homestay.Bedrooms phòng ngủ
+                                        <i class="fas fa-bath ms-2 me-1"></i>@homestay.Bathrooms phòng tắm
+                                    </small>
+                                </div>
+                                <div class="mt-2">
+                                    @if (homestay.IsBooked)
+                                    {
+                                        <span class="badge bg-danger mb-2">Đã đặt</span>
+                                        @if (homestay.NextAvailableDate.HasValue)
+                                        {
+                                            <small class="d-block">Ngày trả phòng: @homestay.NextAvailableDate.Value.ToString("dd/MM/yyyy")</small>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success mb-2">Còn trống</span>
+                                    }
+                                    
+                                    @if (homestay.BookingPeriods.Any())
+                                    {
+                                        <div class="accordion accordion-flush" id="bookingPeriods-@homestay.Id">
+                                            <div class="accordion-item border-0">
+                                                <h2 class="accordion-header">
+                                                    <button class="btn btn-sm btn-outline-secondary p-1" type="button" 
+                                                            data-bs-toggle="collapse" data-bs-target="#collapseBookings-@homestay.Id">
+                                                        Xem lịch đặt phòng
+                                                    </button>
+                                                </h2>
+                                                <div id="collapseBookings-@homestay.Id" class="accordion-collapse collapse" 
+                                                     data-bs-parent="#bookingPeriods-@homestay.Id">
+                                                    <div class="accordion-body p-2">
+                                                        <ul class="list-unstyled small">
+                                                            @foreach (var period in homestay.BookingPeriods)
+                                                            {
+                                                                <li>@period.CheckInDate.ToString("dd/MM/yyyy") - @period.CheckOutDate.ToString("dd/MM/yyyy")</li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">                        <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-all-route-data="@((IDictionary<string, string>)Model.GetRouteData(Model.CurrentPage - 1))">
+                                <span><i class="fas fa-chevron-left"></i></span>
+                            </a>
+                        </li>
+                          @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-all-route-data="@((IDictionary<string, string>)Model.GetRouteData(i))">
+                                    <span>@i</span>
+                                </a>
+                            </li>
+                        }
+                          <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-all-route-data="@((IDictionary<string, string>)Model.GetRouteData(Model.CurrentPage + 1))">
+                                <span><i class="fas fa-chevron-right"></i></span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }        else
+        {
+            <div class="text-center py-5 no-results">
+                <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                <h4 class="display-6 mb-3">Không tìm thấy homestay nào</h4>
+                <p class="text-muted lead mb-4">Thử thay đổi bộ lọc tìm kiếm của bạn</p>
+                <a asp-action="Index" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home me-2"></i>Xem tất cả homestay
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+/* Card Animations & Effects */
+.homestay-card {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    position: relative;
+}
+
+.homestay-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.homestay-card:hover::before {
+    opacity: 1;
+}
+
+.homestay-card:hover {
+    transform: translateY(-15px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.homestay-card .card-img-top {
+    transition: all 0.4s ease;
+    border-radius: 20px 20px 0 0;
+    position: relative;
+    z-index: 2;
+}
+
+.homestay-card:hover .card-img-top {
+    transform: scale(1.08);
+}
+
+/* Search Section Styling */
+.search-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+}
+
+.search-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="3" fill="rgba(255,255,255,0.15)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1.5" fill="rgba(255,255,255,0.2)"/><circle cx="10" cy="90" r="2.5" fill="rgba(255,255,255,0.08)"/><circle cx="90" cy="10" r="1" fill="rgba(255,255,255,0.12)"/></svg>');
+    animation: float 25s infinite linear;
+}
+
+.search-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(255,255,255,0.08) 0%, transparent 50%);
+    animation: pulse 4s ease-in-out infinite alternate;
+}
+
+@@keyframes float {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@@keyframes pulse {
+    0% { opacity: 0.3; }
+    100% { opacity: 0.7; }
+}
+
+.search-section .container {
+    position: relative;
+    z-index: 3;
+}
+
+.search-section h1 {
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    animation: slideInDown 1s ease-out;
+}
+
+.search-section p.lead {
+    animation: slideInUp 1s ease-out 0.3s both;
+}
+
+@@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Form Controls Styling */
+.form-control, .form-select {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    background: rgba(255,255,255,1);
+}
+
+.form-label {
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    animation: fadeInLeft 0.8s ease-out;
+}
+
+@@keyframes fadeInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Button Styling */
+.btn {
+    border-radius: 15px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-weight: 600;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transition: all 0.6s ease;
+    transform: translate(-50%, -50%);
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    background-size: 300% 300%;
+    border: none;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    animation: gradientShift 3s ease infinite;
+}
+
+@@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.6);
+}
+
+.filter-btn {
+    border: 2px solid rgba(255,255,255,0.8);
+    color: white;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    font-weight: 600;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.filter-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: white;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(255,255,255,0.3);
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+    background: transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-outline-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    transition: left 0.5s ease;
+    z-index: -1;
+}
+
+.btn-outline-primary:hover::before {
+    left: 0;
+}
+
+.btn-outline-primary:hover {
+    color: white;
+    border-color: transparent;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+/* Badge Styling */
+.badge {
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-weight: 600;
+    text-shadow: none;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.badge::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent, rgba(255,255,255,0.1));
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.badge:hover::before {
+    opacity: 1;
+    animation: shimmer 1s ease-in-out;
+}
+
+@@keyframes shimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.badge.bg-warning {
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #fff59d) !important;
+    color: #333 !important;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+}
+
+.badge.bg-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb) !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.badge.bg-success {
+    background: linear-gradient(45deg, #56ab2f, #a8e6cf, #88e5a3) !important;
+    box-shadow: 0 4px 15px rgba(86, 171, 47, 0.3);
+}
+
+.badge.bg-danger {
+    background: linear-gradient(45deg, #ff416c, #ff4b2b, #ff6b9d) !important;
+    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
+}
+
+/* Title Animation */
+.page-title {
+    position: relative;
+    display: inline-block;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 0;
+    height: 4px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    border-radius: 2px;
+    transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.page-title:hover::after {
+    width: 100%;
+}
+
+/* Fade In Animation */
+@@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+/* Stagger animation for cards */
+.homestay-card:nth-child(1) { animation-delay: 0.1s; }
+.homestay-card:nth-child(2) { animation-delay: 0.2s; }
+.homestay-card:nth-child(3) { animation-delay: 0.3s; }
+.homestay-card:nth-child(4) { animation-delay: 0.4s; }
+.homestay-card:nth-child(5) { animation-delay: 0.5s; }
+.homestay-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Price highlighting */
+.price-highlight {
+    position: relative;
+    font-weight: bold;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: priceGlow 2s ease-in-out infinite;
+    transition: all 0.3s ease;
+}
+
+@@keyframes priceGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.price-highlight:hover {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+}
+
+/* Advanced filters styling */
+.advanced-filters {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    animation: slideInFromTop 0.5s ease-out;
+}
+
+@@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.advanced-filters .card-title {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Loading animation for images */
+.card-img-top {
+    border-radius: 20px 20px 0 0;
+}
+
+.position-relative.loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        rgba(240,240,240,0.8) 25%, 
+        rgba(220,220,220,0.8) 50%, 
+        rgba(240,240,240,0.8) 75%);
+    background-size: 200% 100%;
+    animation: loading 2s infinite;
+    border-radius: 20px 20px 0 0;
+    z-index: 2;
+}
+
+@@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Pagination styling */
+.pagination .page-link {
+    border-radius: 50%;
+    margin: 0 8px;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #667eea;
+    color: #667eea;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.pagination .page-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 0.3s ease;
+}
+
+.pagination .page-item.active .page-link::before,
+.pagination .page-link:hover::before {
+    transform: scale(1);
+}
+
+.pagination .page-item.active .page-link,
+.pagination .page-link:hover {
+    color: white;
+    border-color: transparent;
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.pagination .page-link span {
+    position: relative;
+    z-index: 2;
+}
+
+/* Scroll reveal animation */
+.scroll-reveal {
+    opacity: 0;
+    transform: translateY(60px);
+    transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.scroll-reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* No results styling */
+.no-results {
+    padding: 80px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.no-results::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    animation: rotate 10s linear infinite;
+}
+
+@@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.no-results i {
+    animation: bounce 2s infinite, colorChange 3s ease-in-out infinite;
+}
+
+@@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-30px); }
+    60% { transform: translateY(-15px); }
+}
+
+@@keyframes colorChange {
+    0%, 100% { color: #667eea; }
+    50% { color: #764ba2; }
+}
+
+.no-results h4, .no-results p {
+    position: relative;
+    z-index: 2;
+}
+
+/* Card body effects */
+.card-body {
+    position: relative;
+    z-index: 2;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Enhanced icon effects */
+.fas, .fab {
+    transition: all 0.3s ease;
+}
+
+.card:hover .fas,
+.card:hover .fab {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.5));
+}
+
+/* Responsive improvements */
+@@media (max-width: 768px) {
+    .homestay-card {
+        margin-bottom: 30px;
+    }
+    
+    .search-section {
+        padding: 30px 0;
+        min-height: 50vh;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .pagination .page-link {
+        width: 35px;
+        height: 35px;
+        margin: 0 3px;
+    }
+}
+
+/* Additional sparkle effect */
+@@keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0); }
+    50% { opacity: 1; transform: scale(1); }
+}
+
+.sparkle {
+    position: absolute;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: sparkle 1.5s ease-in-out infinite;
+}
+
+/* Features & Stats Section */
+.features-section {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.features-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="1" fill="rgba(102, 126, 234, 0.1)"/><circle cx="75" cy="75" r="1.5" fill="rgba(118, 75, 162, 0.08)"/><circle cx="50" cy="10" r="0.8" fill="rgba(240, 147, 251, 0.06)"/></svg>');
+    opacity: 0.5;
+}
+
+/* Stats Cards */
+.stat-card {
+    background: white;
+    border-radius: 20px;
+    padding: 30px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    transform: scaleX(0);
+    transition: transform 0.6s ease;
+}
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.2);
+}
+
+.stat-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+.stat-card:hover .stat-icon::before {
+    transform: translateX(100%);
+}
+
+.stat-icon i {
+    font-size: 2rem;
+    color: white;
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+@@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-label {
+    color: #666;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Features Content */
+.feature-content {
+    position: relative;
+    z-index: 2;
+}
+
+.feature-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.feature-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.feature-item:hover::before {
+    transform: scaleY(1);
+}
+
+.feature-item:hover {
+    transform: translateX(10px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.15);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    flex-shrink: 0;
+}
+
+.feature-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.feature-text h5 {
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: 600;
+}
+
+.feature-text p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+}
+
+/* Feature Animation */
+.feature-animation {
+    position: relative;
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floating-elements {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.floating-card {
+    position: absolute;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #333;
+    animation: float 6s ease-in-out infinite;
+    border: 2px solid rgba(102, 126, 234, 0.1);
+}
+
+.floating-card i {
+    color: #667eea;
+    font-size: 1.2rem;
+}
+
+.card-1 {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.card-2 {
+    top: 10%;
+    right: 20%;
+    animation-delay: 1s;
+}
+
+.card-3 {
+    bottom: 30%;
+    left: 5%;
+    animation-delay: 2s;
+}
+
+.card-4 {
+    bottom: 20%;
+    right: 10%;
+    animation-delay: 3s;
+}
+
+.card-5 {
+    top: 50%;
+    right: 5%;
+    animation-delay: 4s;
+}
+
+@@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    25% { transform: translateY(-20px) rotate(1deg); }
+    50% { transform: translateY(0px) rotate(0deg); }
+    75% { transform: translateY(-10px) rotate(-1deg); }
+}
+
+.central-graphic {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: centralPulse 3s ease-in-out infinite;
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+}
+
+.central-graphic::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 50%;
+    animation: rippleEffect 2s ease-out infinite;
+}
+
+@@keyframes centralPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@@keyframes rippleEffect {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.5); }
+}
+
+.house-icon i {
+    font-size: 3rem;
+    color: white;
+}
+
+/* Popular Destinations */
+.section-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.section-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.destination-card {
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    height: 250px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.destination-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.destination-image {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+}
+
+.destination-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.destination-card:hover .destination-image img {
+    transform: scale(1.1);
+}
+
+.destination-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+    padding: 30px 20px;
+    transform: translateY(20px);
+    transition: transform 0.4s ease;
+}
+
+.destination-card:hover .destination-overlay {
+    transform: translateY(0);
+}
+
+.destination-overlay h4 {
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 1.3rem;
+}
+
+.destination-overlay p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Counter Animation */
+@@keyframes countUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced Responsive Design */
+@@media (max-width: 768px) {
+    .homestay-card {
+        margin-bottom: 30px;
+    }
+    
+    .search-section {
+        padding: 30px 0;
+        min-height: 50vh;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+    
+    .pagination .page-link {
+        width: 35px;
+        height: 35px;
+        margin: 0 3px;
+    }
+    
+    .stat-card {
+        margin-bottom: 20px;
+    }
+    
+    .feature-title {
+        font-size: 2rem;
+        text-align: center;
+    }
+    
+    .feature-animation {
+        height: 300px;
+        margin-top: 30px;
+    }
+    
+    .floating-card {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .central-graphic {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .house-icon i {
+        font-size: 2rem;
+    }
+    
+    .section-title {
+        font-size: 2rem;
+    }
+    
+    .destination-card {
+        height: 200px;
+    }
+}
+
+@@media (max-width: 576px) {
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .feature-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .feature-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .floating-card {
+        display: none;
+    }
+    
+    .feature-animation {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Loading States */
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmerLoading 2s infinite;
+}
+
+/* Scroll to top button enhancement */
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.scroll-to-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.scroll-to-top:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+/* Enhanced search section animation */
+.search-section .form-group {
+    animation: slideInUp 0.8s ease-out;
+}
+
+.search-section .form-group:nth-child(1) { animation-delay: 0.2s; }
+.search-section .form-group:nth-child(2) { animation-delay: 0.4s; }
+.search-section .form-group:nth-child(3) { animation-delay: 0.6s; }
+.search-section .form-group:nth-child(4) { animation-delay: 0.8s; }
+.search-section .form-group:nth-child(5) { animation-delay: 1s; }
+
+/* Tooltip styles for enhanced UX */
+.tooltip-custom {
+    position: relative;
+}
+
+.tooltip-custom::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.tooltip-custom:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(-5px);
+}
+
+/* Enhanced button hover effects */
+.btn-enhanced {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-enhanced::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-enhanced:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Custom scrollbar for better aesthetics */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(45deg, #5a6fd8, #6a4190);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced card animations with stagger effect
+    const cards = document.querySelectorAll('.homestay-card');
+    cards.forEach((card, index) => {
+        card.classList.add('fade-in-up');
+        card.style.animationDelay = `${index * 0.15}s`;
+        
+        // Add sparkle effect on hover
+        card.addEventListener('mouseenter', function() {
+            createSparkles(this);
+        });
+    });
+
+    // Create sparkle effect
+    function createSparkles(element) {
+        for(let i = 0; i < 6; i++) {
+            setTimeout(() => {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.width = Math.random() * 6 + 4 + 'px';
+                sparkle.style.height = sparkle.style.width;
+                sparkle.style.animationDelay = Math.random() * 0.5 + 's';
+                
+                element.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    if(sparkle.parentNode) {
+                        sparkle.parentNode.removeChild(sparkle);
+                    }
+                }, 1500);
+            }, i * 100);
+        }
+    }
+
+    // Enhanced scroll reveal animation
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('revealed');
+                
+                // Add extra animation for cards
+                if(entry.target.classList.contains('homestay-card')) {
+                    setTimeout(() => {
+                        entry.target.style.transform = 'translateY(0) scale(1)';
+                    }, 100);
+                }
+            }
+        });
+    }, observerOptions);
+
+    // Observe cards and other elements
+    cards.forEach(card => {
+        card.classList.add('scroll-reveal');
+        observer.observe(card);
+    });
+
+    // Enhanced image loading with transition effects
+    const images = document.querySelectorAll('.card-img-top');
+    images.forEach(img => {
+        const container = img.parentElement;
+        
+        if (!img.complete) {
+            container.classList.add('loading');
+        }
+        
+        img.addEventListener('load', function() {
+            container.classList.remove('loading');
+            img.style.opacity = '0';
+            img.style.transform = 'scale(1.1)';
+            
+            setTimeout(() => {
+                img.style.transition = 'all 0.6s ease';
+                img.style.opacity = '1';
+                img.style.transform = 'scale(1)';
+            }, 100);
+        });
+
+        img.addEventListener('error', function() {
+            container.classList.remove('loading');
+            this.src = '/images/default-homestay.jpg';
+        });
+    });
+
+    // Smooth scrolling with custom easing
+    const paginationLinks = document.querySelectorAll('.pagination .page-link');
+    paginationLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Add loading effect
+            this.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+            
+            setTimeout(() => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }, 200);
+        });
+    });
+
+    // Enhanced form interactions with micro-animations
+    const searchInputs = document.querySelectorAll('.form-control, .form-select');
+    searchInputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.classList.add('focused');
+            this.style.transform = 'translateY(-2px) scale(1.02)';
+            
+            // Add glow effect
+            this.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.4), 0 0 0 3px rgba(102, 126, 234, 0.1)';
+        });
+        
+        input.addEventListener('blur', function() {
+            this.parentElement.classList.remove('focused');
+            this.style.transform = '';
+            this.style.boxShadow = '';
+        });
+
+        // Add typing animation
+        if(input.type === 'text' || input.tagName === 'INPUT') {
+            input.addEventListener('input', function() {
+                this.style.transform = 'scale(1.01)';
+                clearTimeout(this.typingTimeout);
+                this.typingTimeout = setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        }
+    });
+
+    // Floating price animation with magnetic effect
+    const priceBadges = document.querySelectorAll('.price-highlight');
+    priceBadges.forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.15) rotate(2deg)';
+            this.style.filter = 'drop-shadow(0 5px 15px rgba(102, 126, 234, 0.4))';
+        });
+        
+        badge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+            this.style.filter = '';
+        });
+
+        // Add floating animation
+        badge.style.animation = 'priceGlow 3s ease-in-out infinite';
+    });
+
+    // Dynamic parallax effect
+    let ticking = false;
+    window.addEventListener('scroll', function() {
+        if(!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+        }
+    });
+
+    function updateParallax() {
+        const scrolled = window.pageYOffset;
+        const searchSection = document.querySelector('.search-section');
+        
+        if (searchSection) {
+            const rate = scrolled * -0.3;
+            searchSection.style.transform = `translate3d(0, ${rate}px, 0)`;
+            
+            // Add rotation effect to background
+            const bgElement = searchSection.querySelector('::before');
+            if(bgElement) {
+                bgElement.style.transform = `translate(-50%, -50%) rotate(${scrolled * 0.1}deg)`;
+            }
+        }
+        
+        ticking = false;
+    }
+
+    // Enhanced filter toggle with state management
+    const filterToggle = document.querySelector('[data-bs-target="#advancedFilters"]');
+    const filtersCollapse = document.querySelector('#advancedFilters');
+    
+    if (filterToggle && filtersCollapse) {
+        let isOpen = false;
+        
+        filtersCollapse.addEventListener('show.bs.collapse', function() {
+            isOpen = true;
+            filterToggle.innerHTML = '<i class="fas fa-times me-2"></i>Đóng bộ lọc';
+            filterToggle.style.background = 'rgba(255,255,255,0.3)';
+            
+            // Animate filter inputs
+            setTimeout(() => {
+                const filterInputs = this.querySelectorAll('.form-control, .form-select');
+                filterInputs.forEach((input, index) => {
+                    input.style.opacity = '0';
+                    input.style.transform = 'translateY(20px)';
+                    
+                    setTimeout(() => {
+                        input.style.transition = 'all 0.4s ease';
+                        input.style.opacity = '1';
+                        input.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }, 100);
+        });
+        
+        filtersCollapse.addEventListener('hide.bs.collapse', function() {
+            isOpen = false;
+            filterToggle.innerHTML = '<i class="fas fa-filter me-2"></i>Bộ lọc';
+            filterToggle.style.background = '';
+        });
+
+        // Add pulse effect to filter button
+        setInterval(() => {
+            if(!isOpen) {
+                filterToggle.style.transform = 'scale(1.05)';
+                setTimeout(() => {
+                    filterToggle.style.transform = '';
+                }, 200);
+            }
+        }, 5000);
+    }
+
+    // Enhanced ripple effect with multiple waves
+    function createEnhancedRipple(event) {
+        const button = event.currentTarget;
+        const rect = button.getBoundingClientRect();
+        
+        for(let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const circle = document.createElement('span');
+                const diameter = Math.max(button.clientWidth, button.clientHeight);
+                const radius = diameter / 2;
+
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.clientX - rect.left - radius}px`;
+                circle.style.top = `${event.clientY - rect.top - radius}px`;
+                circle.classList.add('ripple');
+
+                button.appendChild(circle);
+
+                setTimeout(() => {
+                    if(circle.parentNode) {
+                        circle.parentNode.removeChild(circle);
+                    }
+                }, 600);
+            }, i * 100);
+        }
+    }
+
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', createEnhancedRipple);
+        
+        // Add button hover sound effect (visual feedback)
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px) scale(1.02)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+        });
+    });
+
+    // Dynamic CSS for enhanced effects
+    const dynamicStyle = document.createElement('style');
+    dynamicStyle.textContent = `
+        .btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
+            transform: scale(0);
+            animation: ripple-animation 0.6s ease-out forwards;
+            pointer-events: none;
+        }
+        
+        @@keyframes ripple-animation {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .focused {
+            transform: translateY(-3px) scale(1.02);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .card-img-top {
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .homestay-card:hover .card-img-top {
+            filter: brightness(1.1) contrast(1.1);
+        }
+        
+        /* Magnetic effect for interactive elements */
+        .btn:hover {
+            cursor: pointer;
+        }
+        
+        .badge:hover {
+            cursor: default;
+            transform: translateY(-2px) scale(1.1);
+        }
+        
+        /* Enhanced loading animation */
+        .loading::before {
+            background: linear-gradient(90deg, 
+                rgba(102, 126, 234, 0.1) 0%,
+                rgba(255, 255, 255, 0.8) 25%, 
+                rgba(118, 75, 162, 0.1) 50%, 
+                rgba(255, 255, 255, 0.8) 75%,
+                rgba(240, 147, 251, 0.1) 100%);
+            background-size: 200% 100%;
+            animation: shimmerLoading 2s infinite;
+        }
+        
+        @@keyframes shimmerLoading {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    `;
+    document.head.appendChild(dynamicStyle);
+
+    // Add entrance animation for page title
+    const pageTitle = document.querySelector('.page-title');
+    if(pageTitle) {
+        pageTitle.style.opacity = '0';
+        pageTitle.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            pageTitle.style.transition = 'all 0.8s ease';
+            pageTitle.style.opacity = '1';
+            pageTitle.style.transform = 'translateY(0)';
+        }, 500);
+    }    // Add floating animation to badges
+    const badges = document.querySelectorAll('.badge');
+    badges.forEach((badge, index) => {
+        badge.style.animationDelay = `${index * 0.2}s`;
+        badge.addEventListener('mouseenter', function() {
+            this.style.animation = 'none';
+            this.style.transform = 'translateY(-3px) scale(1.1) rotate(1deg)';
+        });
+        
+        badge.addEventListener('mouseleave', function() {
+            this.style.animation = '';
+            this.style.transform = '';
+        });
+    });
+
+    // Counter Animation
+    function animateCounter(element) {
+        const target = parseInt(element.getAttribute('data-target'));
+        const duration = 2000;
+        const increment = target / (duration / 16);
+        let current = 0;
+        
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            element.textContent = Math.floor(current).toLocaleString();
+        }, 16);
+    }
+
+    // Intersection Observer for counters
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const counter = entry.target.querySelector('.stat-number');
+                if (counter && !counter.classList.contains('counted')) {
+                    counter.classList.add('counted');
+                    animateCounter(counter);
+                }
+            }
+        });
+    }, { threshold: 0.5 });
+
+    // Observe stat cards
+    const statCards = document.querySelectorAll('.stat-card');
+    statCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.2}s`;
+        card.classList.add('scroll-reveal');
+        counterObserver.observe(card);
+        observer.observe(card);
+    });
+
+    // Feature items animation
+    const featureItems = document.querySelectorAll('.feature-item');
+    featureItems.forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.3}s`;
+        item.classList.add('scroll-reveal');
+        observer.observe(item);
+    });
+
+    // Destination cards animation
+    const destinationCards = document.querySelectorAll('.destination-card');
+    destinationCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.2}s`;
+        card.classList.add('scroll-reveal');
+        observer.observe(card);
+        
+        // Add click effect
+        card.addEventListener('click', function() {
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+
+    // Floating cards magnetic effect
+    const floatingCards = document.querySelectorAll('.floating-card');
+    floatingCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-10px) scale(1.1)';
+            this.style.boxShadow = '0 15px 30px rgba(102, 126, 234, 0.3)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+            this.style.boxShadow = '';
+        });
+    });
+
+    // Central graphic interaction
+    const centralGraphic = document.querySelector('.central-graphic');
+    if (centralGraphic) {
+        centralGraphic.addEventListener('mouseenter', function() {
+            this.style.animationPlayState = 'paused';
+            this.style.transform = 'translate(-50%, -50%) scale(1.2)';
+            
+            // Create ripple effect
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const ripple = document.createElement('div');
+                    ripple.style.position = 'absolute';
+                    ripple.style.top = '50%';
+                    ripple.style.left = '50%';
+                    ripple.style.width = '120px';
+                    ripple.style.height = '120px';
+                    ripple.style.border = '2px solid rgba(102, 126, 234, 0.5)';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.transform = 'translate(-50%, -50%) scale(1)';
+                    ripple.style.animation = 'rippleEffect 1s ease-out forwards';
+                    ripple.style.pointerEvents = 'none';
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        if (ripple.parentNode) {
+                            ripple.parentNode.removeChild(ripple);
+                        }
+                    }, 1000);
+                }, i * 200);
+            }
+        });
+        
+        centralGraphic.addEventListener('mouseleave', function() {
+            this.style.animationPlayState = 'running';
+            this.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
+    }
+
+    // Add tilt effect to stat cards
+    statCards.forEach(card => {
+        card.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+            
+            this.style.transform = `translateY(-10px) scale(1.05) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) scale(1) rotateX(0) rotateY(0)';
+        });
+    });
+
+    // Smooth scrolling for destination cards
+    destinationCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // You can add navigation logic here
+            const destination = this.querySelector('h4').textContent;
+            console.log(`Navigating to ${destination}`);
+        });
+    });
+
+    // Add entrance animation for sections
+    const sections = document.querySelectorAll('.features-section, .popular-destinations');
+    sections.forEach(section => {
+        section.classList.add('scroll-reveal');
+        observer.observe(section);
+    });
+
+    // Background particles animation
+    function createBackgroundParticles() {
+        const featuresSection = document.querySelector('.features-section');
+        if (!featuresSection) return;
+        
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.width = Math.random() * 4 + 2 + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.background = `rgba(102, 126, 234, ${Math.random() * 0.3 + 0.1})`;
+            particle.style.borderRadius = '50%';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.animation = `float ${Math.random() * 10 + 5}s ease-in-out infinite`;
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.pointerEvents = 'none';
+            particle.style.zIndex = '1';
+            
+            featuresSection.appendChild(particle);
+        }
+    }
+    
+    // Initialize background particles
+    createBackgroundParticles();
+});
+</script>
+
+

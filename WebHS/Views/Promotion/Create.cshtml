@@ -1,0 +1,208 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.CreatePromotionViewModel
+
+@{
+    ViewData["Title"] = "Tạo Khuyến Mãi";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Tạo Khuyến Mãi Mới</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Name" class="form-label">Tên khuyến mãi *</label>
+                                    <input asp-for="Name" class="form-control" placeholder="Nhập tên khuyến mãi">
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Code" class="form-label">Mã khuyến mãi *</label>
+                                    <input asp-for="Code" class="form-control" placeholder="VD: SUMMER2025" style="text-transform: uppercase;">
+                                    <span asp-validation-for="Code" class="text-danger"></span>
+                                    <small class="form-text text-muted">Chỉ chứa chữ hoa và số</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Mô tả chi tiết về khuyến mãi"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Type" class="form-label">Loại khuyến mãi *</label>
+                                    <select asp-for="Type" class="form-control" id="promotionType">
+                                        <option value="">-- Chọn loại khuyến mãi --</option>
+                                        <option value="@WebHSPromotionType.Percentage">Phần trăm (%)</option>
+                                        <option value="@WebHSPromotionType.FixedAmount">Số tiền cố định (VNĐ)</option>
+                                    </select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="Value" class="form-label">Giá trị *</label>
+                                    <div class="input-group">
+                                        <input asp-for="Value" class="form-control" placeholder="0" step="0.01">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text" id="valueUnit">%</span>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="Value" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="MinOrderAmount" class="form-label">Số tiền đơn hàng tối thiểu</label>
+                                    <div class="input-group">
+                                        <input asp-for="MinOrderAmount" class="form-control" placeholder="0">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">VNĐ</span>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="MinOrderAmount" class="text-danger"></span>
+                                    <small class="form-text text-muted">Để trống nếu không có giới hạn</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label asp-for="MaxDiscountAmount" class="form-label">Số tiền giảm tối đa</label>
+                                    <div class="input-group">
+                                        <input asp-for="MaxDiscountAmount" class="form-control" placeholder="0">
+                                        <div class="input-group-append">
+                                            <span class="input-group-text">VNĐ</span>
+                                        </div>
+                                    </div>
+                                    <span asp-validation-for="MaxDiscountAmount" class="text-danger"></span>
+                                    <small class="form-text text-muted">Chỉ áp dụng cho loại phần trăm</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="UsageLimit" class="form-label">Giới hạn số lần sử dụng</label>
+                                    <input asp-for="UsageLimit" class="form-control" placeholder="Không giới hạn">
+                                    <span asp-validation-for="UsageLimit" class="text-danger"></span>
+                                    <small class="form-text text-muted">Để trống nếu không có giới hạn</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="StartDate" class="form-label">Ngày bắt đầu *</label>
+                                    <input asp-for="StartDate" type="date" class="form-control">
+                                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="EndDate" class="form-label">Ngày kết thúc *</label>
+                                    <input asp-for="EndDate" type="date" class="form-control">
+                                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input asp-for="IsActive" class="form-check-input">
+                                <label asp-for="IsActive" class="form-check-label">
+                                    Kích hoạt ngay
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Tạo Khuyến Mãi
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-secondary btn-lg ml-2">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Format code input to uppercase
+            $('#Code').on('input', function() {
+                this.value = this.value.toUpperCase();
+            });
+
+            // Update value unit based on promotion type
+            $('#promotionType').change(function() {
+                var type = $(this).val();
+                var unit = type === '@((int)WebHS.Models.PromotionType.Percentage)' ? '%' : 'VNĐ';
+                $('#valueUnit').text(unit);
+                
+                // Show/hide max discount amount based on type
+                if (type === '@((int)WebHS.Models.PromotionType.Percentage)') {
+                    $('#MaxDiscountAmount').closest('.form-group').show();
+                } else {
+                    $('#MaxDiscountAmount').closest('.form-group').hide();
+                    $('#MaxDiscountAmount').val('');
+                }
+            });
+
+            // Initialize on page load
+            $('#promotionType').trigger('change');
+
+            // Set default dates
+            var today = new Date().toISOString().split('T')[0];
+            var nextMonth = new Date();
+            nextMonth.setMonth(nextMonth.getMonth() + 1);
+            var nextMonthStr = nextMonth.toISOString().split('T')[0];
+            
+            if (!$('#StartDate').val()) {
+                $('#StartDate').val(today);
+            }
+            if (!$('#EndDate').val()) {
+                $('#EndDate').val(nextMonthStr);
+            }
+
+            // Validate end date is after start date
+            $('#StartDate, #EndDate').change(function() {
+                var startDate = $('#StartDate').val();
+                var endDate = $('#EndDate').val();
+                
+                if (startDate && endDate && startDate >= endDate) {
+                    alert('Ngày kết thúc phải sau ngày bắt đầu');
+                    $('#EndDate').focus();
+                }
+            });
+
+            // Format number inputs
+            $('#Value, #MinOrderAmount, #MaxDiscountAmount').on('input', function() {
+                var value = $(this).val().replace(/[^0-9.]/g, '');
+                if (value.split('.').length > 2) {
+                    value = value.substring(0, value.lastIndexOf('.'));
+                }
+                $(this).val(value);
+            });
+        });
+    </script>
+}
+
+
+

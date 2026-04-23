@@ -1,0 +1,151 @@
+@using Microsoft.Extensions.Configuration
+@* Google reCAPTCHA Integration *@
+@{
+    var configuration = Context.RequestServices.GetRequiredService<IConfiguration>();
+    var reCaptchaSiteKey = configuration["GoogleServices:ReCaptcha:SiteKey"];
+    var reCaptchaEnabled = configuration.GetValue<bool>("GoogleServices:ReCaptcha:Enabled");
+    var reCaptchaVersion = configuration["GoogleServices:ReCaptcha:Version"] ?? "v2";
+}
+
+@if (reCaptchaEnabled && !string.IsNullOrEmpty(reCaptchaSiteKey) && reCaptchaSiteKey != "YOUR_RECAPTCHA_SITE_KEY_HERE")
+{
+    @if (reCaptchaVersion == "v3")
+    {
+        <!-- Google reCAPTCHA v3 -->
+        <script src="https://www.google.com/recaptcha/api.js?render=@reCaptchaSiteKey"></script>
+        <script>
+            // Global reCAPTCHA v3 functions
+            window.executeReCaptcha = function(action, callback) {
+                grecaptcha.ready(function() {
+                    grecaptcha.execute('@reCaptchaSiteKey', {action: action}).then(function(token) {
+                        if (callback && typeof callback === 'function') {
+                            callback(token);
+                        }
+                        // Auto-submit hidden field if exists
+                        const hiddenField = document.querySelector('input[name="g-recaptcha-response"]');
+                        if (hiddenField) {
+                            hiddenField.value = token;
+                        }
+                    });
+                });
+            };
+
+            // Auto-execute for page load
+            window.executeReCaptcha('homepage');
+
+            // Form submission handler
+            document.addEventListener('DOMContentLoaded', function() {
+                const forms = document.querySelectorAll('form[data-recaptcha="true"]');
+                forms.forEach(function(form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const action = form.getAttribute('data-recaptcha-action') || 'submit';
+                        
+                        window.executeReCaptcha(action, function(token) {
+                            // Add token to form
+                            let tokenInput = form.querySelector('input[name="g-recaptcha-response"]');
+                            if (!tokenInput) {
+                                tokenInput = document.createElement('input');
+                                tokenInput.type = 'hidden';
+                                tokenInput.name = 'g-recaptcha-response';
+                                form.appendChild(tokenInput);
+                            }
+                            tokenInput.value = token;
+                            
+                            // Submit the form
+                            form.submit();
+                        });
+                    });
+                });
+            });
+        </script>
+    }
+    else
+    {
+        <!-- Google reCAPTCHA v2 -->
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script>
+            // Global reCAPTCHA v2 functions
+            window.renderReCaptcha = function(elementId, callback) {
+                if (typeof grecaptcha !== 'undefined') {
+                    return grecaptcha.render(elementId, {
+                        'sitekey': '@reCaptchaSiteKey',
+                        'callback': callback || function(response) {
+                            console.log('reCAPTCHA solved:', response);
+                        },
+                        'expired-callback': function() {
+                            console.log('reCAPTCHA expired');
+                        },
+                        'error-callback': function() {
+                            console.log('reCAPTCHA error');
+                        }
+                    });
+                }
+            };
+
+            // Auto-render reCAPTCHA widgets on page load
+            document.addEventListener('DOMContentLoaded', function() {
+                const captchaElements = document.querySelectorAll('.g-recaptcha');
+                captchaElements.forEach(function(element) {
+                    if (!element.hasAttribute('data-rendered')) {
+                        window.renderReCaptcha(element.id || element);
+                        element.setAttribute('data-rendered', 'true');
+                    }
+                });
+            });
+
+            // Form validation with reCAPTCHA
+            window.validateFormWithCaptcha = function(formId) {
+                const form = document.getElementById(formId);
+                if (!form) return false;
+
+                const captchaResponse = grecaptcha.getResponse();
+                if (!captchaResponse) {
+                    alert('Vui lòng xác thực reCAPTCHA');
+                    return false;
+                }
+                return true;
+            };
+        </script>
+    }
+
+    <!-- reCAPTCHA Badge Styling (Optional) -->
+    <style>
+        .grecaptcha-badge {
+            visibility: hidden;
+        }
+        
+        .recaptcha-info {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .g-recaptcha {
+            margin: 15px 0;
+        }
+    </style>
+}
+else
+{
+    <!-- Development mode - reCAPTCHA disabled -->
+    <script>
+        // Mock reCAPTCHA functions for development
+        window.executeReCaptcha = function(action, callback) {
+            console.log('reCAPTCHA disabled in development mode');
+            if (callback) callback('development-token');
+        };
+        
+        window.renderReCaptcha = function(elementId, callback) {
+            console.log('reCAPTCHA disabled in development mode');
+            if (callback) callback('development-token');
+            return 'mock-widget-id';
+        };
+        
+        window.validateFormWithCaptcha = function(formId) {
+            console.log('reCAPTCHA validation bypassed in development mode');
+            return true;
+        };
+    </script>
+}
+

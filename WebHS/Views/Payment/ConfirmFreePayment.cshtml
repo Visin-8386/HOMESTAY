@@ -1,0 +1,618 @@
+
+@model WebHS.Models.Payment
+
+@{
+    ViewData["Title"] = "Xác nhận thanh toán miễn phí";
+    var booking = ViewBag.Booking as WebHS.Models.Booking;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Xác nhận thanh toán miễn phí (DEV)
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (booking != null)
+                    {
+                        <div class="alert alert-info mb-4">
+                            <h5 class="alert-heading">Thông tin đặt phòng</h5>
+                            <hr>
+                            <p><strong>Homestay:</strong> @booking.Homestay?.Name</p>
+                            <p><strong>Ngày nhận phòng:</strong> @booking.CheckInDate.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Ngày trả phòng:</strong> @booking.CheckOutDate.ToString("dd/MM/yyyy")</p>
+                            <p><strong>Số khách:</strong> @booking.NumberOfGuests người</p>
+                            <p><strong>Tổng tiền:</strong> <span class="text-success fw-bold">@booking.FinalAmount.ToString("C0", new System.Globalization.CultureInfo("vi-VN"))</span></p>
+                            <p class="mb-0"><strong>Mã giao dịch:</strong> <code>@Model.TransactionId</code></p>
+                        </div>
+                    }
+
+                    <div class="alert alert-warning mb-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Lưu ý quan trọng
+                        </h6>
+                        <ul class="mb-0">
+                            <li>Đây là phương thức thanh toán miễn phí chỉ dành cho môi trường phát triển (Development)</li>
+                            <li>Bạn cần xác nhận để hoàn tất quá trình thanh toán</li>
+                            <li>Sau khi xác nhận, đặt phòng sẽ được đánh dấu là đã thanh toán thành công</li>
+                            <li>Email xác nhận sẽ được gửi đến địa chỉ email của bạn</li>
+                        </ul>
+                    </div>
+
+                    @if (ViewData.ModelState.Count > 0)
+                    {
+                        <div class="alert alert-danger">
+                            @Html.ValidationSummary(false, "", new { @class = "mb-0" })
+                        </div>
+                    }
+
+                    <form asp-action="ConfirmFreePayment" method="post">
+                        <input type="hidden" name="transactionId" value="@Model.TransactionId" />
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-controller="Booking" asp-action="Details" asp-route-id="@booking?.Id" 
+                               class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-1"></i>
+                                Quay lại
+                            </a>
+                            <button type="submit" name="confirmed" value="true" class="btn btn-success">
+                                <i class="fas fa-check me-1"></i>
+                                Xác nhận thanh toán
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-footer text-muted text-center">
+                    <small>
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Giao dịch được bảo mật và mã hóa
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(247,250,252,0.95) 100%);
+        backdrop-filter: blur(15px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        animation: slideInUp 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,193,7,0.1), transparent);
+        animation: shimmer 3s infinite;
+        pointer-events: none;
+    }
+    
+    .card-header {
+        border-radius: 12px 12px 0 0 !important;
+        border: none;
+        background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%);
+        box-shadow: 0 4px 15px rgba(255,193,7,0.3);
+        position: relative;
+        z-index: 2;
+    }
+    
+    .card-header h4 {
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        animation: titleGlow 2s ease-in-out infinite alternate;
+    }
+    
+    .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+    
+    .btn:hover::before {
+        left: 100%;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    
+    .btn-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+    }
+    
+    .btn-success:hover {
+        background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+        box-shadow: 0 8px 25px rgba(40,167,69,0.4);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border: none;
+        box-shadow: 0 4px 15px rgba(108,117,125,0.3);
+    }
+    
+    .alert {
+        border-radius: 8px;
+        border: none;
+        backdrop-filter: blur(10px);
+        animation: fadeInUp 0.5s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, rgba(13,202,240,0.1) 0%, rgba(13,110,253,0.1) 100%);
+        border: 1px solid rgba(13,202,240,0.2);
+        box-shadow: 0 4px 15px rgba(13,202,240,0.1);
+    }
+    
+    .alert-warning {
+        background: linear-gradient(135deg, rgba(255,193,7,0.1) 0%, rgba(255,143,0,0.1) 100%);
+        border: 1px solid rgba(255,193,7,0.2);
+        box-shadow: 0 4px 15px rgba(255,193,7,0.1);
+    }
+    
+    .alert::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        animation: pulse 2s infinite;
+    }
+    
+    .alert-info::before {
+        background: linear-gradient(180deg, #0dcaf0, #0d6efd);
+    }
+    
+    .alert-warning::before {
+        background: linear-gradient(180deg, #ffc107, #ff8f00);
+    }
+    
+    code {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        border: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        animation: codeGlow 3s ease-in-out infinite;
+    }
+    
+    .card-footer {
+        background: linear-gradient(135deg, rgba(248,249,250,0.8) 0%, rgba(233,236,239,0.8) 100%);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid rgba(0,0,0,0.1);
+        position: relative;
+        z-index: 2;
+    }
+    
+    .fas, .fab {
+        animation: iconBounce 2s ease-in-out infinite;
+    }
+    
+    /* Animations */
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    @@keyframes titleGlow {
+        0% { text-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        100% { text-shadow: 0 1px 2px rgba(0,0,0,0.1), 0 0 10px rgba(255,193,7,0.3); }
+    }
+    
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @@keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+    
+    @@keyframes codeGlow {
+        0%, 100% { box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        50% { box-shadow: 0 2px 4px rgba(0,0,0,0.1), 0 0 8px rgba(13,202,240,0.2); }
+    }
+    
+    @@keyframes iconBounce {
+        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+        40% { transform: translateY(-3px); }
+        60% { transform: translateY(-1px); }
+    }
+    
+    /* Enhanced interaction effects */
+    .alert:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+    }
+    
+    /* Responsive enhancements */
+    @@media (max-width: 768px) {
+        .card {
+            margin: 10px;
+            border-radius: 8px;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+        }
+    }
+    
+    /* Loading animation for button */
+    .btn.loading {
+        position: relative;
+        color: transparent;
+    }
+    
+    .btn.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        margin-top: -10px;
+        margin-left: -10px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize enhanced effects
+            initializePageEffects();
+            
+            // Auto-focus after animation completes
+            setTimeout(function() {
+                const confirmBtn = document.querySelector('button[name="confirmed"]');
+                if (confirmBtn) {
+                    confirmBtn.focus();
+                    createFocusGlow(confirmBtn);
+                }
+            }, 800);
+            
+            // Enhanced form submission with loading state
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (e.submitter && e.submitter.name === 'confirmed' && e.submitter.value === 'true') {
+                        if (confirm('Bạn có chắc chắn muốn xác nhận thanh toán này không?')) {
+                            // Add loading state
+                            const button = e.submitter;
+                            button.classList.add('loading');
+                            button.disabled = true;
+                            
+                            // Create success particles
+                            createSuccessParticles(button);
+                            
+                            // Show processing message
+                            showToast('Đang xử lý thanh toán...', 'info');
+                            
+                            return true;
+                        } else {
+                            e.preventDefault();
+                        }
+                    }
+                });
+            }
+            
+            // Add hover effects to alerts
+            $('.alert').on('mouseenter', function() {
+                createRippleEffect(this);
+            });
+            
+            // Add click effects to buttons
+            $('.btn').on('click', function() {
+                createButtonClickEffect(this);
+            });
+        });
+        
+        function initializePageEffects() {
+            // Add floating particles
+            createFloatingParticles();
+            
+            // Stagger animation for alerts
+            $('.alert').each(function(index) {
+                $(this).css('animation-delay', (index * 0.2) + 's');
+            });
+            
+            // Add glow effect to transaction ID
+            const codeElement = document.querySelector('code');
+            if (codeElement) {
+                setInterval(() => {
+                    codeElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1), 0 0 15px rgba(13,202,240,0.3)';
+                    setTimeout(() => {
+                        codeElement.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    }, 1000);
+                }, 3000);
+            }
+        }
+        
+        function createFloatingParticles() {
+            const container = document.querySelector('.container');
+            if (!container) return;
+            
+            setInterval(() => {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        const particle = document.createElement('div');
+                        particle.style.position = 'fixed';
+                        particle.style.width = '4px';
+                        particle.style.height = '4px';
+                        particle.style.background = '#ffc107';
+                        particle.style.borderRadius = '50%';
+                        particle.style.pointerEvents = 'none';
+                        particle.style.zIndex = '1000';
+                        particle.style.opacity = '0.6';
+                        particle.style.left = Math.random() * window.innerWidth + 'px';
+                        particle.style.top = window.innerHeight + 'px';
+                        particle.style.animation = 'floatUp 4s linear forwards';
+                        
+                        document.body.appendChild(particle);
+                        
+                        setTimeout(() => {
+                            if (particle.parentNode) {
+                                particle.parentNode.removeChild(particle);
+                            }
+                        }, 4000);
+                    }, i * 500);
+                }
+            }, 2000);
+        }
+        
+        function createRippleEffect(element) {
+            const ripple = document.createElement('div');
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(255,193,7,0.3)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s ease-out';
+            ripple.style.pointerEvents = 'none';
+            
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = '50%';
+            ripple.style.top = '50%';
+            ripple.style.marginLeft = -(size / 2) + 'px';
+            ripple.style.marginTop = -(size / 2) + 'px';
+            
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+            
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }
+            }, 600);
+        }
+        
+        function createButtonClickEffect(button) {
+            // Create click wave
+            const wave = document.createElement('div');
+            wave.style.position = 'absolute';
+            wave.style.top = '50%';
+            wave.style.left = '50%';
+            wave.style.width = '0';
+            wave.style.height = '0';
+            wave.style.borderRadius = '50%';
+            wave.style.background = 'rgba(255,255,255,0.5)';
+            wave.style.transform = 'translate(-50%, -50%)';
+            wave.style.animation = 'buttonWave 0.5s ease-out';
+            wave.style.pointerEvents = 'none';
+            
+            button.style.position = 'relative';
+            button.style.overflow = 'hidden';
+            button.appendChild(wave);
+            
+            setTimeout(() => {
+                if (wave.parentNode) {
+                    wave.parentNode.removeChild(wave);
+                }
+            }, 500);
+        }
+        
+        function createFocusGlow(element) {
+            element.style.boxShadow = '0 0 0 3px rgba(255,193,7,0.3), 0 4px 15px rgba(255,193,7,0.2)';
+            setTimeout(() => {
+                element.style.boxShadow = '';
+            }, 2000);
+        }
+        
+        function createSuccessParticles(button) {
+            const rect = button.getBoundingClientRect();
+            
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'fixed';
+                    particle.style.width = '6px';
+                    particle.style.height = '6px';
+                    particle.style.background = '#28a745';
+                    particle.style.borderRadius = '50%';
+                    particle.style.pointerEvents = 'none';
+                    particle.style.zIndex = '9999';
+                    particle.style.left = rect.left + rect.width / 2 + 'px';
+                    particle.style.top = rect.top + rect.height / 2 + 'px';
+                    
+                    const angle = (i / 12) * Math.PI * 2;
+                    const distance = 50 + Math.random() * 30;
+                    const endX = Math.cos(angle) * distance;
+                    const endY = Math.sin(angle) * distance;
+                    
+                    particle.style.animation = `successParticle 1s ease-out forwards`;
+                    particle.style.setProperty('--end-x', endX + 'px');
+                    particle.style.setProperty('--end-y', endY + 'px');
+                    
+                    document.body.appendChild(particle);
+                    
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 1000);
+                }, i * 50);
+            }
+        }
+        
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+                ${message}
+            `;
+            
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, ${type === 'success' ? '#28a745, #20c997' : '#0dcaf0, #0d6efd'});
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                z-index: 10000;
+                transform: translateX(400px);
+                opacity: 0;
+                transition: all 0.3s ease;
+                backdrop-filter: blur(10px);
+            `;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+                toast.style.opacity = '1';
+            }, 100);
+            
+            setTimeout(() => {
+                toast.style.transform = 'translateX(400px)';
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Add CSS animations dynamically
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes floatUp {
+                0% {
+                    transform: translateY(0px) rotate(0deg);
+                    opacity: 0.6;
+                }
+                50% {
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(-100vh) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+            
+            @@keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+            
+            @@keyframes buttonWave {
+                0% {
+                    width: 0;
+                    height: 0;
+                    opacity: 1;
+                }
+                100% {
+                    width: 200px;
+                    height: 200px;
+                    opacity: 0;
+                }
+            }
+            
+            @@keyframes successParticle {
+                0% {
+                    transform: translate(0, 0) scale(1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(var(--end-x), var(--end-y)) scale(0);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+}

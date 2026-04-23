@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Khởi tạo dữ liệu Claims";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="mb-4">@ViewData["Title"]</h1>
+
+            @if (TempData["Message"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Message"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card bg-light mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Khởi tạo dữ liệu Claims</h5>
+                    <p class="card-text">
+                        Trang này cho phép bạn khởi tạo dữ liệu mẫu cho các bảng AspNetUserClaims và AspNetRoleClaims.
+                        Các nút dưới đây sẽ tự động thêm các claims phù hợp cho các vai trò và người dùng trong hệ thống.
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Khởi tạo Claims cho Vai trò</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Thêm các claims cơ bản cho các vai trò Admin, Host, User.</p>
+                            <form asp-action="SeedRoleClaims" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-database-fill"></i> Khởi tạo Claims cho Vai trò
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Khởi tạo Claims cho Admin</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Thêm các claims đặc biệt cho người dùng có vai trò Admin.</p>
+                            <form asp-action="SeedAdminClaims" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-success">
+                                    <i class="bi bi-shield-fill"></i> Khởi tạo Claims cho Admin
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Khởi tạo Claims cho Super Host</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Thêm các claims đặc biệt cho các host có điểm đánh giá cao.</p>
+                            <form asp-action="SeedSuperHostClaims" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-warning text-dark">
+                                    <i class="bi bi-star-fill"></i> Khởi tạo Claims cho Super Host
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Khởi tạo Claims Thông tin Người dùng</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Thêm các claims chứa thông tin cá nhân cho tất cả người dùng.</p>
+                            <form asp-action="SeedUserProfileClaims" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-info text-white">
+                                    <i class="bi bi-person-badge"></i> Khởi tạo Claims Hồ sơ
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-warning mt-3">
+                <h5><i class="bi bi-exclamation-triangle"></i> Lưu ý</h5>
+                <p>
+                    Các thao tác trên sẽ không xóa claims hiện có, mà chỉ bổ sung thêm. Nếu một claim đã tồn tại, 
+                    nó sẽ không được thêm lại. Chỉ thực hiện các thao tác này khi cần thiết.
+                </p>
+            </div>
+
+            <div class="mt-4">
+                <a asp-controller="ClaimsManagement" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Quay lại trang Quản lý Claims
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

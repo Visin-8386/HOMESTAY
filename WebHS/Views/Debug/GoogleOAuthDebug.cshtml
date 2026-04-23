@@ -1,0 +1,60 @@
+@model WebHS.Controllers.GoogleOAuthDebugViewModel
+@{
+    ViewData["Title"] = "Google OAuth Debug";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h2>🔍 Google OAuth Debug Information</h2>
+            
+            <div class="card mb-4">
+                <div class="card-header">Configuration Status</div>
+                <div class="card-body">
+                    <ul>
+                        <li><strong>Client ID:</strong> @Model.ClientId</li>
+                        <li><strong>Client Secret:</strong> @Model.ClientSecret</li>
+                        <li><strong>Current URL:</strong> @Model.CurrentUrl</li>
+                        <li><strong>Expected Redirect URI:</strong> @Model.ExpectedRedirectUri</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">Test Google OAuth</div>
+                <div class="card-body">
+                    <a href="/Account/ExternalLogin?provider=Google&returnUrl=%2F" class="btn btn-danger">
+                        <i class="fab fa-google"></i> Test Google Login
+                    </a>
+                    <p class="mt-2 text-muted">Click để test Google OAuth flow</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">⚠️ REDIRECT URI ISSUE</div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <strong>App hiện chạy trên port 5000, nhưng Google Console có thể chỉ có port 7264!</strong>
+                    </div>
+                    <p>Redirect URIs cần thêm vào Google Console:</p>
+                    <code>http://localhost:5000/signin-google</code><br>
+                    <code>https://localhost:7264/signin-google</code><br>
+                    <code>https://yourdomain.com/signin-google</code>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Required Google APIs</div>
+                <div class="card-body">
+                    <ul>
+                        <li>People API</li>
+                        <li>OAuth2 API</li>
+                        <li>Google Identity Toolkit API</li>
+                    </ul>
+                    <p>Enable tại: <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

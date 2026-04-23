@@ -1,0 +1,602 @@
+/* Đom Đóm Dream - Home Page Styles */
+
+/* Hero Section */
+.hero-section {
+    position: relative;
+    min-height: 100vh; /* Back to original height for slideshow only */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Image Slideshow */
+.hero-slideshow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Fixed height for slideshow */
+    z-index: 1;
+    overflow: hidden; /* Ensure thumbnails stay within */
+}
+
+.slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: all 2s ease-in-out;
+    transform: scale(1.1);
+}
+
+.slide.active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Add a gentle zoom effect */
+.slide {
+    animation: slideZoom 5s ease-in-out infinite;
+}
+
+/* Add styling for content card to make text more readable */
+.content-card {
+    background: linear-gradient(135deg, #ffd700 0%, #ff69b4 100%); /* Yellow to Pink gradient */
+    padding: 25px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Content Section - New section for content below slideshow */
+.content-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    position: relative;
+    z-index: 5;
+    pointer-events: auto; /* Ensure section is interactive */
+}
+
+/* Ensure all interactive elements work properly */
+.content-section .container,
+.content-section .row,
+.content-section .col-lg-6 {
+    pointer-events: auto;
+}
+
+@keyframes slideZoom {
+    0%, 100% { 
+        transform: scale(1); 
+    }
+    50% { 
+        transform: scale(1.05); 
+    }
+}
+
+/* Slideshow Navigation Arrows */
+.slideshow-nav {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.prev-btn {
+    left: 20px;
+}
+
+.next-btn {
+    right: 20px;
+}
+
+/* Slideshow Controls */
+.slideshow-controls {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 12px 20px;
+    /* Ensure it stays within slideshow */
+    max-width: 90%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Fix: Keep thumbnails within slideshow area */
+    bottom: 20px; 
+}
+
+/* Thumbnail Indicators */
+.thumbnail-indicators {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.thumbnail {
+    width: 60px;
+    height: 40px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    opacity: 0.7;
+}
+
+.thumbnail:hover {
+    opacity: 0.9;
+    transform: scale(1.05);
+}
+
+.thumbnail.active {
+    border-color: #fff;
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* Old indicator styles - remove these */
+.slideshow-indicators {
+    display: none;
+}
+
+.indicator {
+    display: none;
+}
+
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    z-index: 1;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Fixed height to match slideshow */
+    background: linear-gradient(
+        45deg,
+        rgba(102, 126, 234, 0.4) 0%,
+        rgba(118, 75, 162, 0.3) 50%,
+        rgba(240, 147, 251, 0.4) 100%
+    );
+    z-index: 2;
+}
+
+.gradient-text {
+    background: linear-gradient(45deg, #333, #6b3c8a, #2d5aa0); /* Darker text for better contrast on yellow-pink background */
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: glow 2s ease-in-out infinite alternate;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.8); /* Add text shadow for better readability */
+}
+
+@keyframes glow {
+    from { filter: drop-shadow(0 0 20px rgba(107, 60, 138, 0.5)); }
+    to { filter: drop-shadow(0 0 30px rgba(107, 60, 138, 0.8)); }
+}
+
+.firefly-icon {
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.2) rotate(180deg); }
+}
+
+.floating-card {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+.search-card .card {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    position: relative;
+    z-index: 10; /* Ensure form is above other elements */
+}
+
+/* Fix form input interactions */
+.search-card .form-control,
+.search-card .form-select,
+.search-card .btn {
+    position: relative;
+    z-index: 11;
+    pointer-events: auto;
+}
+
+/* Ensure the entire search card is interactive */
+.search-card {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+.btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3);
+    color: white;
+}
+
+/* Hero Content styling for better contrast on yellow-pink background */
+.hero-content {
+    color: #333 !important; /* Dark text for better readability */
+}
+
+.hero-content h2,
+.hero-content p,
+.hero-content .stat-item {
+    color: #333 !important;
+}
+
+/* Hero Stats */
+.stat-item h3 {
+    font-size: 2rem;
+    margin-bottom: 0;
+}
+
+/* Fireflies Animation */
+.fireflies {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 2;
+    pointer-events: none; /* Don't block interactions */
+}
+
+.firefly {
+    width: 4px;
+    height: 4px;
+    background: #ffd700;
+    border-radius: 50%;
+    position: absolute;
+    box-shadow: 0 0 10px #ffd700;
+    animation: fly 15s linear infinite;
+}
+
+.firefly:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 12s;
+}
+
+.firefly:nth-child(2) {
+    top: 60%;
+    left: 80%;
+    animation-delay: 2s;
+    animation-duration: 18s;
+}
+
+.firefly:nth-child(3) {
+    top: 80%;
+    left: 20%;
+    animation-delay: 4s;
+    animation-duration: 14s;
+}
+
+.firefly:nth-child(4) {
+    top: 30%;
+    left: 70%;
+    animation-delay: 6s;
+    animation-duration: 16s;
+}
+
+.firefly:nth-child(5) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 8s;
+    animation-duration: 20s;
+}
+
+@keyframes fly {
+    0% {
+        transform: translateX(0) translateY(0) scale(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(-100px) translateY(-100px) scale(0);
+        opacity: 0;
+    }
+}
+
+/* Features Section */
+.features-section {
+    margin-top: 20px;
+    position: relative;
+    z-index: 5; /* Higher z-index to ensure it's above hero content */
+}
+
+.feature-card {
+    background: white;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon i {
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon i {
+    transform: scale(1.2);
+}
+
+/* Homestay Cards */
+.homestay-card {
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.homestay-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.homestay-image {
+    height: 240px;
+    object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.homestay-card:hover .homestay-image {
+    transform: scale(1.1);
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.homestay-card:hover .image-overlay {
+    opacity: 1;
+}
+
+.badge-overlay {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 3;
+}
+
+.price {
+    font-size: 1.25rem;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.bg-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Empty State */
+.empty-state-icon {
+    opacity: 0.5;
+}
+
+/* Form Styling */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 12px 15px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 12;
+    pointer-events: auto;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-label {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    position: relative;
+    z-index: 12;
+}
+
+/* Fix for interactive elements */
+.interactive-card {
+    position: relative !important;
+    z-index: 100 !important;
+    pointer-events: auto !important;
+}
+
+.interactive-form {
+    position: relative !important;
+    z-index: 101 !important;
+    pointer-events: auto !important;
+}
+
+.interactive-form input,
+.interactive-form select,
+.interactive-form button,
+.interactive-form label {
+    position: relative !important;
+    z-index: 102 !important;
+    pointer-events: auto !important;
+    background: white !important;
+}
+
+.interactive-form button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+}
+
+/* Override any conflicting styles */
+.content-section * {
+    pointer-events: auto;
+}
+
+.content-section .floating-card {
+    pointer-events: auto !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 100vh;
+        padding: 40px 0 20px 0;
+    }
+    
+    .display-2 {
+        font-size: 2.5rem;
+    }
+    
+    .hero-stats {
+        justify-content: center;
+    }
+    
+    .stat-item h3 {
+        font-size: 1.5rem;
+    }
+    
+    /* Mobile slideshow controls */
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .prev-btn {
+        left: 10px;
+    }
+    
+    .next-btn {
+        right: 10px;
+    }
+    
+    .slideshow-controls {
+        bottom: 20px;
+        padding: 8px 12px;
+        border-radius: 15px;
+    }
+    
+    .thumbnail {
+        width: 45px;
+        height: 30px;
+    }
+    
+    .thumbnail-indicators {
+        gap: 8px;
+    }
+    
+    /* Ensure features section is not covered */
+    .features-section {
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .thumbnail {
+        width: 35px;
+        height: 25px;
+    }
+    
+    .thumbnail-indicators {
+        gap: 6px;
+    }
+    
+    .slideshow-controls {
+        padding: 8px;
+    }
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Text selection */
+::selection {
+    background: rgba(102, 126, 234, 0.3);
+}

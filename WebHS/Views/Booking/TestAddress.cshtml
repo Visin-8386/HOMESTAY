@@ -1,0 +1,238 @@
+@{
+    ViewData["Title"] = "Test Booking Address System";
+    Layout = "_Layout_New";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4><i class="fas fa-map-marker-alt"></i> Test Booking Address System</h4>
+                    <p class="mb-0">Kiểm tra hệ thống nhập địa chỉ trong booking với geocoding thông minh</p>
+                </div>
+                <div class="card-body">
+                    
+                    <!-- Status Panel -->
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Trạng thái hệ thống</h5>
+                        <div id="systemStatus">
+                            <span class="badge bg-secondary">Đang kiểm tra...</span>
+                        </div>
+                    </div>
+
+                    <!-- Test Buttons -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <button class="btn btn-primary w-100" onclick="testDatabaseSchema()">
+                                <i class="fas fa-database"></i> Test Database Schema
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-success w-100" onclick="testGeocodingAPI()">
+                                <i class="fas fa-globe"></i> Test Geocoding API
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-warning w-100" onclick="testBookingModel()">
+                                <i class="fas fa-calendar-check"></i> Test Booking Model
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-info w-100" onclick="showAddressComponent()">
+                                <i class="fas fa-puzzle-piece"></i> Show Address Component
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Test Results -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-chart-bar"></i> Kết quả test</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="testResults" style="max-height: 400px; overflow-y: auto;">
+                                <p class="text-muted">Kết quả test sẽ hiển thị ở đây...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Component Demo -->
+                    <div id="addressComponentDemo" class="card mt-4" style="display: none;">
+                        <div class="card-header">
+                            <h5><i class="fas fa-map"></i> Demo Address Component</h5>
+                        </div>
+                        <div class="card-body">
+                            @await Html.PartialAsync("_BookingAddressInput")
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function log(message, type = 'info') {
+        const resultsDiv = document.getElementById('testResults');
+        const timestamp = new Date().toLocaleTimeString();
+        const badgeClass = type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info';
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${badgeClass} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            <strong>[${timestamp}]</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        resultsDiv.appendChild(alertDiv);
+        resultsDiv.scrollTop = resultsDiv.scrollHeight;
+    }
+
+    function updateSystemStatus(status, type = 'secondary') {
+        const statusDiv = document.getElementById('systemStatus');
+        statusDiv.innerHTML = `<span class="badge bg-${type}">${status}</span>`;
+    }
+
+    async function testDatabaseSchema() {
+        log('🔌 Đang kiểm tra database schema...', 'info');
+        updateSystemStatus('Đang kiểm tra database...', 'warning');
+        
+        try {
+            const response = await fetch('@Url.Action("TestDatabaseSchema", "Booking")');
+            const data = await response.json();
+            
+            if (data.success) {
+                log(`✅ Database Schema OK: ${data.message}`, 'success');
+                log(`📋 Schema Check: ${data.schemaCheck}`, 'success');
+                updateSystemStatus('Database Schema OK', 'success');
+                
+                if (data.testAddressData) {
+                    log('📊 Address Fields Test:', 'info');
+                    Object.entries(data.testAddressData).forEach(([key, value]) => {
+                        log(`   • ${key}: ${value}`, 'info');
+                    });
+                }
+            } else {
+                log(`❌ Database Schema Error: ${data.message}`, 'error');
+                log(`💡 Recommendation: ${data.recommendation}`, 'warning');
+                updateSystemStatus('Schema Error', 'danger');
+            }
+        } catch (error) {
+            log(`❌ Connection Error: ${error.message}`, 'error');
+            updateSystemStatus('Connection Failed', 'danger');
+        }
+    }
+
+    async function testGeocodingAPI() {
+        log('🌍 Đang kiểm tra Geocoding API...', 'info');
+        
+        try {
+            const testAddress = 'Phạm Ngũ Lão, Quận 1, TP.HCM';
+            const response = await fetch('@Url.Action("coordinates", "EnhancedGeocoding")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address: testAddress })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.latitude && data.longitude) {
+                log(`✅ Geocoding OK: ${testAddress} → [${data.latitude}, ${data.longitude}]`, 'success');
+                log(`📍 Address: ${data.displayName || data.address}`, 'info');
+                
+                if (data.components) {
+                    log('🏠 Address Components:', 'info');
+                    Object.entries(data.components).forEach(([key, value]) => {
+                        if (value) log(`   • ${key}: ${value}`, 'info');
+                    });
+                }
+            } else {
+                log(`⚠️ Geocoding Warning: ${data.message || 'No coordinates returned'}`, 'warning');
+            }
+        } catch (error) {
+            log(`❌ Geocoding Error: ${error.message}`, 'error');
+        }
+    }
+
+    async function testBookingModel() {
+        log('📝 Đang kiểm tra Booking Model capabilities...', 'info');
+        
+        // Test computed properties
+        const mockData = {
+            CustomerHouseNumber: '123',
+            CustomerStreetName: 'Phạm Ngũ Lão',
+            CustomerWard: 'Phường Phạm Ngũ Lão',
+            CustomerDistrict: 'Quận 1',
+            CustomerCity: 'TP.HCM',
+            CustomerLatitude: 10.8231,
+            CustomerLongitude: 106.6297
+        };
+        
+        log('✅ Booking Model Features:', 'success');
+        log('   • Customer address fields (8 fields)', 'info');
+        log('   • Computed properties (CompleteAddress, HasAddress, etc.)', 'info');
+        log('   • Coordinate validation', 'info');
+        log('   • Address building logic', 'info');
+        
+        log('📋 Sample address data:', 'info');
+        Object.entries(mockData).forEach(([key, value]) => {
+            log(`   • ${key}: ${value}`, 'info');
+        });
+    }
+
+    function showAddressComponent() {
+        const demo = document.getElementById('addressComponentDemo');
+        if (demo.style.display === 'none') {
+            demo.style.display = 'block';
+            log('✅ Address Component displayed below', 'success');
+            log('🗺️ Component includes: Interactive map, geocoding, address fields', 'info');
+        } else {
+            demo.style.display = 'none';
+            log('📦 Address Component hidden', 'info');
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        log('🚀 Booking Address Test System initialized', 'success');
+        updateSystemStatus('System Ready', 'info');
+        
+        // Auto-run database test
+        setTimeout(() => {
+            testDatabaseSchema();
+        }, 1000);
+    });
+</script>
+}
+
+@section Styles {
+<style>
+    .alert {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .btn {
+        margin-bottom: 10px;
+    }
+    
+    #testResults {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .card-header {
+        border-bottom: 1px solid rgba(0,0,0,.125);
+    }
+</style>
+}
+

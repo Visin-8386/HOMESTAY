@@ -1,0 +1,334 @@
+@using System.Linq
+@model WebHS.ViewModels.AdminEditHomestayViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh Sửa Homestay";
+    Layout = "_Layout_New";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Chỉnh Sửa Homestay (Admin)</h4>
+                    <p class="text-muted mb-0">ID: @Model.Id | Chỉnh sửa homestay với quyền admin</p>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditHomestay" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="Id" />
+                        
+                        <!-- Admin Settings -->
+                        <div class="mb-4">
+                            <h5 class="text-danger border-bottom pb-2">Cài đặt Admin</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="HostId" class="form-label">Chủ nhà *</label>
+                                        <select asp-for="HostId" class="form-control">
+                                            <option value="">-- Chọn chủ nhà --</option>
+                                            @{
+                                                var hosts = ViewBag.Hosts as IEnumerable<WebHS.Models.User>;
+                                                if (hosts != null)
+                                                {
+                                                    foreach (var host in hosts)
+                                                    {
+                                                        <option value="@host.Id" selected="@(host.Id == Model.HostId)">
+                                                            @(host.FirstName ?? "") @(host.LastName ?? "") (@(host.Email ?? ""))
+                                                        </option>
+                                                    }
+                                                }
+                                            }
+                                        </select>
+                                        <span asp-validation-for="HostId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check mt-4">
+                                        <input asp-for="IsActive" class="form-check-input" type="checkbox">
+                                        <label asp-for="IsActive" class="form-check-label">
+                                            Hoạt động
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check mt-4">
+                                        <input asp-for="IsApproved" class="form-check-input" type="checkbox">
+                                        <label asp-for="IsApproved" class="form-check-label">
+                                            Đã được duyệt
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Basic Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Thông tin cơ bản</h5>
+                            
+                            <div class="form-group">
+                                <label asp-for="Name" class="form-label">Tên homestay *</label>
+                                <input asp-for="Name" class="form-control" placeholder="Nhập tên homestay">
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Description" class="form-label">Mô tả *</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả chi tiết về homestay"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label asp-for="Rules" class="form-label">Quy tắc</label>
+                                <textarea asp-for="Rules" class="form-control" rows="3" placeholder="Quy tắc của homestay"></textarea>
+                                <span asp-validation-for="Rules" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Address Information -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Địa chỉ</h5>
+                            
+                            <div class="form-group">
+                                <label asp-for="Address" class="form-label">Địa chỉ *</label>
+                                <input asp-for="Address" class="form-control" placeholder="Số nhà, tên đường">
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="City" class="form-label">Thành phố *</label>
+                                        <input asp-for="City" class="form-control" placeholder="Thành phố">
+                                        <span asp-validation-for="City" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="State" class="form-label">Khu vực *</label>
+                                        <input asp-for="State" class="form-control" placeholder="Miền Bắc/Trung/Nam">
+                                        <span asp-validation-for="State" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ZipCode" class="form-label">Mã bưu điện</label>
+                                        <input asp-for="ZipCode" class="form-control" placeholder="Mã bưu điện">
+                                        <span asp-validation-for="ZipCode" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Property Details -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Chi tiết căn hộ</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="PricePerNight" class="form-label">Giá/đêm (VNĐ) *</label>
+                                        <input asp-for="PricePerNight" type="number" class="form-control" min="0">
+                                        <span asp-validation-for="PricePerNight" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="MaxGuests" class="form-label">Số khách tối đa *</label>
+                                        <input asp-for="MaxGuests" type="number" class="form-control" min="1">
+                                        <span asp-validation-for="MaxGuests" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Bedrooms" class="form-label">Số phòng ngủ *</label>
+                                        <input asp-for="Bedrooms" type="number" class="form-control" min="0">
+                                        <span asp-validation-for="Bedrooms" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Bathrooms" class="form-label">Số phòng tắm *</label>
+                                        <input asp-for="Bathrooms" type="number" class="form-control" min="0">
+                                        <span asp-validation-for="Bathrooms" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Media & Video -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Media & Video</h5>
+                            
+                            <div class="form-group">
+                                <label asp-for="YouTubeVideoId" class="form-label">YouTube Video ID</label>
+                                <input asp-for="YouTubeVideoId" class="form-control" placeholder="Ví dụ: dQw4w9WgXcQ">
+                                <span asp-validation-for="YouTubeVideoId" class="text-danger"></span>
+                                <small class="form-text text-muted">Nhập ID video YouTube để hiển thị video giới thiệu</small>
+                                
+                                <!-- Video Preview -->
+                                <div id="videoPreview" class="mt-3" style="display: none;">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h6 class="mb-0">Xem trước video:</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <div id="videoContainer" class="ratio ratio-16x9"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Existing Images -->
+                            @if (Model.ExistingImages?.Any() == true)
+                            {
+                                <div class="form-group">
+                                    <label class="form-label">Hình ảnh hiện tại</label>
+                                    <div class="row">
+                                        @foreach (var image in Model.ExistingImages)
+                                        {
+                                            <div class="col-md-3 mb-3">
+                                                <div class="card">
+                                                    <img src="@image.ImageUrl" class="card-img-top" style="height: 150px; object-fit: cover;">
+                                                    <div class="card-body p-2">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="ImagesToDelete" value="@image.Id">
+                                                            <label class="form-check-label text-danger">
+                                                                <small>Xóa ảnh này</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="form-group">
+                                <label asp-for="Images" class="form-label">Thêm hình ảnh mới</label>
+                                <input asp-for="Images" type="file" class="form-control" multiple accept="image/*">
+                                <span asp-validation-for="Images" class="text-danger"></span>
+                                <small class="form-text text-muted">Chọn nhiều hình ảnh để thêm. Định dạng: JPG, PNG, GIF</small>
+                            </div>
+                        </div>
+
+                        <!-- Amenities -->
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Tiện nghi</h5>
+                            <div class="row">
+                                @{
+                                    var amenities = ViewBag.Amenities as IEnumerable<WebHS.Models.Amenity>;
+                                    if (amenities != null)
+                                    {
+                                        foreach (var amenity in amenities)
+                                        {
+                                            <div class="col-md-4 col-lg-3 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="AmenityIds" value="@amenity.Id" 
+                                                           id="amenity_@amenity.Id" 
+                                                           checked="@(Model.AmenityIds?.Contains(amenity.Id) == true)">
+                                                    <label class="form-check-label" for="amenity_@amenity.Id">
+                                                        @amenity.Name
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="@Url.Action("Homestays")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật Homestay
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // YouTube Video Preview functionality
+        function initializeYouTubePreview() {
+            const videoIdInput = document.getElementById('YouTubeVideoId');
+            const videoPreview = document.getElementById('videoPreview');
+            const videoContainer = document.getElementById('videoContainer');
+            let debounceTimer;
+            
+            if (videoIdInput) {
+                // Show preview for existing value on page load
+                if (videoIdInput.value && videoIdInput.value.trim()) {
+                    showVideoPreview(videoIdInput.value.trim());
+                }
+                
+                videoIdInput.addEventListener('input', function() {
+                    clearTimeout(debounceTimer);
+                    const videoId = this.value.trim();
+                    
+                    if (videoId) {
+                        videoPreview.style.display = 'block';
+                        videoContainer.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2 text-muted">Đang tải...</p></div>';
+                        
+                        debounceTimer = setTimeout(() => {
+                            if (isValidYouTubeVideoId(videoId)) {
+                                showVideoPreview(videoId);
+                            } else {
+                                showVideoError('ID video không hợp lệ.');
+                            }
+                        }, 1000);
+                    } else {
+                        videoPreview.style.display = 'none';
+                    }
+                });
+            }
+        }
+        
+        function isValidYouTubeVideoId(videoId) {
+            const regex = /^[a-zA-Z0-9_-]{11}$/;
+            return regex.test(videoId);
+        }
+        
+        function showVideoPreview(videoId) {
+            const videoContainer = document.getElementById('videoContainer');
+            const videoPreview = document.getElementById('videoPreview');
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`;
+            iframe.title = 'Video Preview';
+            iframe.allowfullscreen = true;
+            iframe.className = 'rounded';
+            iframe.style.width = '100%';
+            iframe.style.height = '100%';
+            iframe.style.border = 'none';
+            
+            videoContainer.innerHTML = '';
+            videoContainer.appendChild(iframe);
+            videoPreview.style.display = 'block';
+        }
+        
+        function showVideoError(message) {
+            const videoContainer = document.getElementById('videoContainer');
+            videoContainer.innerHTML = `
+                <div class="text-center p-4">
+                    <i class="fas fa-exclamation-triangle text-warning fa-2x mb-3"></i>
+                    <p class="text-muted">${message}</p>
+                </div>
+            `;
+        }
+
+        $(document).ready(function() {
+            initializeYouTubePreview();
+        });
+    </script>
+}

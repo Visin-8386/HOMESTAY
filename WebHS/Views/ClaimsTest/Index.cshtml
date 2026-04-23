@@ -1,0 +1,76 @@
+@{
+    ViewData["Title"] = "Kiểm tra Claims";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
+    
+    <div class="alert alert-info mb-4">
+        <h5><i class="bi bi-info-circle"></i> Thông tin</h5>
+        <p>Trang này cho phép bạn kiểm tra các quyền hạn dựa trên Claims đã được cấu hình cho tài khoản của mình.</p>
+        <p>Nếu bạn có thể truy cập các trang bên dưới, điều đó có nghĩa là tài khoản của bạn có claim tương ứng.</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Quản lý người dùng</h5>
+                </div>
+                <div class="card-body">
+                    <p>Quyền hạn cần thiết: <code>can_manage_users = true</code></p>
+                    <a asp-action="ManageUsers" class="btn btn-primary">Kiểm tra quyền</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Quản lý homestay</h5>
+                </div>
+                <div class="card-body">
+                    <p>Quyền hạn cần thiết: <code>can_manage_properties = true</code></p>
+                    <a asp-action="ManageProperties" class="btn btn-success">Kiểm tra quyền</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">Kiểm duyệt đánh giá</h5>
+                </div>
+                <div class="card-body">
+                    <p>Quyền hạn cần thiết: <code>can_moderate_reviews = true</code></p>
+                    <a asp-action="ModerateReviews" class="btn btn-warning">Kiểm tra quyền</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Trang cho Super Host</h5>
+                </div>
+                <div class="card-body">
+                    <p>Quyền hạn cần thiết: <code>super_host = true</code></p>
+                    <a asp-action="SuperHostOnly" class="btn btn-info">Kiểm tra quyền</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Xem Claims của bạn</h5>
+                </div>
+                <div class="card-body">
+                    <p>Xem tất cả claims hiện có của tài khoản của bạn</p>
+                    <a asp-action="UserClaims" class="btn btn-secondary">Xem Claims</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

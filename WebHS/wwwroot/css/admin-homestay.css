@@ -1,0 +1,369 @@
+/* Enhanced Admin Homestay Management Styles - Clear and Sharp */
+
+.admin-dashboard {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: calc(100vh - 120px);
+    padding: 2rem 0;
+}
+
+/* Particle background animation - lighter effect */
+.admin-dashboard::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="25" cy="25" r="1" fill="%23667eea" opacity="0.05"><animate attributeName="r" values="1;2;1" dur="4s" repeatCount="indefinite"/></circle><circle cx="75" cy="25" r="1" fill="%23764ba2" opacity="0.05"><animate attributeName="r" values="1;2;1" dur="4s" repeatCount="indefinite" begin="1s"/></circle></svg>') repeat;
+    animation: float-bg 30s infinite linear;
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes float-bg {
+    0% { transform: translateY(0px); }
+    100% { transform: translateY(-100px); }
+}
+
+/* Enhanced card hover effects - no blur */
+.stat-card {
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(102,126,234,0.1) 50%, transparent 70%);
+    transform: rotate(45deg);
+    transition: all 0.6s;
+    opacity: 0;
+}
+
+.stat-card:hover::after {
+    animation: shine 0.6s ease-in-out;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+        opacity: 0;
+    }
+}
+
+/* Table improvements - clear and readable */
+.table-responsive {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    border: 1px solid #e9ecef;
+    overflow-x: auto;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, #5a6fd8, #6a4190);
+}
+
+/* Enhanced table styling - no blur, crystal clear text */
+.table-modern {
+    background: #ffffff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: none;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Remove any filters that might cause blur */
+    filter: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.table-modern thead th {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    padding: 1.2rem 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    color: #495057;
+    white-space: nowrap;
+    text-align: center;
+    vertical-align: middle;
+    /* Ensure crisp text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.table-modern tbody tr {
+    transition: all 0.2s ease;
+    border: none;
+    background: #ffffff;
+}
+
+.table-modern tbody tr:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+    transform: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.table-modern tbody td {
+    padding: 1rem 0.8rem;
+    border: 1px solid #e9ecef;
+    vertical-align: middle;
+    color: #212529;
+    font-weight: 500;
+    font-size: 0.875rem;
+    /* Ensure crisp text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Remove any blur effects */
+    filter: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+/* Column width adjustments for better balance */
+.table-modern tbody td:nth-child(1) { /* ID */
+    text-align: center;
+    width: 5%;
+    min-width: 60px;
+}
+
+.table-modern tbody td:nth-child(2) { /* Image */
+    text-align: center;
+    width: 8%;
+    min-width: 100px;
+}
+
+.table-modern tbody td:nth-child(3) { /* Name */
+    text-align: left;
+    width: 18%;
+    min-width: 200px;
+    max-width: 250px;
+    word-wrap: break-word;
+}
+
+.table-modern tbody td:nth-child(4) { /* Host */
+    text-align: left;
+    width: 15%;
+    min-width: 180px;
+    max-width: 220px;
+    word-wrap: break-word;
+}
+
+.table-modern tbody td:nth-child(5) { /* Location */
+    text-align: center;
+    width: 12%;
+    min-width: 150px;
+}
+
+.table-modern tbody td:nth-child(6) { /* Price */
+    text-align: center;
+    width: 10%;
+    min-width: 120px;
+}
+
+.table-modern tbody td:nth-child(7) { /* Video */
+    text-align: center;
+    width: 6%;
+    min-width: 80px;
+}
+
+.table-modern tbody td:nth-child(8) { /* Status */
+    text-align: center;
+    width: 10%;
+    min-width: 130px;
+}
+
+.table-modern tbody td:nth-child(9) { /* Date */
+    text-align: center;
+    width: 8%;
+    min-width: 100px;
+}
+
+.table-modern tbody td:nth-child(10) { /* Actions */
+    text-align: center;
+    width: 8%;
+    min-width: 120px;
+}
+
+/* Text clarity improvements */
+.fw-bold {
+    font-weight: 600 !important;
+    color: #212529 !important;
+    /* Ensure crisp text */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.text-muted {
+    color: #6c757d !important;
+    font-size: 0.8rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.text-primary {
+    color: #0d6efd !important;
+    font-weight: 600;
+}
+
+.text-success {
+    color: #198754 !important;
+    font-weight: 600;
+}
+
+/* Status badges - clear and readable */
+.status-badge {
+    border-radius: 15px;
+    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    display: inline-block;
+    /* Ensure crisp text */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.status-approved {
+    background: #28a745;
+    color: white;
+}
+
+.status-pending {
+    background: #ffc107;
+    color: #212529;
+}
+
+.status-rejected {
+    background: #dc3545;
+    color: white;
+}
+
+.status-inactive {
+    background: #6c757d;
+    color: white;
+}
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 0.3rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.2s ease;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+
+.btn-primary-modern {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-success-modern {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.btn-warning-modern {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: white;
+}
+
+.btn-danger-modern {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    color: white;
+}
+
+.btn-info-modern {
+    background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+    color: white;
+}
+
+/* Homestay images */
+.homestay-image {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    object-fit: cover;
+}
+
+.homestay-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .table-modern tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .table-modern thead th {
+        padding: 1rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+    
+    .homestay-image {
+        width: 50px !important;
+        height: 35px !important;
+    }
+}

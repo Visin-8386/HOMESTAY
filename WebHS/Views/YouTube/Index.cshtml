@@ -1,0 +1,284 @@
+@{
+    ViewData["Title"] = "Travel Videos";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="text-primary">🎥 Travel Videos</h2>
+                    <p class="text-muted">Khám phá những địa điểm du lịch tuyệt vời qua video</p>
+                </div>
+                <div>
+                    <input type="text" id="searchCity" class="form-control" placeholder="Tìm kiếm thành phố..." style="width: 200px;">
+                    <button class="btn btn-primary mt-2" onclick="searchVideos()">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loadingVideos" class="text-center my-5" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Đang tải...</span>
+        </div>
+        <p class="mt-2 text-muted">Đang tải videos...</p>
+    </div>
+
+    <!-- Videos grid -->
+    <div id="videosContainer" class="row g-4">
+        <!-- Videos will be loaded here -->
+    </div>
+
+    <!-- Demo notice -->
+    <div id="demoNotice" class="alert alert-info mt-4" style="display: none;">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Demo Mode:</strong> Đang hiển thị videos mẫu. Để sử dụng YouTube API thực, vui lòng cấu hình YouTube API key trong appsettings.json.
+    </div>
+</div>
+
+<!-- Video modal -->
+<div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="videoModalLabel">Video Player</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="videoPlayerContainer">
+                    <!-- Video player will be loaded here -->
+                </div>
+                <div class="mt-3">
+                    <h6 id="videoTitle"></h6>
+                    <p id="videoDescription" class="text-muted"></p>
+                    <small class="text-muted">
+                        <i class="fas fa-user"></i> <span id="videoChannel"></span> |
+                        <i class="fas fa-calendar"></i> <span id="videoDate"></span>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        class YouTubeVideoManager {
+            constructor() {
+                this.currentCity = 'Vietnam';
+                this.loadVideos();
+            }
+
+            async loadVideos(city = 'Vietnam') {
+                this.showLoading(true);
+                
+                try {
+                    const response = await fetch(`/YouTube/GetTravelVideos?city=${encodeURIComponent(city)}&maxResults=6`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.displayVideos(data.videos);
+                        
+                        // Show demo notice if using demo data
+                        if (data.isDemo) {
+                            document.getElementById('demoNotice').style.display = 'block';
+                        } else {
+                            document.getElementById('demoNotice').style.display = 'none';
+                        }
+                    } else {
+                        this.showError('Không thể tải videos. Vui lòng thử lại sau.');
+                    }
+                } catch (error) {
+                    console.error('Error loading videos:', error);
+                    this.showError('Lỗi kết nối. Vui lòng thử lại sau.');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            displayVideos(videos) {
+                const container = document.getElementById('videosContainer');
+                container.innerHTML = '';
+
+                videos.forEach(video => {
+                    const videoCard = this.createVideoCard(video);
+                    container.appendChild(videoCard);
+                });
+
+                // Track analytics
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'videos_loaded', {
+                        event_category: 'YouTube',
+                        event_label: this.currentCity,
+                        value: videos.length
+                    });
+                }
+            }
+
+            createVideoCard(video) {
+                const col = document.createElement('div');
+                col.className = 'col-md-6 col-lg-4';
+                
+                col.innerHTML = `
+                    <div class="card h-100 shadow-sm video-card" data-video-id="${video.videoId}">
+                        <div class="position-relative">
+                            <img src="${video.thumbnail}" class="card-img-top" alt="${video.title}" 
+                                 style="height: 200px; object-fit: cover;">
+                            <div class="position-absolute top-50 start-50 translate-middle">
+                                <button class="btn btn-primary btn-lg rounded-circle play-btn" 
+                                        onclick="videoManager.playVideo('${video.videoId}', '${this.escapeHtml(video.title)}', '${this.escapeHtml(video.description)}', '${video.channelTitle}', '${video.publishedAt}')">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">${this.truncateText(video.title, 60)}</h6>
+                            <p class="card-text text-muted small">${this.truncateText(video.description, 100)}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> ${video.channelTitle}
+                                </small>
+                                <small class="text-muted">
+                                    ${this.formatDate(video.publishedAt)}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                return col;
+            }
+
+            async playVideo(videoId, title, description, channel, publishedAt) {
+                try {
+                    const response = await fetch(`/YouTube/Embed/${videoId}?width=560&height=315`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Update modal content
+                        document.getElementById('videoPlayerContainer').innerHTML = data.embedHtml;
+                        document.getElementById('videoTitle').textContent = title;
+                        document.getElementById('videoDescription').textContent = description;
+                        document.getElementById('videoChannel').textContent = channel;
+                        document.getElementById('videoDate').textContent = this.formatDate(publishedAt);
+                        
+                        // Show modal
+                        const modal = new bootstrap.Modal(document.getElementById('videoModal'));
+                        modal.show();
+
+                        // Track video play
+                        if (typeof gtag !== 'undefined') {
+                            gtag('event', 'video_play', {
+                                event_category: 'YouTube',
+                                event_label: title,
+                                video_id: videoId
+                            });
+                        }
+
+                        // Clear video when modal is closed
+                        document.getElementById('videoModal').addEventListener('hidden.bs.modal', function() {
+                            document.getElementById('videoPlayerContainer').innerHTML = '';
+                        }, { once: true });
+                    }
+                } catch (error) {
+                    console.error('Error loading video:', error);
+                    alert('Không thể phát video. Vui lòng thử lại.');
+                }
+            }
+
+            showLoading(show) {
+                document.getElementById('loadingVideos').style.display = show ? 'block' : 'none';
+                document.getElementById('videosContainer').style.display = show ? 'none' : 'flex';
+            }
+
+            showError(message) {
+                document.getElementById('videosContainer').innerHTML = `
+                    <div class="col-12">
+                        <div class="alert alert-danger text-center">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            ${message}
+                        </div>
+                    </div>
+                `;
+            }
+
+            truncateText(text, maxLength) {
+                if (!text) return '';
+                return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+            }
+
+            escapeHtml(text) {
+                if (!text) return '';
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML.replace(/'/g, '&#39;');
+            }
+
+            formatDate(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('vi-VN');
+            }
+        }
+
+        // Global functions
+        function searchVideos() {
+            const city = document.getElementById('searchCity').value.trim() || 'Vietnam';
+            videoManager.currentCity = city;
+            videoManager.loadVideos(city);
+        }
+
+        // Enter key support for search
+        document.getElementById('searchCity').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchVideos();
+            }
+        });
+
+        // Initialize
+        let videoManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            videoManager = new YouTubeVideoManager();
+        });
+    </script>
+
+    <style>
+        .video-card {
+            transition: transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .play-btn {
+            opacity: 0.9;
+            transition: all 0.2s ease;
+        }
+
+        .play-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .card-img-top {
+            transition: opacity 0.2s ease;
+        }
+
+        .video-card:hover .card-img-top {
+            opacity: 0.8;
+        }
+
+        .youtube-embed-container {
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+    </style>
+}
+

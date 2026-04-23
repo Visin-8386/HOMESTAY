@@ -1,0 +1,555 @@
+@model WebHS.ViewModels.MessageTemplateListViewModel
+@{
+    ViewData["Title"] = "Quản lý Mẫu Tin Nhắn";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-primary">
+                    <i class="fas fa-envelope-open-text me-2"></i>Quản lý Mẫu Tin Nhắn
+                </h2>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-info" onclick="showStats()">
+                        <i class="fas fa-chart-bar me-2"></i>Thống kê
+                    </button>
+                    <a asp-action="ExportMessageTemplates" class="btn btn-secondary">
+                        <i class="fas fa-download me-2"></i>Xuất CSV
+                    </a>
+                    <a asp-action="CreateMessageTemplate" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Tạo Mẫu Mới
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistics Card (Hidden by default) -->
+            <div id="statsCard" class="card mb-4" style="display: none;">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>Thống kê Mẫu Tin Nhắn
+                    </h5>
+                </div>
+                <div class="card-body" id="statsContent">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-primary" id="totalCount">0</h3>
+                                <p class="text-muted">Tổng số</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-success" id="activeCount">0</h3>
+                                <p class="text-muted">Đang hoạt động</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <h3 class="text-warning" id="inactiveCount">0</h3>
+                                <p class="text-muted">Tạm dừng</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-item">
+                                <canvas id="typeChart" width="150" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" asp-action="MessageTemplates">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                    <input type="text" name="searchTerm" value="@Model.SearchTerm" 
+                                           class="form-control" placeholder="Tìm kiếm theo tên hoặc nội dung...">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <select name="selectedType" class="form-select">
+                                    <option value="">Tất cả loại</option>
+                                    <option value="1" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.WelcomeMessage)">Chào mừng</option>
+                                    <option value="2" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.BookingConfirmation)">Xác nhận booking</option>
+                                    <option value="3" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.CheckInInstructions)">Hướng dẫn check-in</option>
+                                    <option value="4" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.CheckOutReminder)">Nhắc nhở check-out</option>
+                                    <option value="5" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.ThankYouMessage)">Cảm ơn</option>
+                                    <option value="6" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.HouseRules)">Nội quy</option>
+                                    <option value="7" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.LocalRecommendations)">Gợi ý địa điểm</option>
+                                    <option value="8" selected="@(Model.SelectedType == WebHS.Models.MessageTemplateType.Custom)">Tùy chỉnh</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-filter me-1"></i>Lọc
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button" 
+                                            id="bulkActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-cogs me-1"></i>Hành động
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="bulkActionsDropdown">
+                                        <li><a class="dropdown-item" href="#" onclick="bulkAction('activate')">
+                                            <i class="fas fa-check-circle text-success me-2"></i>Kích hoạt đã chọn
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="bulkAction('deactivate')">
+                                            <i class="fas fa-pause-circle text-warning me-2"></i>Tạm dừng đã chọn
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="bulkAction('delete')">
+                                            <i class="fas fa-trash me-2"></i>Xóa đã chọn
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Templates Table -->
+            @if (Model.Templates.Any())
+            {
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Danh sách Mẫu Tin Nhắn (@Model.Templates.Count)
+                        </h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAll">
+                            <label class="form-check-label" for="selectAll">
+                                Chọn tất cả
+                            </label>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="selectAllHeader" class="form-check-input">
+                                    </th>
+                                    <th>Tên & Chủ đề</th>
+                                    <th>Loại</th>
+                                    <th>Nội dung</th>
+                                    <th>Trạng thái</th>
+                                    <th>Ngày tạo</th>
+                                    <th width="150">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var template in Model.Templates)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="checkbox" class="form-check-input template-checkbox" value="@template.Id">
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <strong class="text-primary">@template.Name</strong>
+                                                <br>
+                                                <small class="text-muted">@template.Subject</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @switch (template.Type)
+                                            {
+                                                case WebHS.Models.MessageTemplateType.WelcomeMessage:
+                                                    <span class="badge bg-primary">Chào mừng</span>
+                                                    break;
+                                                case WebHS.Models.MessageTemplateType.BookingConfirmation:
+                                                    <span class="badge bg-success">Xác nhận</span>
+                                                    break;
+                                                case WebHS.Models.MessageTemplateType.CheckInInstructions:
+                                                    <span class="badge bg-info">Check-in</span>
+                                                    break;
+                                                case WebHS.Models.MessageTemplateType.CheckOutReminder:
+                                                    <span class="badge bg-warning">Check-out</span>
+                                                    break;
+                                                case WebHS.Models.MessageTemplateType.ThankYouMessage:
+                                                    <span class="badge bg-pink">Cảm ơn</span>
+                                                    break;
+                                                case WebHS.Models.MessageTemplateType.HouseRules:
+                                                    <span class="badge bg-dark">Nội quy</span>
+                                                    break;
+                                                case WebHS.Models.MessageTemplateType.LocalRecommendations:
+                                                    <span class="badge bg-secondary">Gợi ý</span>
+                                                    break;
+                                                default:
+                                                    <span class="badge bg-light text-dark">Tùy chỉnh</span>
+                                                    break;
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="content-preview" style="max-width: 200px; max-height: 60px; overflow: hidden;">
+                                                <small class="text-muted">@template.Content</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge @(template.IsActive ? "bg-success" : "bg-secondary")">
+                                                @(template.IsActive ? "Hoạt động" : "Tạm dừng")
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                @template.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                            </small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary" onclick="previewTemplate(@template.Id)" title="Xem trước">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <a asp-action="EditMessageTemplate" asp-route-id="@template.Id" class="btn btn-outline-warning" title="Chỉnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-info" onclick="duplicateTemplate(@template.Id)" title="Sao chép">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-@(template.IsActive ? "warning" : "success")" 
+                                                        onclick="toggleTemplate(@template.Id, @template.IsActive.ToString().ToLower())" 
+                                                        title="@(template.IsActive ? "Tạm dừng" : "Kích hoạt")">
+                                                    <i class="fas fa-@(template.IsActive ? "pause" : "play")"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" onclick="deleteTemplate(@template.Id)" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination would go here if needed -->
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-envelope-open-text fa-4x text-muted"></i>
+                    </div>
+                    <h4 class="text-muted">Chưa có mẫu tin nhắn nào</h4>
+                    <p class="text-muted">Tạo mẫu tin nhắn đầu tiên để bắt đầu giao tiếp chuyên nghiệp với khách hàng.</p>
+                    <a asp-action="CreateMessageTemplate" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Tạo Mẫu Đầu Tiên
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xem Trước Mẫu Tin Nhắn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Tiêu đề:</label>
+                    <div id="previewSubject" class="form-control-plaintext border rounded p-2 bg-light"></div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nội dung:</label>
+                    <div id="previewContent" class="form-control-plaintext border rounded p-3 bg-light" style="min-height: 200px; white-space: pre-wrap;"></div>
+                </div>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Placeholders sẽ được thay thế khi gửi:</strong><br>
+                    {guestName} → Tên khách hàng<br>
+                    {homestayName} → Tên homestay<br>
+                    {checkInDate}, {checkOutDate} → Ngày check-in/out<br>
+                    {hostName}, {hostPhone} → Thông tin host
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary" id="editFromPreview">Chỉnh Sửa</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let currentTemplateId = 0;
+        const templates = @Html.Raw(Json.Serialize(Model.Templates));
+
+        // Checkbox handling
+        document.getElementById('selectAll')?.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.template-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+            updateBulkActionButtons();
+        });
+
+        document.getElementById('selectAllHeader')?.addEventListener('change', function() {
+            const checkboxes = document.querySelectorAll('.template-checkbox');
+            checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+            document.getElementById('selectAll').checked = this.checked;
+            updateBulkActionButtons();
+        });
+
+        document.querySelectorAll('.template-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateBulkActionButtons);
+        });
+
+        function updateBulkActionButtons() {
+            const checkedBoxes = document.querySelectorAll('.template-checkbox:checked');
+            const bulkButton = document.getElementById('bulkActionsDropdown');
+            if (bulkButton) {
+                bulkButton.disabled = checkedBoxes.length === 0;
+            }
+        }
+
+        function getSelectedIds() {
+            return Array.from(document.querySelectorAll('.template-checkbox:checked'))
+                .map(checkbox => parseInt(checkbox.value));
+        }
+
+        function bulkAction(action) {
+            const selectedIds = getSelectedIds();
+            if (selectedIds.length === 0) {
+                alert('Vui lòng chọn ít nhất một mẫu tin nhắn');
+                return;
+            }
+
+            let confirmMessage = '';
+            let url = '';
+            let requestData = {};
+
+            switch (action) {
+                case 'activate':
+                    confirmMessage = `Bạn có muốn kích hoạt ${selectedIds.length} mẫu tin nhắn đã chọn?`;
+                    url = '/Host/BulkToggleMessageTemplates';
+                    requestData = { ids: selectedIds, isActive: true };
+                    break;
+                case 'deactivate':
+                    confirmMessage = `Bạn có muốn tạm dừng ${selectedIds.length} mẫu tin nhắn đã chọn?`;
+                    url = '/Host/BulkToggleMessageTemplates';
+                    requestData = { ids: selectedIds, isActive: false };
+                    break;
+                case 'delete':
+                    confirmMessage = `Bạn có chắc chắn muốn xóa ${selectedIds.length} mẫu tin nhắn đã chọn? Hành động này không thể hoàn tác.`;
+                    url = '/Host/BulkDeleteMessageTemplates';
+                    requestData = selectedIds;
+                    break;
+            }
+
+            if (confirm(confirmMessage)) {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi thực hiện thao tác');
+                });
+            }
+        }
+
+        function showStats() {
+            const statsCard = document.getElementById('statsCard');
+            if (statsCard.style.display === 'none') {
+                statsCard.style.display = 'block';
+                loadStats();
+            } else {
+                statsCard.style.display = 'none';
+            }
+        }
+
+        function loadStats() {
+            fetch('/Host/MessageTemplateStats')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('totalCount').textContent = data.stats.total;
+                        document.getElementById('activeCount').textContent = data.stats.active;
+                        document.getElementById('inactiveCount').textContent = data.stats.inactive;
+                        
+                        // Create chart
+                        createTypeChart(data.stats.byType);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading stats:', error);
+                });
+        }
+
+        function createTypeChart(typeData) {
+            const ctx = document.getElementById('typeChart').getContext('2d');
+            const labels = typeData.map(item => getTypeLabel(item.type));
+            const data = typeData.map(item => item.count);
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: [
+                            '#007bff', '#28a745', '#17a2b8', '#ffc107',
+                            '#e91e63', '#343a40', '#6c757d', '#f8f9fa'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                fontSize: 12
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function getTypeLabel(type) {
+            const typeLabels = {
+                1: 'Chào mừng',
+                2: 'Xác nhận',
+                3: 'Check-in',
+                4: 'Check-out',
+                5: 'Cảm ơn',
+                6: 'Nội quy',
+                7: 'Gợi ý',
+                8: 'Tùy chỉnh'
+            };
+            return typeLabels[type] || 'Khác';
+        }
+
+        function previewTemplate(id) {
+            const template = templates.find(t => t.id === id);
+            if (template) {
+                currentTemplateId = id;
+                document.getElementById('previewSubject').textContent = template.subject;
+                document.getElementById('previewContent').textContent = template.content;
+                new bootstrap.Modal(document.getElementById('previewModal')).show();
+            }
+        }
+
+        function duplicateTemplate(id) {
+            if (confirm('Bạn có muốn tạo bản sao của mẫu tin nhắn này?')) {
+                fetch(`/Host/DuplicateMessageTemplate/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi sao chép mẫu tin nhắn');
+                });
+            }
+        }
+
+        function toggleTemplate(id, isActive) {
+            const action = isActive ? 'tạm dừng' : 'kích hoạt';
+            if (confirm(`Bạn có muốn ${action} mẫu tin nhắn này?`)) {
+                fetch(`/Host/ToggleMessageTemplateStatus/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi thực hiện thao tác');
+                });
+            }
+        }
+
+        function deleteTemplate(id) {
+            if (confirm('Bạn có chắc chắn muốn xóa mẫu tin nhắn này? Hành động này không thể hoàn tác.')) {
+                fetch(`/Host/DeleteMessageTemplate/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Có lỗi xảy ra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Có lỗi xảy ra khi xóa mẫu tin nhắn');
+                });
+            }
+        }
+
+        document.getElementById('editFromPreview')?.addEventListener('click', function() {
+            window.location.href = `/Host/EditMessageTemplate/${currentTemplateId}`;
+        });
+
+        // Initialize bulk action buttons
+        updateBulkActionButtons();
+    </script>
+}
+
+<style>
+    .bg-pink {
+        background-color: #e91e63 !important;
+    }
+    .card {
+        transition: transform 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+    }
+</style>

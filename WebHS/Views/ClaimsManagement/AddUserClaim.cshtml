@@ -1,0 +1,185 @@
+@model WebHS.ViewModels.ClaimViewModel
+@{
+    ViewData["Title"] = "Thêm Claim cho người dùng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <form asp-action="AddUserClaim" method="post">
+                <input type="hidden" asp-for="UserId" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                <div class="mb-3">
+                    <label asp-for="ClaimType" class="form-label">Loại Claim</label>
+                    <select asp-for="ClaimType" class="form-select">
+                        <option value="">-- Chọn loại claim --</option>
+                        
+                        <optgroup label="📋 Thông tin cá nhân">
+                            <option value="birthdate">🎂 Ngày sinh</option>
+                            <option value="address">🏠 Địa chỉ</option>
+                            <option value="phone_number">📞 Số điện thoại</option>
+                            <option value="language">🌐 Ngôn ngữ ưu tiên</option>
+                        </optgroup>
+                        
+                        <optgroup label="✅ Xác thực">
+                            <option value="phone_verified">📱 Số điện thoại đã xác thực</option>
+                            <option value="email_verified">📧 Email đã xác thực</option>
+                            <option value="identity_verified">🆔 Danh tính đã xác thực</option>
+                            <option value="2fa_enabled">🔐 Đã bật 2FA</option>
+                        </optgroup>
+                        
+                        <optgroup label="⭐ Cấp độ & Thành viên">
+                            <option value="account_level">💎 Cấp độ tài khoản</option>
+                            <option value="membership_tier">🏆 Hạng thành viên</option>
+                            <option value="profile_completed">✔️ Hoàn thành hồ sơ</option>
+                        </optgroup>
+                        
+                        <optgroup label="🏡 Host & Homestay">
+                            <option value="super_host">⭐ Siêu chủ nhà</option>
+                            <option value="host_verified">✅ Host đã xác thực</option>
+                            <option value="host_rating">📊 Đánh giá host</option>
+                            <option value="host_since">📅 Là host từ</option>
+                            <option value="property_count">🏘️ Số lượng homestay</option>
+                        </optgroup>
+                        
+                        <optgroup label="🔧 Hệ thống">
+                            <option value="last_password_change">🔄 Lần đổi mật khẩu cuối</option>
+                            <option value="login_method">🚪 Phương thức đăng nhập</option>
+                        </optgroup>
+                        
+                        <option value="custom">🛠️ Tùy chỉnh...</option>
+                    </select>
+                    <div id="customClaimType" class="mt-2 d-none">
+                        <input type="text" class="form-control" placeholder="Nhập loại claim tùy chỉnh (VD: custom_permission)" />
+                        <small class="form-text text-muted">Sử dụng snake_case, chỉ chữ thường và dấu gạch dưới</small>
+                    </div>
+                    <span asp-validation-for="ClaimType" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="ClaimValue" class="form-label">Giá trị Claim</label>
+                    <input asp-for="ClaimValue" class="form-control" placeholder="Nhập giá trị cho claim" />
+                    <span asp-validation-for="ClaimValue" class="text-danger"></span>
+                    
+                    <!-- Gợi ý giá trị dựa trên loại claim được chọn -->
+                    <div id="valueHints" class="mt-2">
+                        <small class="text-muted">💡 Chọn loại claim ở trên để xem gợi ý giá trị</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <a asp-action="UserClaims" asp-route-userId="@Model.UserId" class="btn btn-secondary">Hủy</a>
+                    <button type="submit" class="btn btn-primary">Thêm Claim</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">📖 Hướng dẫn giá trị Claims</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-primary">🔢 Claims dạng Boolean (true/false):</h6>
+                    <ul class="list-unstyled">
+                        <li>📱 <code>phone_verified</code> → <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span></li>
+                        <li>📧 <code>email_verified</code> → <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span></li>
+                        <li>🆔 <code>identity_verified</code> → <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span></li>
+                        <li>⭐ <code>super_host</code> → <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span></li>
+                        <li>🔐 <code>2fa_enabled</code> → <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-warning">📝 Claims dạng văn bản:</h6>
+                    <ul class="list-unstyled">
+                        <li>🎂 <code>birthdate</code> → <code>1990-05-15</code> (YYYY-MM-DD)</li>
+                        <li>🏠 <code>address</code> → <code>123 Đường ABC, Quận 1, TP.HCM</code></li>
+                        <li>📞 <code>phone_number</code> → <code>+84901234567</code></li>
+                        <li>🌐 <code>language</code> → <code>vi</code>, <code>en</code>, <code>fr</code></li>
+                        <li>📅 <code>host_since</code> → <code>2023-01-15</code> (YYYY-MM-DD)</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-success">🎯 Claims dạng lựa chọn:</h6>
+                    <ul class="list-unstyled">
+                        <li>💎 <code>account_level</code> → <span class="badge bg-secondary">basic</span>, <span class="badge bg-primary">premium</span>, <span class="badge bg-warning text-dark">vip</span></li>
+                        <li>🏆 <code>membership_tier</code> → <span class="badge bg-secondary">bronze</span>, <span class="badge bg-info">silver</span>, <span class="badge bg-warning text-dark">gold</span>, <span class="badge bg-dark">platinum</span></li>
+                        <li>🚪 <code>login_method</code> → <code>email</code>, <code>google</code>, <code>facebook</code></li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-danger">🔢 Claims dạng số:</h6>
+                    <ul class="list-unstyled">
+                        <li>📊 <code>host_rating</code> → <code>4.8</code> (từ 1.0 đến 5.0)</li>
+                        <li>🏘️ <code>property_count</code> → <code>5</code> (số nguyên)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Định nghĩa gợi ý giá trị cho các loại claim
+            const valueHints = {
+                'birthdate': '📅 VD: <code>1990-05-15</code> (định dạng YYYY-MM-DD)',
+                'address': '🏠 VD: <code>123 Đường ABC, Quận 1, TP.HCM</code>',
+                'phone_number': '📞 VD: <code>+84901234567</code>',
+                'language': '🌐 VD: <code>vi</code> (Tiếng Việt), <code>en</code> (English), <code>fr</code> (Français)',
+                'phone_verified': '📱 Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                'email_verified': '📧 Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                'identity_verified': '🆔 Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                '2fa_enabled': '🔐 Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                'account_level': '💎 Chọn: <span class="badge bg-secondary">basic</span>, <span class="badge bg-primary">premium</span>, hoặc <span class="badge bg-warning text-dark">vip</span>',
+                'membership_tier': '🏆 Chọn: <span class="badge bg-secondary">bronze</span>, <span class="badge bg-info">silver</span>, <span class="badge bg-warning text-dark">gold</span>, <span class="badge bg-dark">platinum</span>',
+                'profile_completed': '✔️ Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                'super_host': '⭐ Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                'host_verified': '✅ Nhập: <span class="badge bg-success">true</span> hoặc <span class="badge bg-danger">false</span>',
+                'host_rating': '📊 VD: <code>4.8</code> (số thập phân từ 1.0 đến 5.0)',
+                'host_since': '📅 VD: <code>2023-01-15</code> (định dạng YYYY-MM-DD)',
+                'property_count': '🏘️ VD: <code>5</code> (số nguyên dương)',
+                'last_password_change': '🔄 VD: <code>2024-01-15</code> (định dạng YYYY-MM-DD)',
+                'login_method': '🚪 VD: <code>email</code>, <code>google</code>, <code>facebook</code>'
+            };
+            
+            $('#ClaimType').change(function() {
+                const selectedType = $(this).val();
+                const valueHintsDiv = $('#valueHints');
+                
+                if (selectedType === 'custom') {
+                    $('#customClaimType').removeClass('d-none');
+                    valueHintsDiv.html('<small class="text-muted">💡 Nhập loại claim tùy chỉnh và giá trị phù hợp</small>');
+                } else {
+                    $('#customClaimType').addClass('d-none');
+                    
+                    if (selectedType && valueHints[selectedType]) {
+                        valueHintsDiv.html(`<small class="text-info">💡 ${valueHints[selectedType]}</small>`);
+                    } else if (selectedType) {
+                        valueHintsDiv.html('<small class="text-muted">💡 Nhập giá trị phù hợp cho claim này</small>');
+                    } else {
+                        valueHintsDiv.html('<small class="text-muted">💡 Chọn loại claim ở trên để xem gợi ý giá trị</small>');
+                    }
+                }
+            });
+            
+            $('#customClaimType input').blur(function() {
+                const customValue = $(this).val();
+                if (customValue !== '') {
+                    $('#ClaimType').val(customValue);
+                    $('#valueHints').html('<small class="text-warning">⚠️ Claim tùy chỉnh - đảm bảo giá trị phù hợp với logic ứng dụng</small>');
+                }
+            });
+        });
+    </script>
+}

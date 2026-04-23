@@ -1,0 +1,241 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Test Calendar";
+}
+
+<div class="container mt-4">
+    <h2>Test Calendar - Homestay @ViewBag.HomestayId</h2>
+    <p><strong>@ViewBag.HomestayName</strong></p>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Calendar</h4>
+            <div id="calendar-container">
+                <div id="calendarHeader" class="d-flex justify-content-between align-items-center mb-3">
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeMonth(-1)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <h5 id="monthYear" class="mb-0"></h5>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="changeMonth(1)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div id="calendarGrid" class="calendar-grid">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h4>Debug Info</h4>
+            <div>
+                <button class="btn btn-primary mb-2" onclick="testAPI()">Test API</button>
+                <button class="btn btn-secondary mb-2" onclick="createTestData()">Create Test Data</button>
+                <button class="btn btn-info mb-2" onclick="loadBookedDates()">Reload Calendar</button>
+            </div>
+            <pre id="debugInfo" style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px; max-height: 400px; overflow-y: auto;"></pre>
+        </div>
+    </div>
+</div>
+
+<style>
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    max-width: 350px;
+}
+
+.calendar-day-header,
+.calendar-day {
+    padding: 8px;
+    text-align: center;
+    border: 1px solid #dee2e6;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day-header {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.calendar-day {
+    cursor: pointer;
+    background-color: white;
+}
+
+.calendar-day.other-month {
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+.calendar-day.booked {
+    background-color: #dc3545 !important;
+    color: white !important;
+    cursor: not-allowed;
+}
+
+.calendar-day.selected-checkin {
+    background-color: #28a745;
+    color: white;
+}
+
+.calendar-day.selected-checkout {
+    background-color: #ffc107;
+    color: black;
+}
+
+.calendar-day.in-range {
+    background-color: #e7f3ff;
+    color: #0066cc;
+}
+
+.calendar-day:hover:not(.booked):not(.other-month) {
+    background-color: #e9ecef;
+}
+</style>
+
+<script>
+let bookedDates = [];
+let currentDate = new Date();
+let selectedCheckIn = null;
+let selectedCheckOut = null;
+const homestayId = @ViewBag.HomestayId;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadBookedDates();
+});
+
+function loadBookedDates() {
+    const debugInfo = document.getElementById('debugInfo');
+    debugInfo.textContent = 'Loading booked dates...\n';
+    
+    fetch(`/Booking/GetBookedDates?homestayId=${homestayId}`)
+        .then(response => {
+            debugInfo.textContent += `API Status: ${response.status}\n`;
+            return response.json();
+        })
+        .then(data => {
+            debugInfo.textContent += `API Response: ${JSON.stringify(data, null, 2)}\n`;
+            
+            if (Array.isArray(data)) {
+                bookedDates = data;
+                generateCalendar();
+                debugInfo.textContent += `\nLoaded ${bookedDates.length} booked dates\n`;
+                debugInfo.textContent += `Booked dates: ${bookedDates.join(', ')}\n`;
+            } else {
+                debugInfo.textContent += `Error: API did not return array\n`;
+            }
+        })
+        .catch(error => {
+            debugInfo.textContent += `Error: ${error.message}\n`;
+        });
+}
+
+function testAPI() {
+    const debugInfo = document.getElementById('debugInfo');
+    debugInfo.textContent = 'Testing APIs...\n';
+    
+    // Test debug endpoint
+    fetch(`/Booking/DebugBlockedDates?homestayId=${homestayId}`)
+        .then(response => response.json())
+        .then(data => {
+            debugInfo.textContent += '\n=== DEBUG BLOCKED DATES ===\n';
+            debugInfo.textContent += JSON.stringify(data, null, 2) + '\n';
+        })
+        .catch(error => {
+            debugInfo.textContent += `Debug API Error: ${error.message}\n`;
+        });
+}
+
+function createTestData() {
+    const debugInfo = document.getElementById('debugInfo');
+    debugInfo.textContent += '\nCreating test data...\n';
+    
+    fetch(`/Booking/CreateTestBlockedDates?homestayId=${homestayId}`)
+        .then(response => response.json())
+        .then(data => {
+            debugInfo.textContent += 'Test data result:\n';
+            debugInfo.textContent += JSON.stringify(data, null, 2) + '\n';
+            
+            if (data.success) {
+                // Reload calendar after creating test data
+                setTimeout(() => loadBookedDates(), 1000);
+            }
+        })
+        .catch(error => {
+            debugInfo.textContent += `Create test data error: ${error.message}\n`;
+        });
+}
+
+function generateCalendar() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    const monthYear = document.getElementById('monthYear');
+    
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Set month/year header
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'];
+    monthYear.textContent = `${monthNames[month]} ${year}`;
+    
+    // Clear calendar
+    calendarGrid.innerHTML = '';
+    
+    // Add day headers
+    const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    dayHeaders.forEach(day => {
+        const header = document.createElement('div');
+        header.className = 'calendar-day-header';
+        header.textContent = day;
+        calendarGrid.appendChild(header);
+    });
+    
+    // Get first day of month and days in month
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
+    
+    // Generate calendar days
+    const debugInfo = document.getElementById('debugInfo');
+    let debugCalendarInfo = '\n=== CALENDAR GENERATION ===\n';
+    debugCalendarInfo += `Current month: ${monthNames[month]} ${year}\n`;
+    debugCalendarInfo += `Booked dates array: ${JSON.stringify(bookedDates)}\n`;
+    
+    for (let i = 0; i < 42; i++) {
+        const cellDate = new Date(startDate);
+        cellDate.setDate(startDate.getDate() + i);
+        
+        const day = document.createElement('div');
+        day.className = 'calendar-day';
+        day.textContent = cellDate.getDate();
+        
+        // Check if date is in other month
+        if (cellDate.getMonth() !== month) {
+            day.classList.add('other-month');
+        }
+        
+        // Check if date is booked
+        const dateStr = cellDate.toISOString().split('T')[0];
+        if (bookedDates.includes(dateStr)) {
+            day.classList.add('booked');
+            debugCalendarInfo += `Date ${dateStr} marked as booked\n`;
+        }
+        
+        calendarGrid.appendChild(day);
+    }
+    
+    debugInfo.textContent += debugCalendarInfo;
+}
+
+function changeMonth(delta) {
+    currentDate.setMonth(currentDate.getMonth() + delta);
+    generateCalendar();
+}
+</script>

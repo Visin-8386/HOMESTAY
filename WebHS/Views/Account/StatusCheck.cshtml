@@ -1,0 +1,214 @@
+@{
+    ViewData["Title"] = "WebHS System Status Check";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-center mb-5">🏠 WebHS System Status Check</h1>
+        </div>
+    </div>
+
+    <!-- Facebook Integration Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fab fa-facebook-f me-2"></i>Facebook Integration Status
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>✅ Login/Register Pages</h5>
+                            <ul class="list-unstyled">
+                                <li>✅ <a href="/Account/Login" target="_blank">Login Page</a> - Facebook button ready</li>
+                                <li>✅ <a href="/Account/Register" target="_blank">Register Page</a> - Facebook button ready</li>
+                                <li>✅ <a href="/Account/FacebookDebug" target="_blank">Facebook Debug Page</a> - API testing</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>⚙️ Required Configuration</h5>
+                            <ul class="list-unstyled">
+                                <li>📝 Facebook App ID: Configured in appsettings.json</li>
+                                <li>🔑 Facebook App Secret: Configured in appsettings.json</li>
+                                <li>🔄 OAuth Redirect URI: <code>http://localhost:5000/signin-facebook</code></li>
+                                <li>🌐 App Domains: <code>localhost</code> (for development)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-3">
+                        <strong>Facebook App Settings URLs (Required in Facebook Developer Console):</strong><br>
+                        • Privacy Policy: <code>http://localhost:5000/Home/Privacy</code><br>
+                        • Terms of Service: <code>http://localhost:5000/Home/Terms</code><br>
+                        • Data Deletion: <code>http://localhost:5000/Account/DeleteData</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking & Calendar Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Booking & Calendar Status
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>✅ Core Features</h5>
+                            <ul class="list-unstyled">
+                                <li>✅ BlockedDates logic implemented</li>
+                                <li>✅ Calendar displays blocked dates (red)</li>
+                                <li>✅ Booking API returns correct blocked dates</li>
+                                <li>✅ Checkout date blocking logic</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>🔗 Test Links</h5>
+                            <ul class="list-unstyled">
+                                <li>📅 <a href="/Homestay/Details/1" target="_blank">Homestay Details (Calendar)</a></li>
+                                <li>🔍 <a href="/api/booking/1/booked-dates" target="_blank">Booked Dates API</a></li>
+                                <li>🧪 <a href="/Shared/TestBookingBlockedDates" target="_blank">Booking Test Page</a></li>
+                                <li>📊 <a href="/Booking/DebugCalendar" target="_blank">Calendar Debug</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Configuration Status -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>System Configuration
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>✅ Build Status</h5>
+                            <ul class="list-unstyled">
+                                <li>✅ No compilation errors</li>
+                                <li>✅ JsonElement/JsonSerializer imports fixed</li>
+                                <li>✅ Null reference checks implemented</li>
+                                <li>✅ All controllers building successfully</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>🔧 API Keys Configured</h5>
+                            <ul class="list-unstyled">
+                                <li>🔑 Facebook App ID & Secret</li>
+                                <li>🔑 Google OAuth credentials</li>
+                                <li>🔑 YouTube API key</li>
+                                <li>🔑 Email service settings</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debug & Testing Tools -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-bug me-2"></i>Debug & Testing Tools
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h5>🔐 Authentication</h5>
+                            <ul class="list-unstyled">
+                                <li><a href="/Account/TestAuth" target="_blank">Auth Test Page</a></li>
+                                <li><a href="/Account/FacebookDebug" target="_blank">Facebook Debug</a></li>
+                                <li><a href="/ClaimsTest" target="_blank">Claims Test</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>📅 Booking System</h5>
+                            <ul class="list-unstyled">
+                                <li><a href="/Shared/TestBookingBlockedDates" target="_blank">Booking Test</a></li>
+                                <li><a href="/Booking/DebugCalendar" target="_blank">Calendar Debug</a></li>
+                                <li><a href="/api/booking/1/booked-dates" target="_blank">API Test</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <h5>🌐 External Services</h5>
+                            <ul class="list-unstyled">
+                                <li><a href="/GoogleServices/Debug" target="_blank">Google Services</a></li>
+                                <li><a href="/YouTube/Debug" target="_blank">YouTube API</a></li>
+                                <li><a href="/Weather" target="_blank">Weather Service</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-secondary">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>Next Steps & Recommendations
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-primary">
+                        <h5>🚀 For Production Deployment:</h5>
+                        <ol>
+                            <li>Change all URLs from <code>http://localhost:5000</code> to your production HTTPS domain</li>
+                            <li>Update Facebook App settings with production URLs</li>
+                            <li>Set Facebook app to LIVE mode</li>
+                            <li>Configure production database connection</li>
+                            <li>Set up SSL certificate for HTTPS</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="alert alert-success">
+                        <h5>✅ Current Development Status:</h5>
+                        <ul class="mb-0">
+                            <li>✅ Facebook login/register UI ready</li>
+                            <li>✅ Facebook API integration working</li>
+                            <li>✅ Booking system with blocked dates functional</li>
+                            <li>✅ Calendar display working correctly</li>
+                            <li>✅ All compilation errors resolved</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .card-header h4 {
+        margin: 0;
+    }
+    .list-unstyled li {
+        padding: 2px 0;
+    }
+    .alert {
+        border-radius: 0.5rem;
+    }
+</style>

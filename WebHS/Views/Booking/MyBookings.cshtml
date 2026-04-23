@@ -1,0 +1,241 @@
+@model WebHS.ViewModels.BookingListViewModel
+@{
+    ViewData["Title"] = "Booking của tôi";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-calendar-check me-2"></i>Booking của tôi</h2>
+                <a href="/" class="btn btn-outline-primary">
+                    <i class="fas fa-search me-1"></i>Tìm homestay mới
+                </a>
+            </div>            <!-- Filter tabs -->
+            <ul class="nav nav-pills mb-4" id="statusFilter">
+                <li class="nav-item">
+                    <a class="nav-link @(ViewBag.StatusFilter == "all" ? "active" : "")" 
+                       href="@Url.Action("MyBookings", new { status = "all" })">
+                        Tất cả (@Model.TotalCount)
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewBag.StatusFilter == "paid" ? "active" : "")" 
+                       href="@Url.Action("MyBookings", new { status = "paid" })">
+                        Đã thanh toán
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewBag.StatusFilter == "completed" ? "active" : "")" 
+                       href="@Url.Action("MyBookings", new { status = "completed" })">
+                        Đã hoàn thành
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewBag.StatusFilter == "cancelled" ? "active" : "")" 
+                       href="@Url.Action("MyBookings", new { status = "cancelled" })">
+                        Đã hủy
+                    </a>
+                </li>
+            </ul>
+
+            @if (Model.Bookings.Any())
+            {
+                <div class="row">
+                    @foreach (var booking in Model.Bookings)
+                    {
+                        <div class="col-12 mb-4">
+                            <div class="card booking-card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="@booking.HomestayImage" 
+                                             class="img-fluid rounded-start h-100 object-cover" 
+                                             alt="@booking.HomestayName"
+                                             style="min-height: 200px;">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body d-flex flex-column h-100">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h5 class="card-title">@booking.HomestayName</h5>
+                                                <span class="badge @GetStatusBadgeClass(booking.Status)">
+                                                    @GetStatusText(booking.Status)
+                                                </span>
+                                            </div>
+                                            
+                                            <p class="text-muted mb-2">
+                                                <i class="fas fa-map-marker-alt me-1"></i>@booking.HomestayLocation
+                                            </p>
+                                            
+                                            <div class="row mb-3">
+                                                <div class="col-sm-6">
+                                                    <strong>Check-in:</strong> @booking.CheckInDate.ToString("dd/MM/yyyy")
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <strong>Check-out:</strong> @booking.CheckOutDate.ToString("dd/MM/yyyy")
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mb-3">
+                                                <div class="col-sm-6">
+                                                    <strong>Số khách:</strong> @booking.NumberOfGuests người
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <strong>Số đêm:</strong> @((booking.CheckOutDate - booking.CheckInDate).Days) đêm
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="row mb-3">
+                                                <div class="col-12">
+                                                    <strong>Tổng tiền:</strong> 
+                                                    <span class="text-primary fs-5">@booking.FinalAmount.ToString("N0") VND</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="mt-auto">
+                                                <div class="d-flex gap-2">
+                                                    <a href="@Url.Action("Details", new { id = booking.Id })" 
+                                                       class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-eye me-1"></i>Chi tiết
+                                                    </a>
+                                                    
+                                                    @if (booking.Status == WebHS.Models.BookingStatus.Paid)
+                                                    {
+                                                        <button type="button" 
+                                                                class="btn btn-outline-danger btn-sm" 
+                                                                onclick="cancelBooking(@booking.Id)">
+                                                            <i class="fas fa-times me-1"></i>Hủy booking
+                                                        </button>
+                                                    }
+                                                                     @if (booking.Status == WebHS.Models.BookingStatus.Completed && booking.CanReview)
+                                    {
+                                        <a href="@Url.Action("Create", "Review", new { bookingId = booking.Id })" 
+                                           class="btn btn-outline-warning btn-sm">
+                                            <i class="fas fa-star me-1"></i>Đánh giá
+                                        </a>
+                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Booking pagination">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("MyBookings", new { status = ViewBag.StatusFilter, page = Model.CurrentPage - 1 })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("MyBookings", new { status = ViewBag.StatusFilter, page = i })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("MyBookings", new { status = ViewBag.StatusFilter, page = Model.CurrentPage + 1 })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h4>Chưa có booking nào</h4>
+                    <p class="text-muted">Bạn chưa đặt homestay nào. Hãy khám phá và đặt ngay!</p>
+                    <a href="/" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Tìm homestay ngay
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function cancelBooking(bookingId) {
+        if (confirm('Bạn có chắc chắn muốn hủy booking này?')) {
+            $.post('@Url.Action("Cancel")', { id: bookingId }, function(result) {
+                if (result.success) {
+                    location.reload();
+                } else {
+                    alert('Không thể hủy booking: ' + result.message);
+                }
+            });
+        }
+    }
+</script>
+}
+
+@section Styles {
+<style>
+    .booking-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .booking-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .object-cover {
+        object-fit: cover;
+    }
+    
+    .nav-pills .nav-link {
+        color: #6c757d;
+        border-radius: 20px;
+        margin-right: 8px;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #0d6efd;
+        color: white;
+    }
+</style>
+}
+
+@functions {
+    string GetStatusBadgeClass(WebHS.Models.BookingStatus status)
+    {        return status switch
+        {
+            WebHS.Models.BookingStatus.Paid => "bg-success",
+            WebHS.Models.BookingStatus.Completed => "bg-primary", 
+            WebHS.Models.BookingStatus.Cancelled => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    string GetStatusText(WebHS.Models.BookingStatus status)
+    {
+        return status switch
+        {
+            WebHS.Models.BookingStatus.Paid => "Đã thanh toán",
+            WebHS.Models.BookingStatus.Completed => "Hoàn thành",
+            WebHS.Models.BookingStatus.Cancelled => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+}
+

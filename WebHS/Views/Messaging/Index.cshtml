@@ -1,0 +1,1450 @@
+@model WebHS.ViewModels.MessagingIndexViewModel
+@{
+    ViewData["Title"] = "Tin nhắn";
+    Layout = "_Layout_New";
+}
+
+<style>
+    .messaging-container {
+        height: calc(100vh - 120px);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .conversations-sidebar {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .conversation-item {
+        border: none !important;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }        .conversation-item:hover {
+            background: linear-gradient(90deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+            transform: translateX(5px);
+        }
+
+        .conversation-item.active {
+            background: linear-gradient(90deg, rgba(102,126,234,0.2) 0%, rgba(118,75,162,0.2) 100%);
+            border-left: 4px solid #667eea;
+        }
+
+        .conversation-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: width 0.3s ease;
+        }
+
+        .conversation-item:hover::before {
+            width: 3px;
+        }
+
+    .chat-area {
+        background: rgba(255,255,255,0.98);
+        backdrop-filter: blur(15px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chat-header {
+        background: linear-gradient(90deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.9) 100%);
+        color: white;
+        padding: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .messages-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(247,250,252,0.9) 100%);
+        scroll-behavior: smooth;
+    }
+
+    .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 20px;
+        margin-bottom: 8px;        position: relative;
+        animation: messageSlideIn 0.3s ease-out;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    @@keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .message-bubble.sent {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin-left: auto;
+        border-bottom-right-radius: 5px;
+    }
+
+    .message-bubble.received {
+        background: white;
+        color: #333;
+        border: 1px solid rgba(102,126,234,0.2);
+        border-bottom-left-radius: 5px;
+    }
+
+    .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 4px;
+    }
+
+    .message-input-area {
+        background: white;
+        padding: 20px;
+        border-top: 1px solid rgba(0,0,0,0.1);
+        box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+    }    .message-input {
+        border: 2px solid #e1e8ed;
+        border-radius: 25px;
+        padding: 12px 20px;
+        resize: none;
+        transition: all 0.3s ease;
+        background: rgba(247,250,252,0.8);
+    }
+
+    .message-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25);
+        background: white;
+    }    .send-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+    }
+
+    .send-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+    }    .avatar {
+        border: 3px solid rgba(102,126,234,0.3);
+        transition: all 0.3s ease;
+    }
+
+    .avatar:hover {
+        border-color: #667eea;
+        transform: scale(1.05);
+    }
+
+    .unread-badge {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 2px 8px;
+        font-size: 11px;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .online-indicator {
+        width: 12px;
+        height: 12px;
+        background: #4CAF50;
+        border-radius: 50%;
+        border: 2px solid white;
+        position: absolute;
+        bottom: 2px;
+        right: 2px;
+    }
+
+    .typing-indicator {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        background: rgba(102,126,234,0.1);
+        border-radius: 20px;
+        margin-bottom: 10px;
+    }    .typing-dots {
+        display: flex;
+        gap: 4px;
+    }
+
+    .typing-dots span {
+        width: 8px;
+        height: 8px;
+        background: #667eea;
+        border-radius: 50%;
+        animation: typing 1.4s infinite;
+    }
+
+    .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @@keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+
+        30% {
+            transform: translateY(-10px);
+        }
+    }    .no-messages {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+
+    .no-messages i {
+        font-size: 4rem;
+        color: rgba(102,126,234,0.3);
+        margin-bottom: 20px;
+    }
+    /* Enhanced Modern Effects */
+    .messaging-container {
+        animation: slideInUp 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
+        background-size: 400% 400%;
+        animation: gradientFlow 15s ease infinite, slideInUp 0.8s ease-out;
+    }
+
+    @@keyframes gradientFlow {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* Floating Decorative Elements */
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 1;
+    }    .floating-icon {
+        position: absolute;
+        color: rgba(255,255,255,0.1);
+        font-size: 2rem;
+        animation: floatIcon 6s ease-in-out infinite;
+        transition: all 0.3s ease;
+    }
+
+    .floating-icon:hover {
+        color: rgba(255,255,255,0.3);
+        transform: scale(1.2);
+    }
+
+    @@keyframes floatIcon {
+        0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+            opacity: 0.05;
+        }
+
+        25% {
+            opacity: 0.15;
+        }
+
+        50% {
+            transform: translateY(-20px) rotate(180deg);
+            opacity: 0.1;
+        }
+
+        75% {
+            opacity: 0.15;
+        }
+    }
+
+    .messaging-container::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.03), transparent);
+        animation: shimmer 3s infinite;
+        pointer-events: none;
+    }
+
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes shimmer {
+        0% {
+            transform: translateX(-100%) translateY(-100%) rotate(45deg);
+        }
+
+        100% {
+            transform: translateX(100%) translateY(100%) rotate(45deg);
+        }
+    }    .conversation-item {
+        backdrop-filter: blur(5px);
+        background: rgba(255,255,255,0.8);
+        border-radius: 15px;
+        margin-bottom: 8px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .conversation-item:hover {
+        background: rgba(255,255,255,0.95);
+        transform: translateX(8px) scale(1.02);
+        box-shadow: 0 8px 25px rgba(102,126,234,0.15);
+    }
+
+    .conversation-item.active {
+        background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+        transform: scale(1.02);
+        box-shadow: 0 10px 30px rgba(102,126,234,0.2);
+    }    /* Enhanced Message Bubbles */
+    .message-bubble {
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: all 0.3s ease;
+    }
+
+    .message-bubble:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .message-bubble.sent {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 15px rgba(102,126,234,0.3);
+    }
+
+    .message-bubble.received {
+        background: rgba(255,255,255,0.95);
+        backdrop-filter: blur(10px);
+    }
+
+    /* Enhanced Input Area */
+    .message-input-area {
+        background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(247,250,252,0.95) 100%);
+        backdrop-filter: blur(15px);
+        border-top: 1px solid rgba(102,126,234,0.1);
+    }    .message-input {
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(102,126,234,0.2);
+        transition: all 0.4s ease;
+    }
+
+    .message-input:focus {
+        background: rgba(255,255,255,0.98);
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102,126,234,0.25), 0 8px 25px rgba(102,126,234,0.1);
+        transform: translateY(-2px);
+    }    /* Enhanced Send Button */
+    .send-btn {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .send-btn::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255,255,255,0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: all 0.3s ease;
+    }
+
+    .send-btn:hover::before {
+        width: 100px;
+        height: 100px;
+    }
+
+    .send-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Floating Animation for Online Indicators */
+    .online-indicator {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @@keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-3px);
+        }
+    }    /* Enhanced Avatar Effects */
+    .avatar {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 15px rgba(102,126,234,0.2);
+    }
+
+    .avatar:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 8px 25px rgba(102,126,234,0.3);
+    }    /* Enhanced Unread Badge */
+    .unread-badge {
+        box-shadow: 0 2px 10px rgba(255,107,107,0.4);
+        transform: scale(1);
+        transition: all 0.3s ease;
+    }
+
+    .unread-badge:hover {
+        transform: scale(1.1);
+        box-shadow: 0 4px 15px rgba(255,107,107,0.5);
+    }    /* Smooth Scrollbar */
+    .conversations-sidebar::-webkit-scrollbar,
+    .messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .conversations-sidebar::-webkit-scrollbar-track,
+    .messages-container::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.1);
+        border-radius: 3px;
+    }
+
+    .conversations-sidebar::-webkit-scrollbar-thumb,
+    .messages-container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 3px;
+    }
+
+    .conversations-sidebar::-webkit-scrollbar-thumb:hover,
+    .messages-container::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #5a6fd8, #6b3fa0);
+    }    /* Enhanced No Messages State */
+    .no-messages {
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .no-messages i {
+        animation: bounce 2s infinite;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+
+        40% {
+            transform: translateY(-10px);
+        }
+
+        60% {
+            transform: translateY(-5px);
+        }
+    }
+
+    /* Modern Glass Effect for Chat Header */
+    .chat-header {
+        backdrop-filter: blur(20px);
+        background: linear-gradient(135deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.9) 100%);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }    /* Enhanced Search and Filter Effects */
+    .search-input {
+        transition: all 0.3s ease;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(10px);
+    }
+
+    .search-input:focus {
+        background: rgba(255,255,255,0.98);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(102,126,234,0.15);
+    }    /* Micro-interactions */
+    .btn {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    /* Enhanced Status Indicators */
+    .status-indicator {
+        animation: pulse 2s infinite;
+        box-shadow: 0 0 10px rgba(76,175,80,0.5);
+    }    /* Responsive Enhancements */
+    @@media (max-width: 768px) {
+        .messaging-container {
+            border-radius: 0;
+            height: 100vh;
+        }
+
+        .conversation-item:hover {
+            transform: translateX(4px) scale(1.01);
+        }
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="messaging-container">
+        <!-- Floating Decorative Elements -->
+        <div class="floating-elements">
+            <div class="floating-icon" style="top: 10%; left: 5%; animation-delay: 0s;">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="floating-icon" style="top: 20%; right: 8%; animation-delay: 1s;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="floating-icon" style="bottom: 30%; left: 3%; animation-delay: 2s;">
+                <i class="fas fa-smile"></i>
+            </div>
+            <div class="floating-icon" style="top: 60%; right: 5%; animation-delay: 0.5s;">
+                <i class="fas fa-thumbs-up"></i>
+            </div>
+            <div class="floating-icon" style="bottom: 15%; right: 10%; animation-delay: 1.5s;">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+        </div>
+        <div class="row h-100 g-0">
+            <!-- Sidebar - Danh sách cuộc trò chuyện -->
+            <div class="col-md-4 col-lg-3">
+                <div class="conversations-sidebar h-100 d-flex flex-column">
+                    <!-- Header -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="mb-0 fw-bold text-dark">
+                                <i class="fas fa-comments me-2 text-primary"></i>
+                                Tin nhắn
+                            </h4>
+                            @if (Model.HasUnreadMessages)
+                            {
+                                <span class="unread-badge">@Model.TotalUnreadCount</span>
+                            }
+                        </div>                        <button class="btn btn-primary w-100 rounded-pill mb-2" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+                            <i class="fas fa-plus me-2"></i>
+                            Cuộc trò chuyện mới
+                        </button>
+                        <button class="btn btn-outline-warning w-100 rounded-pill" onclick="contactAdmin()">
+                            <i class="fas fa-headset me-2"></i>
+                            Liên hệ Admin
+                        </button>
+                    </div>
+
+                    <!-- Conversations List -->
+                    <div class="flex-grow-1 overflow-auto">
+                        <div id="conversationsList">
+                            @if (Model.Conversations.Any())
+                            {
+                                @foreach (var conversation in Model.Conversations)
+                                {
+                                    <div class="conversation-item @(Model.ActiveConversation?.Id == conversation.Id ? "active" : "")"
+                                         data-conversation-id="@conversation.Id"
+                                         onclick="loadConversation(@conversation.Id)">
+                                        <div class="d-flex p-3">
+                                            <div class="position-relative">
+                                                <img src="@conversation.ParticipantAvatar"
+                                                     class="avatar rounded-circle"
+                                                     width="50" height="50"
+                                                     alt="@conversation.ParticipantName">
+                                                <div class="online-indicator"></div>
+                                            </div>
+                                            <div class="flex-grow-1 ms-3">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1 fw-semibold">@conversation.ParticipantName</h6>
+                                                        <small class="text-muted">@conversation.ParticipantRole</small>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <small class="text-muted d-block">
+                                                            @conversation.LastMessageAt.ToString("HH:mm")
+                                                        </small>
+                                                        @if (conversation.HasUnreadMessages)
+                                                        {
+                                                            <span class="unread-badge mt-1">@conversation.UnreadCount</span>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                @if (!string.IsNullOrEmpty(conversation.Subject))
+                                                {
+                                                    <div class="text-primary small fw-medium mt-1">@conversation.Subject</div>
+                                                }
+                                                @if (!string.IsNullOrEmpty(conversation.LastMessage))
+                                                {
+                                                    <p class="mb-0 small text-muted text-truncate mt-1">
+                                                        @if (conversation.LastMessageSenderId == Model.CurrentUserId)
+                                                        {
+                                                            <span class="fw-medium">Bạn: </span>
+                                                        }
+                                                        @conversation.LastMessage
+                                                    </p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="p-4 text-center">
+                                    <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                                    <p class="text-muted">Chưa có cuộc trò chuyện nào</p>
+                                    <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+                                        Bắt đầu trò chuyện
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main chat area -->
+            <div class="col-md-8 col-lg-9">
+                @if (Model.ActiveConversation != null)
+                {
+                    <div class="chat-area h-100">
+                        <!-- Chat header -->
+                        <div class="chat-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="position-relative">
+                                        <img src="@Model.ActiveConversation.ParticipantAvatar"
+                                             class="rounded-circle me-3"
+                                             width="50" height="50"
+                                             alt="@Model.ActiveConversation.ParticipantName">
+                                        <div class="online-indicator"></div>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 fw-bold">@Model.ActiveConversation.ParticipantName</h5>
+                                        <small class="opacity-75">@Model.ActiveConversation.ParticipantRole</small>
+                                        @if (!string.IsNullOrEmpty(Model.ActiveConversation.Subject))
+                                        {
+                                            <div class="small opacity-90 mt-1">
+                                                <i class="fas fa-tag me-1"></i>@Model.ActiveConversation.Subject
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-light btn-sm rounded-pill" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item" href="#" onclick="archiveConversation(@Model.ActiveConversation.Id)">
+                                                <i class="fas fa-archive me-2"></i>Lưu trữ
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Messages area -->
+                        <div class="messages-container" id="messagesContainer">
+                            <div id="messagesList">
+                                @foreach (var message in Model.Messages)
+                                {
+                                    <div class="d-flex @(message.IsSentByCurrentUser ? "justify-content-end" : "justify-content-start") mb-3">
+                                        @if (!message.IsSentByCurrentUser)
+                                        {
+                                            <img src="@message.SenderAvatar" class="avatar rounded-circle me-2 align-self-end" width="32" height="32" alt="@message.SenderName">
+                                        }
+                                        <div class="message-bubble @(message.IsSentByCurrentUser ? "sent" : "received")">
+                                            @if (message.Type == WebHS.Models.MessageType.Image && !string.IsNullOrEmpty(message.AttachmentUrl))
+                                            {
+                                                <img src="@message.AttachmentUrl" class="img-fluid rounded mb-2" style="max-width: 250px;" alt="Image">
+                                            }
+                                            @if (message.Type == WebHS.Models.MessageType.File && !string.IsNullOrEmpty(message.AttachmentUrl))
+                                            {
+                                                <div class="file-attachment mb-2 p-2 rounded" style="background: rgba(0,0,0,0.1);">
+                                                    <a href="@message.AttachmentUrl" target="_blank" class="text-decoration-none">
+                                                        <i class="fas fa-file me-2"></i>@message.AttachmentFileName
+                                                    </a>
+                                                </div>
+                                            }
+                                            @if (!string.IsNullOrEmpty(message.Content))
+                                            {
+                                                <div>@Html.Raw(Html.Encode(message.Content).Replace("\n", "<br>"))</div>
+                                            }
+                                            <div class="message-time text-end">
+                                                @message.SentAt.ToString("HH:mm")
+                                            </div>
+                                        </div>
+                                        @if (message.IsSentByCurrentUser)
+                                        {
+                                            <img src="@message.SenderAvatar" class="avatar rounded-circle ms-2 align-self-end" width="32" height="32" alt="@message.SenderName">
+                                        }
+                                    </div>
+                                }
+
+                                <!-- Typing indicator (hidden by default) -->
+                                <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                                    <div class="typing-dots">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </div>
+                                    <span class="ms-2 small text-muted">đang gõ...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message input area -->
+                        <div class="message-input-area">
+                            <form id="messageForm" enctype="multipart/form-data">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ReceiverId" value="@(Model.ActiveConversation?.ParticipantId)" />
+                                <input type="hidden" name="ConversationId" value="@(Model.ActiveConversation?.Id)" />
+                                @if (Model.ActiveConversation?.HomestayId.HasValue == true)
+                                {
+                                    <input type="hidden" name="HomestayId" value="@Model.ActiveConversation.HomestayId" />
+                                }
+                                @if (Model.ActiveConversation?.BookingId.HasValue == true)
+                                {
+                                    <input type="hidden" name="BookingId" value="@Model.ActiveConversation.BookingId" />
+                                }
+
+                                <div class="d-flex align-items-end gap-3">
+                                    <input type="file" name="Attachment" id="fileInput" class="d-none" accept="image/*,.pdf,.doc,.docx,.txt">
+                                    <button type="button" class="btn btn-outline-primary rounded-pill px-3" onclick="document.getElementById('fileInput').click()">
+                                        <i class="fas fa-paperclip"></i>
+                                    </button>
+                                    <div class="flex-grow-1">
+                                        <textarea name="Content" id="messageInput" class="message-input form-control"
+                                                  placeholder="Nhập tin nhắn..." autocomplete="off" rows="1"></textarea>
+                                    </div>
+                                    <button type="submit" class="send-btn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="chat-area h-100 d-flex align-items-center justify-content-center">
+                        <div class="no-messages">
+                            <i class="fas fa-comments"></i>
+                            <h4 class="fw-bold">Chọn một cuộc trò chuyện</h4>
+                            <p>Chọn cuộc trò chuyện từ danh sách bên trái để bắt đầu nhắn tin</p>
+                            <button class="btn btn-primary rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#newMessageModal">
+                                <i class="fas fa-plus me-2"></i>Bắt đầu trò chuyện mới
+                            </button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tạo cuộc trò chuyện mới -->
+<div class="modal fade" id="newMessageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-comments me-2"></i>Cuộc trò chuyện mới
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="newMessageForm">
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Tìm người dùng</label>
+                        <div class="position-relative">
+                            <input type="text" id="userSearch" class="form-control form-control-lg rounded-pill ps-5" placeholder="Nhập tên hoặc email...">
+                            <i class="fas fa-search position-absolute top-50 translate-middle-y ms-3 text-muted"></i>
+                        </div>
+                        <div id="searchResults" class="mt-3"></div>
+                    </div>
+                    <div class="mb-4" id="selectedUserDiv" style="display: none;">
+                        <label class="form-label fw-semibold">Người nhận</label>
+                        <div id="selectedUser" class="p-3 bg-light rounded-3 border"></div>
+                        <input type="hidden" id="selectedUserId" name="WithUserId">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Tin nhắn đầu tiên</label>
+                        <textarea name="InitialMessage" class="form-control rounded-3" rows="4" placeholder="Nhập tin nhắn..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="startConversation()">
+                    <i class="fas fa-paper-plane me-2"></i>Bắt đầu trò chuyện
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>    // Form submission using jQuery
+    $(document).ready(function () {
+        // Clean any potentially injected content
+        cleanInjectedContent();
+        
+        const additionalStyles = `
+            .user-search-item {
+                cursor: pointer;
+                padding: 8px 12px;
+                border-radius: 6px;
+                transition: background-color 0.2s;
+            }
+
+            .user-search-item:hover {
+                background-color: #f8f9fa;
+            }
+
+            .file-attachment {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 8px 12px;
+                border-radius: 8px;
+            }
+        `;
+        
+        // Add styles to head
+        const styleElement = document.createElement('style');
+        styleElement.textContent = additionalStyles;
+        document.head.appendChild(styleElement);
+    });
+
+    // Function to clean any injected content that doesn't belong to messaging
+    function cleanInjectedContent() {
+        // Remove any elements that might contain chat AI content
+        const suspiciousElements = document.querySelectorAll('.bot-message, .user-message, .homestay-link');
+        suspiciousElements.forEach(el => {
+            if (!el.closest('.messaging-container')) {
+                el.remove();
+            }
+        });
+        
+        // Remove any script tags that might have been injected
+        const scripts = document.querySelectorAll('script:not([src])');
+        scripts.forEach(script => {
+            if (script.textContent.includes('word-wrap') || 
+                script.textContent.includes('bot-message') || 
+                script.textContent.includes('typing-indicator') && 
+                !script.textContent.includes('messaging')) {
+                script.remove();
+            }
+        });
+        
+        // Clean any text nodes that might contain CSS
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            null,
+            false
+        );
+        
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) {
+            textNodes.push(node);
+        }
+        
+        textNodes.forEach(textNode => {
+            if (textNode.textContent.includes('word-wrap: break-word') ||
+                textNode.textContent.includes('.homestay-link') ||
+                textNode.textContent.includes('.bot-message')) {
+                textNode.remove();
+            }
+        });
+    }
+
+    // Global functions that can be called from HTML
+    function loadConversation(conversationId) {
+        window.location.href = '@Url.Action("Index", "Messaging")?conversationId=' + conversationId;
+    }
+
+    // Global function to contact admin
+    function contactAdmin() {
+                const message = prompt('Nhập tin nhắn cần gửi cho Admin:');
+                if (!message || message.trim() === '') {
+                    return;
+                }
+
+                // Show loading
+                const loadingToast = showToast('Đang gửi yêu cầu...', 'info', 0);                $.ajax({
+                    url: '@Url.Action("RequestAdminMessage", "Messaging")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ Message: message.trim() }),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (response) {
+                        hideToast(loadingToast);
+                        if (response && response.success) {
+                            showToast('Yêu cầu đã được gửi! Admin sẽ liên hệ lại sớm nhất.', 'success');
+                        } else {
+                            showToast('Lỗi: ' + (response.message || 'Không thể gửi yêu cầu'), 'error');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        hideToast(loadingToast);
+                        console.error('Error contacting admin:', error);
+                        showToast('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.', 'error');
+                    }
+                });
+            }
+
+            // Global function to select user (called from HTML)
+            function selectUser(id, name, role, avatar) {
+                $('#selectedUserId').val(id);
+                $('#selectedUser').html(`
+                <div class="d-flex align-items-center">
+                    <img src="${avatar}" class="rounded-circle me-2" width="30" height="30" alt="${name}">
+                    <div>
+                        <div class="fw-bold">${name}</div>
+                        <small class="text-muted">${role}</small>
+                    </div>
+                </div>
+            `);
+                $('#selectedUserDiv').show();
+                $('#searchResults').empty();
+                $('#userSearch').val('');            }
+
+            // Global function to start conversation (called from HTML)
+            function startConversation() {
+                const userId = $('#selectedUserId').val();
+                const message = $('textarea[name="InitialMessage"]').val().trim();
+
+                if (!userId) {
+                    alert('Vui lòng chọn người nhận');
+                    return;
+                }
+
+                if (!message) {
+                    alert('Vui lòng nhập tin nhắn');
+                    return;
+                }
+
+                const data = {
+                    ReceiverId: userId,
+                    Content: message
+                };                $.ajax({
+                    url: '@Url.Action("SendMessage", "Messaging")',
+                    type: 'POST',
+                    data: data,
+                    success: function (response) {
+                        if (response && response.success) {
+                            $('#newMessageModal').modal('hide');
+                            window.location.reload();
+                        } else {
+                            alert('Lỗi: ' + (response.message || 'Không thể gửi tin nhắn'));
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error starting conversation:', error);
+                        alert('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.');
+                    }
+                });
+            }
+
+            // Global toast functions
+            function showToast(message, type = 'info', duration = 3000) {
+                const toastId = 'toast-' + Date.now();
+                const toastClass = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-info';
+
+                const toast = $(`
+                <div id="${toastId}" class="toast-notification ${toastClass} text-white position-fixed"
+                     style="top: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 8px;
+                            box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: translateX(400px); opacity: 0;">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                        <span>${message}</span>
+                        ${duration > 0 ? '<button type="button" class="btn-close btn-close-white ms-2" onclick="hideToast(\'' + toastId + '\')"></button>' : ''}
+                    </div>
+                </div>
+            `);
+
+                $('body').append(toast);
+
+                // Animate in
+                setTimeout(() => {
+                    toast.css({ transform: 'translateX(0)', opacity: '1' });
+                }, 10);
+
+                // Auto hide
+                if (duration > 0) {
+                    setTimeout(() => {
+                        hideToast(toastId);
+                    }, duration);
+                }                return toastId;
+            }
+
+            function hideToast(toastId) {
+                const toast = $('#' + toastId);
+                if (toast.length) {
+                    toast.css({ transform: 'translateX(400px)', opacity: '0' });
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);                }
+            }            $(document).ready(function () {
+                // Clean injected content periodically
+                setInterval(cleanInjectedContent, 5000);
+                
+                // Messaging functionality
+                let currentConversationId = @(Model.ActiveConversation?.Id ?? 0);
+
+                // Auto-scroll to bottom of messages
+                function scrollToBottom() {
+                    const container = document.getElementById('messagesContainer');
+                    if (container) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }
+
+                // Auto-resize textarea
+                const messageInput = document.getElementById('messageInput');
+                if (messageInput) {
+                    messageInput.addEventListener('input', function () {
+                        this.style.height = 'auto';
+                        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                    });
+                }
+
+                // Initial scroll to bottom
+                scrollToBottom();
+
+                // Send message
+                $('#messageForm').on('submit', function (e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const messageContent = $('#messageInput').val().trim();
+                    const hasFile = $('#fileInput')[0].files.length > 0;
+
+                    if (!messageContent && !hasFile) {
+                        return;
+                    }
+
+                    const url = hasFile ? '@Url.Action("SendMessageWithFile", "Messaging")' : '@Url.Action("SendMessage", "Messaging")';
+
+                    if (hasFile) {
+                        // Send with file
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,                            success: function (response) {
+                                if (response && response.success) {
+                                    appendMessage(response.message);
+                                    $('#messageInput').val('');
+                                    $('#fileInput').val('');
+                                    scrollToBottom();
+                                } else {
+                                    alert('Lỗi: ' + (response.message || 'Không thể gửi tin nhắn'));
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error sending file message:', error);
+                                alert('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.');
+                            }
+                        });
+                    } else {
+                        // Send text only
+                        const data = {
+                            ReceiverId: $('input[name="ReceiverId"]').val(),
+                            Content: messageContent,
+                            ConversationId: $('input[name="ConversationId"]').val(),
+                            HomestayId: $('input[name="HomestayId"]').val() || null,
+                            BookingId: $('input[name="BookingId"]').val() || null
+                        };                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: data,
+                            success: function (response) {
+                                if (response && response.success) {
+                                    appendMessage(response.message);
+                                    $('#messageInput').val('');
+                                    scrollToBottom();
+                                } else {
+                                    alert('Lỗi: ' + (response.message || 'Không thể gửi tin nhắn'));
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error sending message:', error);
+                                alert('Lỗi gửi tin nhắn: ' + error);
+                            }
+                        });
+                    }
+                });
+
+                // Append new message to chat
+                function appendMessage(message) {
+                    const messageHtml = createMessageHtml(message);
+                    $('#messagesList').append(messageHtml);
+                }
+
+                // Create message HTML
+                function createMessageHtml(message) {
+                    const isSent = message.isSentByCurrentUser;
+                    const alignClass = isSent ? 'justify-content-end' : 'justify-content-start';
+                    const bubbleClass = isSent ? 'bg-primary text-white' : 'bg-light';
+                    const timeClass = isSent ? 'text-white-50' : 'text-muted';
+
+                    let contentHtml = '';
+                    if (message.type === 1 && message.attachmentUrl) { // Image
+                        contentHtml += `<img src="${message.attachmentUrl}" class="img-fluid rounded mb-2" style="max-width: 200px;" alt="Image">`;
+                    }
+                    if (message.type === 2 && message.attachmentUrl) { // File
+                        contentHtml += `<div class="file-attachment mb-2"><a href="${message.attachmentUrl}" target="_blank" class="text-decoration-none"><i class="fas fa-file me-2"></i>${message.attachmentFileName}</a></div>`;
+                    }
+                    if (message.content) {
+                        contentHtml += `<div>${message.content}</div>`;
+                    }
+
+                    const avatarHtml = !isSent ? `<img src="${message.senderAvatar}" class="rounded-circle me-2" width="35" height="35" alt="${message.senderName}">` : '';
+                    const readIndicator = isSent && message.isRead ? '<i class="fas fa-check-double ms-1"></i>' : '';
+
+                    return `
+                        <div class="message-item ${isSent ? 'sent' : 'received'}" data-message-id="${message.id}">
+                            <div class="d-flex ${alignClass} mb-3">
+                                ${avatarHtml}
+                                <div class="message-bubble ${bubbleClass}">
+                                    ${contentHtml}
+                                    <small class="d-block mt-1 ${timeClass}">
+                                        ${new Date(message.sentAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                                        ${readIndicator}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Scroll to bottom
+                function scrollToBottom() {
+                    const container = document.getElementById('messagesContainer');
+                    container.scrollTop = container.scrollHeight;
+                }
+
+                // Delete message
+                function deleteMessage(messageId) {
+                    if (confirm('Bạn có chắc muốn xóa tin nhắn này?')) {
+                        $.post('@Url.Action("DeleteMessage", "Messaging")', { messageId: messageId }, function (response) {
+                            if (response.success) {
+                                $(`[data-message-id="${messageId}"]`).remove();
+                            }
+                        });
+                    }
+                }
+
+                // Archive conversation
+                function archiveConversation(conversationId) {
+                    if (confirm('Bạn có chắc muốn lưu trữ cuộc trò chuyện này?')) {
+                        $.post('@Url.Action("ArchiveConversation", "Messaging")', { conversationId: conversationId }, function (response) {
+                            if (response.success) {
+                                window.location.href = '@Url.Action("Index", "Messaging")';
+                            }
+                        });
+                    }
+                }
+
+                // User search
+                $('#userSearch').on('input', function () {
+                    const term = $(this).val().trim();
+                    if (term.length < 2) {
+                        $('#searchResults').empty();
+                        return;
+                    }                    $.get('@Url.Action("SearchUsers", "Messaging")', { term: term }, function (response) {
+                        if (response && response.success) {
+                            displaySearchResults(response.users);
+                        }
+                    }).fail(function(xhr, status, error) {
+                        console.error('Error searching users:', error);
+                        $('#searchResults').html('<div class="text-danger small">Lỗi tìm kiếm người dùng</div>');
+                    });
+                });
+
+                // Display search results
+                function displaySearchResults(users) {
+                    const resultsHtml = users.map(user => `
+                        <div class="user-search-item" onclick="selectUser('${user.id}', '${user.name}', '${user.role}', '${user.avatar}')">
+                            <div class="d-flex align-items-center">
+                                <img src="${user.avatar}" class="rounded-circle me-2" width="30" height="30" alt="${user.name}">
+                                <div>
+                                    <div class="fw-bold">${user.name}</div>
+                                    <small class="text-muted">${user.role} - ${user.email}</small>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    $('#searchResults').html(resultsHtml);
+                }
+
+                // Auto scroll to bottom on page load
+                $(document).ready(function () {
+                    scrollToBottom();
+
+                    // Mark messages as read
+                    if (currentConversationId > 0) {
+                        $.post('@Url.Action("MarkAsRead", "Messaging")', { conversationId: currentConversationId });
+                    }
+                });                // Enter key to send message
+                $('#messageInput').on('keypress', function(e) {
+                    if (e.which === 13 && !e.shiftKey) {
+                        e.preventDefault();
+                        $('#messageForm').submit();
+                    }
+                });
+
+                // Enhanced Interactive Effects
+                initializeModernEffects();
+            });
+
+        // Modern Interactive Effects
+        function initializeModernEffects() {
+            // Floating particles effect
+            createFloatingParticles();
+
+            // Message hover effects
+            $(document).on('mouseenter', '.message-bubble', function () {
+                createRippleEffect(this);
+            });
+
+            // Send button effects
+            $('.send-btn').on('click', function () {
+                createSendEffect(this);
+            });
+
+            // Typing indicator with sound
+            let typingTimeout;
+            $('#messageInput').on('input', function () {
+                clearTimeout(typingTimeout);
+                showTypingIndicator();
+
+                typingTimeout = setTimeout(() => {
+                    hideTypingIndicator();
+                }, 1000);
+            });
+
+            // Smooth scroll with easing
+            $('.conversation-item').on('click', function () {
+                $(this).addClass('loading');
+                setTimeout(() => {
+                    $(this).removeClass('loading');
+                }, 500);            });
+        }
+
+        // Create floating particles
+        function createFloatingParticles() {
+            const container = $('.messaging-container')[0];
+            if (!container) return;
+
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                container.appendChild(particle);
+
+                setTimeout(() => {
+                    if (particle.parentNode) {
+                        particle.parentNode.removeChild(particle);
+                    }
+                }, 5000);            }, 2000);
+        }
+
+        // Create ripple effect
+        function createRippleEffect(element) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-effect';
+            ripple.style.position = 'absolute';
+            ripple.style.borderRadius = '50%';
+            ripple.style.background = 'rgba(102,126,234,0.3)';
+            ripple.style.transform = 'scale(0)';
+            ripple.style.animation = 'ripple 0.6s ease-out';
+            ripple.style.pointerEvents = 'none';
+
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = (rect.width / 2 - size / 2) + 'px';
+            ripple.style.top = (rect.height / 2 - size / 2) + 'px';
+
+            element.style.position = 'relative';
+            element.appendChild(ripple);
+
+            setTimeout(() => {
+                if (ripple.parentNode) {
+                    ripple.parentNode.removeChild(ripple);
+                }            }, 600);
+        }
+
+        // Create send effect
+        function createSendEffect(button) {
+            button.style.transform = 'scale(0.95)';
+
+            // Create success particles
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.style.position = 'absolute';
+                    particle.style.width = '4px';
+                    particle.style.height = '4px';
+                    particle.style.background = '#4CAF50';
+                    particle.style.borderRadius = '50%';
+                    particle.style.pointerEvents = 'none';
+                    particle.style.animation = 'sendParticle 0.8s ease-out forwards';
+
+                    const rect = button.getBoundingClientRect();
+                    particle.style.left = rect.left + rect.width / 2 + 'px';
+                    particle.style.top = rect.top + rect.height / 2 + 'px';
+
+                    document.body.appendChild(particle);
+
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.parentNode.removeChild(particle);
+                        }
+                    }, 800);
+                }, i * 100);
+            }
+
+            setTimeout(() => {                button.style.transform = '';
+            }, 150);
+        }
+
+        // Show typing indicator
+        function showTypingIndicator() {
+            // Implementation for typing indicator            console.log('User is typing...');
+        }
+
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            // Implementation for hiding typing indicator            console.log('User stopped typing...');
+        }
+    </script>
+
+    <!-- Add missing CSS for animations -->
+    <style>
+        @@keyframes ripple {
+            to {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        @@keyframes sendParticle {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--dx, 20px), var(--dy, -20px)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102,126,234,0.6);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle 4s infinite;
+        }
+
+        @@keyframes particle {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .conversation-item.loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }        .ripple-effect {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(102,126,234,0.3);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+    </style>

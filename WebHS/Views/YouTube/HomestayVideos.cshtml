@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Homestay Việt Nam</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #ff7b7b 0%, #ff416c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-overlay: rgba(0, 0, 0, 0.7);
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Animated background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @@keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .container-fluid {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            margin: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header with glassmorphism effect */
+        .header-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        @@keyframes shimmer {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(180deg); }
+        }
+
+        .display-4 {
+            color: white;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .lead {
+            color: rgba(255, 255, 255, 0.9);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Filter section with enhanced glassmorphism */
+        .filter-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .filter-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-select, .btn {
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus, .form-select:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+        }
+
+        .form-select option {
+            background: rgba(102, 126, 234, 0.9);
+            color: white;
+        }
+
+        .form-label {
+            color: white !important;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #searchBtn {
+            background: var(--secondary-gradient);
+            border: none;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #searchBtn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        #searchBtn:hover::before {
+            left: 100%;
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 65, 108, 0.4);
+        }
+
+        /* Video cards with enhanced effects */
+        .video-card {
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: none;
+            border-radius: 20px;
+            overflow: hidden;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .video-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-card:hover::before {
+            opacity: 1;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .video-thumbnail {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px 20px 0 0;
+        }
+        
+        .video-thumbnail img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: all 0.4s ease;
+            filter: brightness(1) saturate(1);
+        }
+        
+        .video-card:hover .video-thumbnail img {
+            transform: scale(1.1);
+            filter: brightness(1.1) saturate(1.2);
+        }
+        
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .video-card:hover .play-overlay {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .play-overlay i {
+            margin-left: 3px;
+        }
+        
+        .video-category {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--accent-gradient);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .video-duration {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: var(--dark-overlay);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .video-title {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.4;
+            height: 2.8rem;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .video-channel, .video-date {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+
+        /* Modal optimizations - FIX WHITE SPACE ISSUE */
+        .modal-dialog {
+            max-width: 90vw;
+            margin: 1rem auto;
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+        }
+
+        .modal-body {
+            padding: 0 !important; /* Remove all padding */
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        #videoPlayerContainer {
+            margin: 0 !important; /* Remove margins */
+            border-radius: 0 !important;
+        }
+
+        .video-info {
+            padding: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            color: white;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        /* Loading animation */
+        .spinner-border {
+            animation: spin 1s linear infinite, pulse 2s ease-in-out infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Alert styling */
+        .alert {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            color: white;
+        }
+
+        /* Load more button */
+        #loadMoreBtn {
+            background: var(--accent-gradient);
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        #loadMoreBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4);
+        }
+
+        /* Error container */
+        .error-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 3rem;
+            color: white;
+            text-align: center;
+        }
+
+        /* Responsive improvements */
+        @@media (max-width: 768px) {
+            .container-fluid {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .header-section {
+                padding: 2rem 1rem;
+            }
+            
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+            
+            .video-thumbnail img {
+                height: 180px;
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-gradient);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-gradient);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated background particles -->
+    <div class="bg-particles" id="particles"></div>
+
+    <div class="container-fluid py-4">
+        <!-- Header Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="header-section text-center">
+                    <h1 class="display-4 mb-3">
+                        <i class="fas fa-video me-3"></i>
+                        Video Homestay Việt Nam
+                    </h1>
+                    <p class="lead">Khám phá những homestay tuyệt vời qua video thực tế</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card filter-card shadow-lg">
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <div class="col-md-4">
+                                <label for="locationSelect" class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt text-danger"></i> Địa điểm
+                                </label>
+                                <select id="locationSelect" class="form-select">
+                                    <option value="Vietnam">Toàn quốc</option>
+                                    <option value="Ha Noi">Hà Nội</option>
+                                    <option value="Ho Chi Minh">TP. Hồ Chí Minh</option>
+                                    <option value="Da Nang">Đà Nẵng</option>
+                                    <option value="Hoi An">Hội An</option>
+                                    <option value="Da Lat">Đà Lạt</option>
+                                    <option value="Sapa">Sapa</option>
+                                    <option value="Phu Quoc">Phú Quốc</option>
+                                    <option value="Nha Trang">Nha Trang</option>
+                                    <option value="Ha Long">Hạ Long</option>
+                                    <option value="Mui Ne">Mũi Né</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="categorySelect" class="form-label fw-bold">
+                                    <i class="fas fa-tags text-info"></i> Loại homestay
+                                </label>
+                                <select id="categorySelect" class="form-select">
+                                    <option value="all">Tất cả</option>
+                                    <option value="tour">Tour & Review</option>
+                                    <option value="food">Ẩm thực</option>
+                                    <option value="culture">Văn hóa</option>
+                                    <option value="nature">Thiên nhiên</option>
+                                    <option value="family">Gia đình</option>
+                                    <option value="luxury">Cao cấp</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="maxResults" class="form-label fw-bold">
+                                    <i class="fas fa-list-ol text-warning"></i> Số lượng
+                                </label>
+                                <select id="maxResults" class="form-select">
+                                    <option value="6">6 video</option>
+                                    <option value="12" selected>12 video</option>
+                                    <option value="18">18 video</option>
+                                    <option value="24">24 video</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="searchBtn" class="btn w-100">
+                                    <i class="fas fa-search"></i> Tìm kiếm
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div id="loadingVideos" class="text-center my-5" style="display: none;">
+            <div class="spinner-border text-light" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Đang tải...</span>
+            </div>
+            <p class="mt-3 text-light">Đang tìm kiếm video homestay...</p>
+        </div>
+
+        <!-- Demo notice -->
+        <div id="demoNotice" class="alert alert-info" style="display: none;">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Demo Mode:</strong> Đang hiển thị video mẫu. Cấu hình YouTube API key để xem video thực tế.
+        </div>
+
+        <!-- Video Results -->
+        <div id="videosContainer" class="row g-4">
+            <!-- Videos will be loaded here -->
+        </div>
+
+        <!-- Load More Button -->
+        <div class="text-center mt-5">
+            <button id="loadMoreBtn" class="btn btn-lg" style="display: none;">
+                <i class="fas fa-plus-circle"></i> Xem thêm video
+            </button>
+        </div>
+    </div>
+
+    <!-- Video Modal - OPTIMIZED -->
+    <div class="modal fade" id="videoModal" tabindex="-1" aria-labelledby="videoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videoModalLabel">
+                        <i class="fas fa-play-circle text-light"></i> Video Player
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="videoPlayerContainer" class="ratio ratio-16x9">
+                        <!-- Video player will be loaded here -->
+                    </div>
+                    <div class="video-info">
+                        <h5 id="videoTitle" class="fw-bold mb-2"></h5>
+                        <p id="videoDescription" class="mb-3" style="color: rgba(255,255,255,0.8);"></p>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <small style="color: rgba(255,255,255,0.7);">
+                                <i class="fas fa-user"></i> <span id="videoChannel" class="fw-bold"></span>
+                            </small>
+                            <small style="color: rgba(255,255,255,0.7);">
+                                <i class="fas fa-calendar"></i> <span id="videoDate"></span>
+                            </small>
+                        </div>
+                        <div class="mt-3">
+                            <button id="shareVideoBtn" class="btn btn-primary btn-sm me-2">
+                                <i class="fas fa-share"></i> Chia sẻ
+                            </button>
+                            <button id="saveVideoBtn" class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-bookmark"></i> Lưu video
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Create animated background particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const numberOfParticles = 50;
+
+            for (let i = 0; i < numberOfParticles; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 2;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const delay = Math.random() * 6;
+                
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = posX + '%';
+                particle.style.top = posY + '%';
+                particle.style.animationDelay = delay + 's';
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        class HomestayVideoManager {
+            constructor() {
+                this.currentVideos = [];
+                this.currentPage = 1;
+                this.videosPerPage = 12;
+                this.isLoading = false;
+                this.modalInstance = null;
+                
+                this.initializeEventListeners();
+                this.loadDemoVideos(); // Load demo videos initially
+            }
+
+            initializeEventListeners() {
+                document.getElementById('searchBtn').addEventListener('click', () => {
+                    this.loadHomestayVideos();
+                });
+
+                document.getElementById('loadMoreBtn').addEventListener('click', () => {
+                    this.loadMoreVideos();
+                });
+
+                document.getElementById('shareVideoBtn').addEventListener('click', () => {
+                    this.shareVideo();
+                });
+
+                document.getElementById('saveVideoBtn').addEventListener('click', () => {
+                    this.saveVideo();
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        this.closeModal();
+                    }
+                });
+
+                ['locationSelect', 'categorySelect', 'maxResults'].forEach(id => {
+                    document.getElementById(id).addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            this.loadHomestayVideos();
+                        }
+                    });
+                });
+            }
+
+            // Load demo videos for demonstration
+            loadDemoVideos() {
+                const demoVideos = [
+                    {
+                        videoId: 'demo1',
+                        title: 'Homestay Sapa - Trải nghiệm bản địa tuyệt vời',
+                        thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=300&fit=crop',
+                        channelTitle: 'Vietnam Travel',
+                        publishedAt: '2024-01-15T10:00:00Z',
+                        description: 'Khám phá homestay tuyệt đẹp tại Sapa với cảnh núi non hùng vĩ',
+                        category: 'nature'
+                    },
+                    {
+                        videoId: 'demo2',
+                        title: 'Homestay Hội An - Phố cổ thơ mộng',
+                        thumbnail: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=400&h=300&fit=crop',
+                        channelTitle: 'Culture Vietnam',
+                        publishedAt: '2024-01-20T15:30:00Z',
+                        description: 'Trải nghiệm văn hóa độc đáo tại homestay Hội An',
+                        category: 'culture'
+                    },
+                    {
+                        videoId: 'demo3',
+                        title: 'Homestay Đà Lạt - Thành phố ngàn hoa',
+                        thumbnail: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=400&h=300&fit=crop',
+                        channelTitle: 'Dalat Explorer',
+                        publishedAt: '2024-02-01T09:15:00Z',
+                        description: 'Homestay lãng mạn giữa lòng Đà Lạt mộng mơ',
+                        category: 'luxury'
+                    },
+                    {
+                        videoId: 'demo4',
+                        title: 'Homestay Phú Quốc - Đảo ngọc thiên đường',
+                        thumbnail: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=400&h=300&fit=crop',
+                        channelTitle: 'Beach Vietnam',
+                        publishedAt: '2024-02-10T14:45:00Z',
+                        description: 'Homestay view biển tuyệt đẹp tại Phú Quốc',
+                        category: 'nature'
+                    },
+                    {
+                        videoId: 'demo5',
+                        title: 'Homestay gia đình Hà Nội - Ẩm thực đường phố',
+                        thumbnail: 'https://images.unsplash.com/photo-1581833971358-2c8b550f87b3?w=400&h=300&fit=crop',
+                        channelTitle: 'Hanoi Food Tour',
+                        publishedAt: '2024-02-15T11:20:00Z',
+                        description: 'Trải nghiệm ẩm thực Hà Nội tại homestay gia đình',
+                        category: 'food'
+                    },
+                    {
+                        videoId: 'demo6',
+                        title: 'Homestay cao cấp Nha Trang - Resort mini',
+                        thumbnail: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=300&fit=crop',
+                        channelTitle: 'Luxury Stay VN',
+                        publishedAt: '2024-02-20T16:00:00Z',
+                        description: 'Homestay sang trọng với đầy đủ tiện nghi tại Nha Trang',
+                        category: 'luxury'
+                    }
+                ];
+
+                this.currentVideos = demoVideos;
+                this.displayVideos(this.currentVideos);
+                document.getElementById('demoNotice').style.display = 'block';
+            }
+
+            async loadHomestayVideos(append = false) {
+                if (this.isLoading) return;
+                
+                this.showLoading(true);
+                this.isLoading = true;
+                
+                try {
+                    // Simulate API call delay
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    // For demo, just reload the same videos
+                    this.loadDemoVideos();
+                    
+                } catch (error) {
+                    console.error('Error loading homestay videos:', error);
+                    this.showError('Lỗi không xác định. Vui lòng thử lại sau.');
+                } finally {
+                    this.showLoading(false);
+                    this.isLoading = false;
+                }
+            }
+
+            displayVideos(videos, append = false) {
+                const container = document.getElementById('videosContainer');
+                
+                if (!append) {
+                    container.innerHTML = '';
+                }
+                
+                if (videos.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12">
+                            <div class="error-container">
+                                <i class="fas fa-video fa-3x mb-3" style="color: rgba(255,255,255,0.5);"></i>
+                                <h4>Không tìm thấy video nào</h4>
+                                <p style="color: rgba(255,255,255,0.7);">Thử thay đổi bộ lọc để tìm video khác</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                videos.forEach((video, index) => {
+                    const videoCard = this.createVideoCard(video, index);
+                    container.appendChild(videoCard);
+                });
+
+                // Add entrance animation
+                this.animateCards();
+            }
+
+            animateCards() {
+                const cards = document.querySelectorAll('.video-card');
+                cards.forEach((card, index) => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(30px)';
+                    setTimeout(() => {
+                        card.style.transition = 'all 0.5s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }
+
+            createVideoCard(video, index) {
+                const col = document.createElement('div');
+                col.className = 'col-lg-3 col-md-4 col-sm-6';
+                
+                const publishedDate = new Date(video.publishedAt).toLocaleDateString('vi-VN');
+                const categoryName = this.getCategoryName(video.category);
+                
+                col.innerHTML = `
+                    <div class="card video-card h-100" data-video-id="${this.escapeHtml(video.videoId)}">
+                        <div class="video-thumbnail">
+                            <img src="${this.escapeHtml(video.thumbnail)}" alt="${this.escapeHtml(video.title)}" loading="lazy">
+                            <div class="play-overlay">
+                                <i class="fas fa-play text-danger fa-2x"></i>
+                            </div>
+                            <div class="video-category">${categoryName}</div>
+                            <div class="video-duration">HD</div>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="video-title mb-2">${this.escapeHtml(video.title)}</h6>
+                            <p class="video-channel mb-1">
+                                <i class="fas fa-user-circle"></i> ${this.escapeHtml(video.channelTitle)}
+                            </p>
+                            <small class="video-date">
+                                <i class="fas fa-calendar"></i> ${publishedDate}
+                            </small>
+                        </div>
+                    </div>
+                `;
+                
+                const card = col.querySelector('.video-card');
+                card.addEventListener('click', () => {
+                    this.playVideo(
+                        video.videoId,
+                        video.title,
+                        video.description,
+                        video.channelTitle,
+                        publishedDate
+                    );
+                });
+                
+                return col;
+            }
+
+            async playVideo(videoId, title, description, channel, date) {
+                try {
+                    // Create demo video embed
+                    const embedHtml = `
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0&modestbranding=1" 
+                            title="${this.escapeHtml(title)}"
+                            frameborder="0" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    `;
+                    
+                    document.getElementById('videoPlayerContainer').innerHTML = embedHtml;
+                    document.getElementById('videoTitle').textContent = title;
+                    document.getElementById('videoDescription').textContent = description || 'Không có mô tả';
+                    document.getElementById('videoChannel').textContent = channel;
+                    document.getElementById('videoDate').textContent = date;
+                    
+                    this.showModal();
+                    
+                } catch (error) {
+                    console.error('Error loading video player:', error);
+                    alert('Không thể phát video. Vui lòng thử lại sau.');
+                }
+            }
+
+            showModal() {
+                if (!this.modalInstance) {
+                    this.modalInstance = new bootstrap.Modal(document.getElementById('videoModal'));
+                }
+                this.modalInstance.show();
+            }
+
+            closeModal() {
+                if (this.modalInstance) {
+                    this.modalInstance.hide();
+                }
+            }
+
+            getCategoryName(category) {
+                const categoryNames = {
+                    'all': 'Tổng hợp',
+                    'tour': 'Tour & Review',
+                    'food': 'Ẩm thực',
+                    'culture': 'Văn hóa',
+                    'nature': 'Thiên nhiên',
+                    'family': 'Gia đình',
+                    'luxury': 'Cao cấp'
+                };
+                return categoryNames[category] || 'Tổng hợp';
+            }
+
+            escapeHtml(text) {
+                if (!text) return '';
+                
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                
+                return text.toString().replace(/[&<>"']/g, function(m) { 
+                    return map[m]; 
+                });
+            }
+
+            showLoading(show) {
+                document.getElementById('loadingVideos').style.display = show ? 'block' : 'none';
+                document.getElementById('searchBtn').disabled = show;
+                
+                if (show) {
+                    document.getElementById('searchBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang tải...';
+                } else {
+                    document.getElementById('searchBtn').innerHTML = '<i class="fas fa-search"></i> Tìm kiếm';
+                }
+            }
+
+            showError(message) {
+                const container = document.getElementById('videosContainer');
+                container.innerHTML = `
+                    <div class="col-12">
+                        <div class="error-container">
+                            <i class="fas fa-exclamation-triangle fa-3x mb-3" style="color: #ffc107;"></i>
+                            <h4 style="color: #ffc107;">Oops! Có lỗi xảy ra</h4>
+                            <p style="color: rgba(255,255,255,0.7);">${this.escapeHtml(message)}</p>
+                            <button class="btn btn-primary mt-3" onclick="videoManager.loadHomestayVideos()">
+                                <i class="fas fa-redo"></i> Thử lại
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            loadMoreVideos() {
+                // For demo, just show the same videos again
+                const moreVideos = [...this.currentVideos];
+                this.currentVideos = [...this.currentVideos, ...moreVideos];
+                this.displayVideos(this.currentVideos);
+            }
+
+            shareVideo() {
+                try {
+                    const title = document.getElementById('videoTitle').textContent;
+                    const url = window.location.href;
+                    
+                    if (navigator.share) {
+                        navigator.share({
+                            title: title,
+                            text: 'Xem video homestay này!',
+                            url: url
+                        }).catch(err => {
+                            console.log('Share cancelled or failed:', err);
+                        });
+                    } else if (navigator.clipboard) {
+                        navigator.clipboard.writeText(url).then(() => {
+                            this.showToast('Đã copy link video!', 'success');
+                        }).catch(() => {
+                            this.fallbackCopyToClipboard(url);
+                        });
+                    } else {
+                        this.fallbackCopyToClipboard(url);
+                    }
+                } catch (error) {
+                    console.error('Error sharing video:', error);
+                    this.showToast('Không thể chia sẻ video. Vui lòng thử lại!', 'error');
+                }
+            }
+
+            fallbackCopyToClipboard(text) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    this.showToast('Đã copy link video!', 'success');
+                } catch (err) {
+                    console.error('Fallback copy failed:', err);
+                    this.showToast('Link: ' + text, 'info');
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            }
+
+            saveVideo() {
+                try {
+                    const videoTitle = document.getElementById('videoTitle').textContent;
+                    
+                    // Use memory storage instead of localStorage for demo
+                    if (!window.savedVideos) {
+                        window.savedVideos = [];
+                    }
+                    
+                    const isAlreadySaved = window.savedVideos.some(video => video.title === videoTitle);
+                    if (isAlreadySaved) {
+                        this.showToast('Video đã được lưu trước đó!', 'warning');
+                        return;
+                    }
+                    
+                    window.savedVideos.push({
+                        title: videoTitle,
+                        savedAt: new Date().toISOString(),
+                        url: window.location.href
+                    });
+                    
+                    this.showToast('Đã lưu video!', 'success');
+                    
+                } catch (error) {
+                    console.error('Error saving video:', error);
+                    this.showToast('Không thể lưu video. Vui lòng thử lại!', 'error');
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const toastContainer = document.getElementById('toastContainer') || this.createToastContainer();
+                
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} border-0`;
+                toast.setAttribute('role', 'alert');
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                const bsToast = new bootstrap.Toast(toast);
+                bsToast.show();
+                
+                toast.addEventListener('hidden.bs.toast', () => {
+                    toast.remove();
+                });
+            }
+
+            createToastContainer() {
+                const container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container position-fixed top-0 end-0 p-3';
+                container.style.zIndex = '9999';
+                document.body.appendChild(container);
+                return container;
+            }
+        }
+
+        // Initialize everything when DOM is loaded
+        let videoManager;
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            videoManager = new HomestayVideoManager();
+        });
+
+        // Global functions for backward compatibility
+        function loadHomestayVideos() {
+            if (videoManager) {
+                videoManager.loadHomestayVideos();
+            }
+        }
+
+        function loadMoreVideos() {
+            if (videoManager) {
+                videoManager.loadMoreVideos();
+            }
+        }
+
+        function shareVideo() {
+            if (videoManager) {
+                videoManager.shareVideo();
+            }
+        }
+
+        function saveVideo() {
+            if (videoManager) {
+                videoManager.saveVideo();
+            }
+        }
+    </script>
+</body>
+</html>

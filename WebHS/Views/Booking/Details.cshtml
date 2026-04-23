@@ -1,0 +1,285 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@using WebHSBookingStatus = WebHS.Models.BookingStatus
+@model WebHS.ViewModels.BookingDetailViewModel
+@{
+    ViewData["Title"] = "Chi tiết đặt phòng";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Chi tiết đặt phòng</h2>
+                <a asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Quay lại
+                </a>
+            </div>
+
+            <div class="row">
+                <!-- Left Column - Booking Details -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-calendar-check me-2"></i>Thông tin đặt phòng
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold">Mã đặt phòng:</td>
+                                            <td>#@Model.Booking.Id.ToString("D6")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Trạng thái:</td>
+                                            <td>
+                                                <span class="badge bg-@GetStatusColor(Model.Booking.Status) fs-6">
+                                                    @GetStatusText(Model.Booking.Status)
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Ngày đặt:</td>
+                                            <td>@Model.Booking.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Số khách:</td>
+                                            <td>@Model.Booking.NumberOfGuests khách</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="col-md-6">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td class="fw-bold">Ngày nhận phòng:</td>
+                                            <td>@Model.Booking.CheckInDate.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Ngày trả phòng:</td>
+                                            <td>@Model.Booking.CheckOutDate.ToString("dd/MM/yyyy")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-bold">Số đêm:</td>
+                                            <td>@((Model.Booking.CheckOutDate - Model.Booking.CheckInDate).Days) đêm</td>
+                                        </tr>
+                                        @if (!string.IsNullOrEmpty(Model.Booking.Notes))
+                                        {
+                                            <tr>
+                                                <td class="fw-bold">Ghi chú:</td>
+                                                <td>@Model.Booking.Notes</td>
+                                            </tr>
+                                        }
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Homestay Information -->
+                    <div class="card shadow-sm border-0 mb-4">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-home me-2"></i>Thông tin Homestay
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <img src="@(!string.IsNullOrEmpty(Model.PrimaryImage) ? Model.PrimaryImage : "/images/default-homestay.jpg")" 
+                                         class="img-fluid rounded" alt="@Model.HomestayName">
+                                </div>
+                                <div class="col-md-8">
+                                    <h5>@Model.HomestayName</h5>
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        @Model.Booking.Homestay.Address, @Model.Booking.Homestay.City, @Model.Booking.Homestay.State
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-user me-1"></i>
+                                        <strong>Chủ nhà:</strong> @Model.HostName
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-envelope me-1"></i>
+                                        @Model.Booking.Homestay.Host.Email
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="fas fa-phone me-1"></i>
+                                        @Model.Booking.Homestay.Host.PhoneNumber
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex gap-2 flex-wrap">
+                                @if (Model.CanCancel)
+                                {
+                                    <button type="button" class="btn btn-outline-danger" onclick="cancelBooking()">
+                                        <i class="fas fa-times me-2"></i>Hủy đặt phòng
+                                    </button>
+                                }
+                                
+                                @if (Model.CanReview)
+                                {
+                                    <a asp-controller="Review" asp-action="Create" asp-route-bookingId="@Model.Booking.Id" 
+                                       class="btn btn-outline-warning">
+                                        <i class="fas fa-star me-2"></i>Đánh giá
+                                    </a>
+                                }
+                                
+                                <a asp-controller="Homestay" asp-action="Details" asp-route-id="@Model.Booking.HomestayId" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-eye me-2"></i>Xem Homestay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Payment Summary -->
+                <div class="col-lg-4">
+                    <div class="card shadow-lg border-0 position-sticky" style="top: 20px;">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-money-bill-wave me-2"></i>Chi tiết thanh toán
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td>Giá mỗi đêm:</td>
+                                    <td class="text-end">@Model.Booking.Homestay.PricePerNight.ToString("N0") VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <td>Số đêm:</td>
+                                    <td class="text-end">@((Model.Booking.CheckOutDate - Model.Booking.CheckInDate).Days) đêm</td>
+                                </tr>
+                                <tr>
+                                    <td>Tạm tính:</td>
+                                    <td class="text-end">@Model.Booking.TotalAmount.ToString("N0") VNĐ</td>
+                                </tr>
+                                @if (Model.Booking.DiscountAmount > 0)
+                                {
+                                    <tr class="text-success">
+                                        <td>Giảm giá:</td>
+                                        <td class="text-end">-@Model.Booking.DiscountAmount.ToString("N0") VNĐ</td>
+                                    </tr>
+                                }
+                                <tr class="border-top">
+                                    <td class="fw-bold">Tổng cộng:</td>
+                                    <td class="text-end fw-bold h5 text-primary">@Model.Booking.FinalAmount.ToString("N0") VNĐ</td>
+                                </tr>
+                            </table>
+
+                            @if (Model.Booking.Status == WebHSBookingStatus.Paid)
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-clock me-2"></i>
+                                    Đang chờ chủ nhà xác nhận. Bạn sẽ nhận được thông báo qua email khi có cập nhật.
+                                </div>
+                            }
+                            else if (Model.Booking.Status == WebHSBookingStatus.Paid)
+                            {
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Đặt phòng đã được xác nhận. Hãy chuẩn bị cho chuyến đi của bạn!
+                                </div>
+                            }
+                            else if (Model.Booking.Status == WebHSBookingStatus.Cancelled)
+                            {
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    Đặt phòng đã bị hủy.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Booking Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Xác nhận hủy đặt phòng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bạn có chắc chắn muốn hủy đặt phòng này không?</p>
+                <p class="text-muted small">Lưu ý: Việc hủy phòng có thể phát sinh phí theo chính sách của chủ nhà.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-danger" id="confirmCancel">Xác nhận hủy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function cancelBooking() {
+            var modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+        
+        document.getElementById('confirmCancel').addEventListener('click', function() {
+            fetch(`/Booking/Cancel/@Model.Booking.Id`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra khi hủy đặt phòng');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi hủy đặt phòng');
+            });
+            
+            var modal = bootstrap.Modal.getInstance(document.getElementById('cancelModal'));
+            modal.hide();
+        });
+    </script>
+}
+
+@functions {    private string GetStatusColor(WebHSBookingStatus status)
+    {
+        return status switch
+        {
+            WebHSBookingStatus.Paid => "warning",
+            WebHSBookingStatus.Completed => "primary",
+            WebHSBookingStatus.Cancelled => "danger",
+            _ => "secondary"
+        };
+    }
+    
+    private string GetStatusText(WebHSBookingStatus status)
+    {
+        return status switch
+        {
+            WebHSBookingStatus.Paid => "Đã thanh toán",
+            WebHSBookingStatus.Completed => "Đã hoàn thành",
+            WebHSBookingStatus.Cancelled => "Đã hủy",
+            _ => "Không xác định"
+        };
+    }
+}
+
+

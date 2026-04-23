@@ -1,0 +1,197 @@
+@model WebHS.ViewModels.RoleClaimsViewModel
+@{
+    ViewData["Title"] = $"Claims của vai trò {Model.RoleName}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+    // Helper methods để hiển thị tiếng Việt
+    string GetClaimTypeDisplayName(string claimType)
+    {
+        var claimTypeNames = new Dictionary<string, string>
+        {
+            // Claims hệ thống chuẩn
+            { "email", "Email" },
+            { "name", "Tên" },
+            { "given_name", "Tên riêng" },
+            { "family_name", "Họ" },
+            { "birthdate", "Ngày sinh" },
+            { "address", "Địa chỉ" },
+            { "phone_number", "Số điện thoại" },
+            { "language", "Ngôn ngữ" },
+            { "role", "Vai trò" },
+            
+            // Claims xác thực
+            { "phone_verified", "Xác thực SĐT" },
+            { "email_verified", "Xác thực Email" },
+            { "identity_verified", "Xác thực danh tính" },
+            
+            // Claims cấp độ
+            { "account_level", "Cấp độ tài khoản" },
+            { "membership_tier", "Hạng thành viên" },
+            
+            // Claims quyền hạn
+            { "super_host", "Siêu chủ nhà" },
+            { "can_view_reports", "Quyền xem báo cáo" },
+            { "can_moderate_reviews", "Quyền kiểm duyệt đánh giá" },
+            { "can_manage_promotions", "Quyền quản lý khuyến mãi" },
+            { "can_manage_users", "Quyền quản lý người dùng" },
+            { "can_manage_properties", "Quyền quản lý bất động sản" },
+            { "can_approve_listings", "Quyền duyệt tin đăng" },
+            { "can_access_api_keys", "Quyền truy cập API Keys" },
+            { "can_manage_roles", "Quyền quản lý vai trò" }
+        };
+        
+        return claimTypeNames.GetValueOrDefault(claimType, claimType);
+    }
+    
+    string GetClaimValueDisplayName(string claimType, string claimValue)
+    {
+        if (string.IsNullOrEmpty(claimValue))
+            return claimValue ?? "";
+
+        // Xử lý các giá trị boolean
+        if (claimValue.ToLower() == "true")
+            return "Có";
+        if (claimValue.ToLower() == "false")
+            return "Không";
+
+        // Xử lý các giá trị cụ thể theo loại claim
+        switch (claimType)
+        {
+            case "account_level":
+                return claimValue.ToLower() switch
+                {
+                    "basic" => "Cơ bản",
+                    "premium" => "Cao cấp",
+                    "vip" => "VIP",
+                    _ => claimValue
+                };
+
+            case "membership_tier":
+                return claimValue.ToLower() switch
+                {
+                    "bronze" => "Đồng",
+                    "silver" => "Bạc",
+                    "gold" => "Vàng",
+                    "platinum" => "Bạch kim",
+                    _ => claimValue
+                };
+
+            case "language":
+                return claimValue.ToLower() switch
+                {
+                    "vi" => "Tiếng Việt",
+                    "en" => "Tiếng Anh",
+                    "fr" => "Tiếng Pháp",
+                    "de" => "Tiếng Đức",
+                    "ja" => "Tiếng Nhật",
+                    "ko" => "Tiếng Hàn",
+                    "zh" => "Tiếng Trung",
+                    _ => claimValue
+                };
+
+            default:
+                return claimValue;
+        }
+    }
+}
+
+<div class="container my-5">
+    <h1 class="mb-4">@ViewData["Title"]</h1>
+    
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Quay lại
+        </a>
+        <a asp-action="AddRoleClaim" asp-route-roleId="@Model.RoleId" asp-route-roleName="@Model.RoleName" class="btn btn-success">
+            <i class="bi bi-plus"></i> Thêm Claim mới
+        </a>
+    </div>
+    
+    @if (!Model.Claims.Any())
+    {
+        <div class="alert alert-info">
+            Vai trò này không có claims nào.
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Loại Claim</th>
+                                <th>Giá trị</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var claim in Model.Claims)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-success me-2">@GetClaimTypeDisplayName(claim.ClaimType)</span>
+                                        <small class="text-muted">(@claim.ClaimType)</small>
+                                    </td>
+                                    <td>
+                                        <strong>@GetClaimValueDisplayName(claim.ClaimType, claim.ClaimValue)</strong>
+                                        @if (GetClaimValueDisplayName(claim.ClaimType, claim.ClaimValue) != claim.ClaimValue)
+                                        {
+                                            <br><small class="text-muted">(@claim.ClaimValue)</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form asp-action="DeleteRoleClaim" method="post" class="d-inline">
+                                            <input type="hidden" name="roleId" value="@Model.RoleId" />
+                                            <input type="hidden" name="claimType" value="@claim.ClaimType" />
+                                            <input type="hidden" name="claimValue" value="@claim.ClaimValue" />
+                                            <button type="submit" class="btn btn-sm btn-danger" 
+                                                    onclick="return confirm('Bạn có chắc chắn muốn xóa claim này?');">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Claims phân quyền phổ biến cho vai trò</h5>
+        </div>
+        <div class="card-body">
+            <p>Dưới đây là danh sách các claim phân quyền phổ biến cho vai trò:</p>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-danger">Quyền quản lý người dùng:</h6>
+                    <ul>
+                        <li><span class="badge bg-danger">Quyền quản lý người dùng</span> <code>can_manage_users</code> - true/false</li>
+                        <li><span class="badge bg-danger">Quyền quản lý vai trò</span> <code>can_manage_roles</code> - true/false</li>
+                        <li><span class="badge bg-danger">Quyền xem báo cáo</span> <code>can_view_reports</code> - true/false</li>
+                        <li><span class="badge bg-danger">Quyền truy cập API Keys</span> <code>can_access_api_keys</code> - true/false</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-warning">Quyền quản lý nội dung:</h6>
+                    <ul>
+                        <li><span class="badge bg-warning text-dark">Quyền quản lý bất động sản</span> <code>can_manage_properties</code> - true/false</li>
+                        <li><span class="badge bg-warning text-dark">Quyền duyệt tin đăng</span> <code>can_approve_listings</code> - true/false</li>
+                        <li><span class="badge bg-warning text-dark">Quyền kiểm duyệt đánh giá</span> <code>can_moderate_reviews</code> - true/false</li>
+                        <li><span class="badge bg-warning text-dark">Quyền quản lý khuyến mãi</span> <code>can_manage_promotions</code> - true/false</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="alert alert-info mt-3">
+                <strong><i class="bi bi-info-circle"></i> Lưu ý:</strong> 
+                Claims của vai trò sẽ tự động được áp dụng cho tất cả người dùng thuộc vai trò đó. 
+                Để cấp quyền riêng lẻ cho từng người dùng, hãy sử dụng phần "Claims của người dùng".
+            </div>
+        </div>
+    </div>
+</div>

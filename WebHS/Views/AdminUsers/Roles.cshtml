@@ -1,0 +1,64 @@
+@model List<WebHS.ViewModels.RoleViewModel>
+@{
+    ViewData["Title"] = "Quản lý vai trò";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>@ViewData["Title"]</h1>
+        <div>
+            <a asp-action="CreateRole" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Tạo vai trò mới
+            </a>
+            <a asp-area="" asp-controller="ClaimsManagement" asp-action="Index" class="btn btn-info">
+                <i class="bi bi-key"></i> Quản lý Claims
+            </a>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Tên vai trò</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in Model)
+                        {
+                            <tr>
+                                <td>@role.Name</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="RoleDetails" asp-route-id="@role.Id" class="btn btn-sm btn-info">
+                                            <i class="bi bi-info-circle"></i> Chi tiết
+                                        </a>
+                                        <a asp-action="EditRole" asp-route-id="@role.Id" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-pencil"></i> Sửa
+                                        </a>
+                                        <a asp-action="ManageUsersInRole" asp-route-roleId="@role.Id" class="btn btn-sm btn-warning">
+                                            <i class="bi bi-people"></i> Quản lý người dùng
+                                        </a>
+                                        <a asp-controller="ClaimsManagement" asp-action="RoleClaims" asp-route-roleName="@role.Name" class="btn btn-sm btn-secondary">
+                                            <i class="bi bi-key"></i> Claims
+                                        </a>
+                                        <form asp-action="DeleteRole" asp-route-id="@role.Id" method="post" class="d-inline"
+                                              onsubmit="return confirm('Bạn có chắc chắn muốn xóa vai trò này?');">
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                <i class="bi bi-trash"></i> Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

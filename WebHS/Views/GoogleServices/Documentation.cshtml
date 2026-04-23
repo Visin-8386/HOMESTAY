@@ -1,0 +1,496 @@
+@{
+    ViewData["Title"] = "Google Services Documentation";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="display-4 text-primary mb-4">
+                <i class="fab fa-google me-3"></i>Google Services Integration Guide
+            </h1>
+            <p class="lead">Complete documentation for all Google services integrated into the homestay website</p>
+        </div>
+    </div>
+
+    <!-- Table of Contents -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">📚 Table of Contents</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><a href="#google-oauth">1. Google OAuth 2.0</a></li>
+                                <li><a href="#google-analytics">2. Google Analytics</a></li>
+                                <li><a href="#google-recaptcha">3. Google reCAPTCHA</a></li>
+                                <li><a href="#google-tag-manager">4. Google Tag Manager</a></li>
+                                <li><a href="#google-adsense">5. Google AdSense</a></li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                <li><a href="#google-fonts">6. Google Fonts</a></li>
+                                <li><a href="#youtube-api">7. YouTube API</a></li>
+                                <li><a href="#google-structured-data">8. Google Structured Data</a></li>
+                                <li><a href="#google-search-console">9. Google Search Console</a></li>
+                                <li><a href="#configuration">10. Configuration Guide</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google OAuth 2.0 -->
+    <div class="row mb-5" id="google-oauth">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fab fa-google me-2"></i>1. Google OAuth 2.0
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Allows users to sign in with their Google accounts without creating separate passwords.</p>
+                    
+                    <h5>Features</h5>
+                    <ul>
+                        <li>One-click Google sign-in</li>
+                        <li>Secure authentication without storing passwords</li>
+                        <li>Access to basic profile information</li>
+                        <li>Integrated with existing user system</li>
+                    </ul>
+                    
+                    <h5>Implementation</h5>
+                    <pre><code>&lt;a href="/Account/ExternalLogin?provider=Google" class="btn btn-outline-danger"&gt;
+    &lt;i class="fab fa-google me-2"&gt;&lt;/i&gt;Sign in with Google
+&lt;/a&gt;</code></pre>
+                    
+                    <h5>Configuration</h5>
+                    <p>Configured in <code>appsettings.json</code>:</p>
+                    <pre><code>"Authentication": {
+  "Google": {
+    "ClientId": "your-google-client-id",
+    "ClientSecret": "your-google-client-secret"
+  }
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Analytics -->
+    <div class="row mb-5" id="google-analytics">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>2. Google Analytics
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Tracks website usage, user behavior, and conversion metrics.</p>
+                    
+                    <h5>Features</h5>
+                    <ul>
+                        <li>Page view tracking</li>
+                        <li>E-commerce tracking for bookings</li>
+                        <li>User engagement metrics</li>
+                        <li>Conversion tracking</li>
+                        <li>Error tracking</li>
+                        <li>Scroll depth analysis</li>
+                    </ul>
+                    
+                    <h5>Custom Events</h5>
+                    <pre><code>// Track homestay view
+gtag('event', 'homestay_view', {
+    homestay_id: 'HS001',
+    homestay_name: 'Beautiful Beach House',
+    city: 'Da Nang'
+});
+
+// Track booking completion
+gtag('event', 'purchase', {
+    transaction_id: 'B12345',
+    currency: 'VND',
+    value: 500000
+});</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google reCAPTCHA -->
+    <div class="row mb-5" id="google-recaptcha">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>3. Google reCAPTCHA
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Protects forms from spam and automated abuse while maintaining user experience.</p>
+                    
+                    <h5>Versions Available</h5>
+                    <ul>
+                        <li><strong>reCAPTCHA v2:</strong> "I'm not a robot" checkbox</li>
+                        <li><strong>reCAPTCHA v3:</strong> Invisible, score-based verification</li>
+                    </ul>
+                    
+                    <h5>Usage</h5>
+                    <p>Add to any form that needs protection:</p>
+                    <pre><code>&lt;form data-recaptcha="true"&gt;
+    &lt;!-- Form fields --&gt;
+    &lt;partial name="_ReCaptchaWidget" /&gt;
+    &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;</code></pre>
+                    
+                    <h5>Configuration</h5>
+                    <pre><code>"GoogleReCaptcha": {
+  "SiteKey": "your-site-key",
+  "SecretKey": "your-secret-key",
+  "Enabled": true,
+  "Version": "v2"
+}</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Tag Manager -->
+    <div class="row mb-5" id="google-tag-manager">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>4. Google Tag Manager
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Centralized tag management for analytics, marketing, and tracking tools.</p>
+                    
+                    <h5>Features</h5>
+                    <ul>
+                        <li>Enhanced data layer for tracking</li>
+                        <li>E-commerce event tracking</li>
+                        <li>Custom event management</li>
+                        <li>Integration with Google Analytics</li>
+                    </ul>
+                    
+                    <h5>Custom Events</h5>
+                    <pre><code>// Track booking start
+gtmTrack.bookingStart({
+    homestay_id: 'HS001',
+    total_amount: 500000,
+    nights: 2
+});
+
+// Track search
+gtmTrack.search('Da Nang', 'homestay', 15);</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google AdSense -->
+    <div class="row mb-5" id="google-adsense">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-ad me-2"></i>5. Google AdSense
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Website monetization through contextual advertisements.</p>
+                    
+                    <h5>Ad Types Supported</h5>
+                    <ul>
+                        <li>Responsive display ads</li>
+                        <li>In-article ads</li>
+                        <li>Auto ads (automatic placement)</li>
+                        <li>Search result ads</li>
+                    </ul>
+                    
+                    <h5>Implementation</h5>
+                    <pre><code>&lt;!-- Ad container --&gt;
+&lt;div id="banner-ad" class="adsense-container"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// Render responsive ad
+renderResponsiveAd('ad-slot-id', 'banner-ad');
+&lt;/script&gt;</code></pre>
+                    
+                    <div class="alert alert-info">
+                        <strong>Note:</strong> Requires Google AdSense approval before displaying real ads.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Fonts -->
+    <div class="row mb-5" id="google-fonts">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-font me-2"></i>6. Google Fonts
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Beautiful, fast-loading web fonts for improved typography.</p>
+                    
+                    <h5>Fonts Used</h5>
+                    <ul>
+                        <li><strong>Inter:</strong> Clean, readable font for body text</li>
+                        <li><strong>Poppins:</strong> Modern, friendly font for headings</li>
+                    </ul>
+                    
+                    <h5>Implementation</h5>
+                    <pre><code>&lt;link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"&gt;
+
+&lt;style&gt;
+body { font-family: 'Inter', sans-serif; }
+h1, h2, h3 { font-family: 'Poppins', sans-serif; }
+&lt;/style&gt;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube API -->
+    <div class="row mb-5" id="youtube-api">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="mb-0">
+                        <i class="fab fa-youtube me-2"></i>7. YouTube API
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Integration of travel videos and homestay promotional content.</p>
+                    
+                    <h5>Features</h5>
+                    <ul>
+                        <li>Travel video recommendations</li>
+                        <li>Playlist management</li>
+                        <li>Video embedding</li>
+                        <li>Demo fallback when API unavailable</li>
+                    </ul>
+                    
+                    <h5>Usage</h5>
+                    <pre><code>// Load travel videos
+fetch('/YouTube/GetTravelVideos?city=Da Nang')
+    .then(response => response.json())
+    .then(data => {
+        // Display videos
+    });</code></pre>
+                    
+                    <h5>Endpoints</h5>
+                    <ul>
+                        <li><code>GET /YouTube/GetTravelVideos</code> - Get travel videos by city</li>
+                        <li><code>GET /YouTube/GetPlaylistVideos</code> - Get videos from playlist</li>
+                        <li><code>GET /YouTube/Embed/{videoId}</code> - Get embeddable video HTML</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Structured Data -->
+    <div class="row mb-5" id="google-structured-data">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-code me-2"></i>8. Google Structured Data
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Purpose</h5>
+                    <p>Helps search engines understand content for better search results and rich snippets.</p>
+                    
+                    <h5>Schema Types Implemented</h5>
+                    <ul>
+                        <li><strong>LodgingBusiness:</strong> Homestay information</li>
+                        <li><strong>Organization:</strong> Company information</li>
+                        <li><strong>WebSite:</strong> Website search functionality</li>
+                        <li><strong>BreadcrumbList:</strong> Navigation breadcrumbs</li>
+                        <li><strong>Review:</strong> Customer reviews</li>
+                        <li><strong>FAQPage:</strong> Frequently asked questions</li>
+                    </ul>
+                    
+                    <h5>Usage</h5>
+                    <pre><code>// Add to view
+ViewData["StructuredDataType"] = "homestay";
+ViewData["StructuredData"] = homestayData;</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Guide -->
+    <div class="row mb-5" id="configuration">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-cog me-2"></i>10. Configuration Guide
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <h5>Step-by-Step Setup</h5>
+                    
+                    <div class="accordion" id="configAccordion">
+                        <!-- Google OAuth Setup -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="oauthHeading">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#oauthCollapse">
+                                    Google OAuth 2.0 Setup
+                                </button>
+                            </h2>
+                            <div id="oauthCollapse" class="accordion-collapse collapse show" data-bs-parent="#configAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                                        <li>Create a new project or select existing one</li>
+                                        <li>Enable Google+ API and Google OAuth2 API</li>
+                                        <li>Create OAuth 2.0 credentials</li>
+                                        <li>Add authorized redirect URIs:
+                                            <ul>
+                                                <li><code>https://your-domain.com/signin-google</code></li>
+                                                <li><code>https://localhost:7000/signin-google</code> (for development)</li>
+                                            </ul>
+                                        </li>
+                                        <li>Update <code>appsettings.json</code> with ClientId and ClientSecret</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Google Analytics Setup -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="analyticsHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#analyticsCollapse">
+                                    Google Analytics Setup
+                                </button>
+                            </h2>
+                            <div id="analyticsCollapse" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Visit <a href="https://analytics.google.com/" target="_blank">Google Analytics</a></li>
+                                        <li>Create a new GA4 property</li>
+                                        <li>Get your Measurement ID (G-XXXXXXXXXX)</li>
+                                        <li>Update <code>appsettings.json</code>:
+                                            <pre><code>"GoogleAnalytics": {
+  "TrackingId": "G-XXXXXXXXXX",
+  "Enabled": true
+}</code></pre>
+                                        </li>
+                                        <li>Enable Enhanced E-commerce in GA4</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- reCAPTCHA Setup -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="recaptchaHeading">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#recaptchaCollapse">
+                                    Google reCAPTCHA Setup
+                                </button>
+                            </h2>
+                            <div id="recaptchaCollapse" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                                <div class="accordion-body">
+                                    <ol>
+                                        <li>Go to <a href="https://www.google.com/recaptcha/admin" target="_blank">reCAPTCHA Admin Console</a></li>
+                                        <li>Create a new site</li>
+                                        <li>Choose reCAPTCHA type (v2 or v3)</li>
+                                        <li>Add your domain</li>
+                                        <li>Get Site Key and Secret Key</li>
+                                        <li>Update configuration:
+                                            <pre><code>"GoogleReCaptcha": {
+  "SiteKey": "6LeXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "SecretKey": "6LeXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  "Enabled": true,
+  "Version": "v2"
+}</code></pre>
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Development vs Production -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Development vs Production
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-success">✅ Development Mode</h5>
+                            <ul>
+                                <li>Mock functions for disabled services</li>
+                                <li>Console logging for debugging</li>
+                                <li>Placeholder ads and content</li>
+                                <li>Bypassed reCAPTCHA verification</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-primary">🚀 Production Mode</h5>
+                            <ul>
+                                <li>Real API calls and tracking</li>
+                                <li>Full security enforcement</li>
+                                <li>Live advertisements</li>
+                                <li>Complete analytics data</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testing Link -->
+    <div class="row">
+        <div class="col-12 text-center">
+            <a href="/GoogleServices/Test" class="btn btn-primary btn-lg">
+                <i class="fas fa-test-tube me-2"></i>Test All Google Services
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Track documentation page view
+        if (typeof gtmTrack !== 'undefined') {
+            gtmTrack.pageView({
+                page_title: 'Google Services Documentation',
+                page_type: 'documentation'
+            });
+        }
+    </script>
+}
+

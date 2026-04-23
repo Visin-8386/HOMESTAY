@@ -1,0 +1,18 @@
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@* Google Tag Manager (noscript) - Place immediately after opening <body> tag *@
+@{
+    var gtmContainerId = Configuration["GoogleTagManager:ContainerId"];
+    var gtmEnabled = Configuration.GetValue<bool>("GoogleTagManager:Enabled");
+}
+
+@if (gtmEnabled && !string.IsNullOrEmpty(gtmContainerId) && gtmContainerId != "GTM-XXXXXXX")
+{
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=@gtmContainerId"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
+}
+

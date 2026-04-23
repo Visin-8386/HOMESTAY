@@ -1,0 +1,1093 @@
+@using WebHSPromotionType = WebHS.Models.PromotionType
+@model WebHS.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<style>
+    /* ===== REGISTER PAGE STYLES ===== */
+    .auth-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .auth-page::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        animation: float 20s ease-in-out infinite;
+    }
+
+    .floating-shapes {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .floating-shape {
+        position: absolute;
+        opacity: 0.1;
+        animation: floatShape 15s linear infinite;
+    }
+
+    .floating-shape:nth-child(1) {
+        top: 15%;
+        left: 5%;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+        border-radius: 50%;
+        animation-delay: 0s;
+    }
+
+    .floating-shape:nth-child(2) {
+        top: 45%;
+        right: 10%;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+        border-radius: 20%;
+        animation-delay: 3s;
+    }
+
+    .floating-shape:nth-child(3) {
+        bottom: 25%;
+        left: 15%;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(45deg, #00cec9, #55efc4);
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        animation-delay: 6s;
+    }
+
+    .floating-shape:nth-child(4) {
+        top: 70%;
+        right: 25%;
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(45deg, #fd79a8, #fdcb6e);
+        border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+        animation-delay: 9s;
+    }
+
+    @@keyframes floatShape {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        25% { transform: translateY(-30px) rotate(90deg); }
+        50% { transform: translateY(-60px) rotate(180deg); }
+        75% { transform: translateY(-30px) rotate(270deg); }
+    }
+
+    .auth-container {
+        position: relative;
+        z-index: 10;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .auth-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 24px;
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.1),
+            0 8px 25px rgba(0, 0, 0, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        overflow: hidden;
+        position: relative;
+        animation: slideInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+
+    @@keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .auth-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #667eea, transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @@keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        animation: fadeInDown 1s 0.3s both;
+    }
+
+    @@keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .auth-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .auth-subtitle {
+        color: #6c757d;
+        font-size: 1.1rem;
+        font-weight: 400;
+        opacity: 0.8;
+    }
+
+    .auth-form {
+        animation: fadeInUp 1s 0.5s both;
+    }
+
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-floating-modern {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }    .form-floating-modern .form-control,
+    .form-floating-modern .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        padding: 1rem 1rem 1rem 3.5rem;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 2;
+        color: #333 !important;
+        font-weight: 500;
+    }
+
+    .form-floating-modern .form-select {
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 5 6 6 6-6'/%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        background-size: 16px 12px;
+        padding-right: 3rem;
+    }
+
+    .form-floating-modern .form-control::placeholder {
+        color: transparent;
+    }    /* Force text color in all states */
+    .form-floating-modern input,
+    .form-floating-modern select {
+        color: #333 !important;
+    }
+
+    .form-floating-modern input:focus,
+    .form-floating-modern select:focus,
+    .form-floating-modern input:active,
+    .form-floating-modern select:active {
+        color: #333 !important;
+        background-color: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    /* Override autofill styles */
+    .form-floating-modern input:-webkit-autofill,
+    .form-floating-modern input:-webkit-autofill:hover,
+    .form-floating-modern input:-webkit-autofill:focus,
+    .form-floating-modern input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.9) inset !important;
+        -webkit-text-fill-color: #333 !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
+        color: #333 !important;
+    }
+
+    /* Ensure text is always visible */
+    .form-floating-modern .form-control,
+    .form-floating-modern .form-select {
+        -webkit-text-fill-color: #333 !important;
+        text-fill-color: #333 !important;
+    }.form-floating-modern .form-control:focus,
+    .form-floating-modern .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        background: rgba(255, 255, 255, 0.95);
+        transform: translateY(-2px);
+        color: #333 !important;
+    }
+
+    .form-floating-modern .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-size: 1.1rem;
+        z-index: 5;
+        transition: all 0.3s ease;
+    }
+
+    .form-floating-modern .form-control:focus ~ .input-icon,
+    .form-floating-modern .form-select:focus ~ .input-icon {
+        color: #667eea;
+        transform: translateY(-50%) scale(1.1);
+    }    .form-floating-modern label {
+        position: absolute;
+        top: 1rem;
+        left: 3.5rem;
+        font-size: 1rem;
+        color: #6c757d;
+        pointer-events: none;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        background: transparent;
+        padding: 0 0.5rem;
+        z-index: 5;
+        white-space: nowrap;
+        font-weight: 500;
+    }    .form-floating-modern .form-control:focus ~ label,
+    .form-floating-modern .form-control:not(:placeholder-shown) ~ label,
+    .form-floating-modern .form-select:focus ~ label,
+    .form-floating-modern .form-select:not([value=""]) ~ label,
+    .form-floating-modern .form-select:valid ~ label,
+    .form-floating-modern.has-value label,
+    .form-floating-modern.focused label {
+        top: -0.5rem;
+        left: 3rem;
+        font-size: 0.85rem;
+        color: #667eea;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 8px;
+        z-index: 10;
+        font-weight: 600;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .form-row-modern {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }    @@media (max-width: 768px) {
+        .form-row-modern {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+    }
+
+    .btn-auth {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 16px;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-auth::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.6s;
+    }
+
+    .btn-auth:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-auth:hover::before {
+        left: 100%;
+    }
+
+    .btn-auth:active {
+        transform: translateY(-1px);
+    }
+
+    .btn-social {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-decoration: none;
+        color: #495057;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-social::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 100%;
+        transition: width 0.3s ease;
+        z-index: -1;
+    }
+
+    .btn-social.btn-google::before {
+        background: linear-gradient(135deg, #ea4335, #fbbc05);
+    }
+
+    .btn-social.btn-facebook::before {
+        background: linear-gradient(135deg, #1877f2, #42a5f5);
+    }
+
+    .btn-social:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        color: white;
+    }
+
+    .btn-social:hover::before {
+        width: 100%;
+    }    .checkbox-modern {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: #2c3e50;
+        font-weight: 500;
+        cursor: pointer;
+        padding: 0.75rem;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(102, 126, 234, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    .checkbox-modern:hover {
+        background: rgba(255, 255, 255, 0.9);
+        border-color: rgba(102, 126, 234, 0.3);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+
+    .checkbox-modern input[type="checkbox"] {
+        opacity: 0;
+        position: absolute;
+    }    .checkbox-modern .checkmark {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid #667eea;
+        border-radius: 6px;
+        margin-right: 0.75rem;
+        margin-top: 0.1rem;
+        position: relative;
+        transition: all 0.3s ease;
+        vertical-align: top;
+        flex-shrink: 0;
+        background: rgba(255, 255, 255, 0.9);
+    }
+
+    .checkbox-modern input[type="checkbox"]:checked ~ .checkmark {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-color: #667eea;
+    }
+
+    .checkbox-modern .checkmark::after {
+        content: '';
+        position: absolute;
+        left: 6px;
+        top: 2px;
+        width: 5px;
+        height: 10px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }    .checkbox-modern input[type="checkbox"]:checked ~ .checkmark::after {
+        opacity: 1;
+    }    .checkbox-text {
+        color: #2c3e50 !important;
+        font-weight: 600;
+        line-height: 1.6;
+        margin-left: 0.5rem;
+        font-size: 0.95rem;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }    .checkbox-text .link-gradient {
+        color: #2c3e50;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+        font-weight: 700;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid transparent;
+    }    .checkbox-text .link-gradient:hover {
+        text-decoration: none;
+        border-bottom: 1px solid #667eea;
+        transform: translateY(-1px);
+    }
+
+    .divider {
+        position: relative;
+        text-align: center;
+        margin: 2rem 0;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+    }
+
+    .divider span {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 0 1rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .link-gradient {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .link-gradient:hover {
+        transform: translateY(-1px);
+        text-decoration: underline;
+    }
+
+    /* Ripple Effect */
+    .ripple {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ripple::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .ripple:active::after {
+        width: 300px;
+        height: 300px;
+    }    /* Mobile Optimizations */
+    @@media (max-width: 768px) {
+        .auth-container {
+            padding: 1rem;
+        }
+        
+        .auth-card {
+            margin: 1rem;
+            border-radius: 20px;
+        }
+        
+        .auth-title {
+            font-size: 2rem;
+        }
+        
+        .btn-auth {
+            padding: 1rem 1.5rem;
+        }
+    }
+
+    /* Progress indicator */
+    .form-progress {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        padding: 0 1rem;
+    }
+
+    .progress-step {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6c757d;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.active {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    .progress-step.completed {
+        background: #28a745;
+        color: white;
+    }
+
+    .progress-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 100%;
+        top: 50%;
+        width: calc(100vw / 3 - 60px);
+        height: 2px;
+        background: #e9ecef;
+        transform: translateY(-50%);
+        transition: all 0.3s ease;
+    }
+
+    .progress-step.completed:not(:last-child)::after {
+        background: #28a745;
+    }    /* Dark mode support */
+    @@media (prefers-color-scheme: dark) {
+        .auth-card {
+            background: rgba(30, 30, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-floating-modern .form-control,
+        .form-floating-modern .form-select {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: white !important;
+        }
+        
+        .form-floating-modern label {
+            color: #adb5bd !important;
+        }
+        
+        .form-floating-modern .form-control:focus ~ label,
+        .form-floating-modern .form-control:not(:placeholder-shown) ~ label,
+        .form-floating-modern .form-select:focus ~ label,
+        .form-floating-modern .form-select:not([value=""]) ~ label,
+        .form-floating-modern .form-select:valid ~ label,
+        .form-floating-modern.has-value label,
+        .form-floating-modern.focused label {
+            color: #667eea !important;
+            background: rgba(30, 30, 30, 0.95) !important;
+        }
+        
+        .auth-subtitle {
+            color: #adb5bd;
+        }        .checkbox-modern {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #e9ecef !important;
+        }
+        
+        .checkbox-modern:hover {
+            background: rgba(255, 255, 255, 0.08) !important;
+            border-color: rgba(116, 185, 255, 0.3) !important;
+        }
+        
+        .checkbox-text {
+            color: #e9ecef !important;
+        }
+        
+        .checkbox-text .link-gradient {
+            color: #e9ecef;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .checkbox-modern .checkmark {
+            border-color: #74b9ff !important;
+            background: rgba(30, 30, 30, 0.8) !important;
+        }
+        }
+    }
+</style>
+
+<div class="auth-page">
+    <div class="floating-shapes">
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+        <div class="floating-shape"></div>
+    </div>
+    
+    <div class="auth-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="auth-card">
+                        <div class="p-5">
+                            <div class="auth-header">
+                                <h1 class="auth-title">Đăng ký tài khoản</h1>
+                                <p class="auth-subtitle">Tạo tài khoản để bắt đầu hành trình khám phá những điểm lưu trú tuyệt vời.</p>
+                            </div>
+
+                            @{
+                                ViewData["reCaptchaId"] = "register-recaptcha";
+                                ViewData["reCaptchaCallback"] = "onRegisterRecaptchaSuccess";
+                            }
+
+                            <form asp-action="Register" method="post" class="auth-form" role="form">
+                                <input type="hidden" name="RecaptchaAction" value="register" />
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3" role="alert"></div>
+                                  <div class="form-row-modern">
+                                    <div class="form-floating-modern">
+                                        <input asp-for="FirstName" class="form-control" placeholder=" " autocomplete="given-name">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <label asp-for="FirstName">Tên</label>
+                                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                    </div>
+                                    <div class="form-floating-modern">
+                                        <input asp-for="LastName" class="form-control" placeholder=" " autocomplete="family-name">
+                                        <i class="fas fa-user input-icon"></i>
+                                        <label asp-for="LastName">Họ</label>
+                                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-floating-modern">
+                                    <input asp-for="Email" class="form-control" placeholder=" " autocomplete="email">
+                                    <i class="fas fa-envelope input-icon"></i>
+                                    <label asp-for="Email">Email</label>
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-floating-modern">
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder=" " autocomplete="tel">
+                                    <i class="fas fa-phone input-icon"></i>
+                                    <label asp-for="PhoneNumber">Số điện thoại</label>
+                                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-floating-modern">
+                                    <input asp-for="Password" type="password" class="form-control" placeholder=" " autocomplete="new-password">
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <label asp-for="Password">Mật khẩu</label>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+
+                                <div class="form-floating-modern">
+                                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder=" " autocomplete="new-password">
+                                    <i class="fas fa-lock input-icon"></i>
+                                    <label asp-for="ConfirmPassword">Xác nhận mật khẩu</label>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div><div class="form-floating-modern">
+                                    <select asp-for="Role" class="form-select" id="roleSelect">
+                                        <option value="" disabled selected>Chọn loại tài khoản</option>
+                                        <option value="User">Khách hàng - Tìm kiếm và đặt phòng</option>
+                                        <option value="Host">Chủ nhà - Cho thuê homestay</option>
+                                    </select>
+                                    <i class="fas fa-user-tag input-icon"></i>
+                                    <label asp-for="Role">Loại tài khoản</label>
+                                    <span asp-validation-for="Role" class="text-danger small"></span>
+                                </div>                                <div class="mb-4">
+                                    <label class="checkbox-modern d-flex align-items-start">
+                                        <input type="checkbox" id="agreeTerms" required>
+                                        <span class="checkmark"></span>
+                                        <span class="checkbox-text">
+                                            Tôi đồng ý với <a href="#" class="link-gradient">Điều khoản sử dụng</a> và <a href="#" class="link-gradient">Chính sách bảo mật</a>
+                                        </span>
+                                    </label>
+                                </div><!-- Google reCAPTCHA -->
+                                <partial name="_ReCaptchaWidget" />
+
+                                <div class="d-grid mb-4">
+                                    <button type="submit" class="btn btn-auth ripple">
+                                        <i class="fas fa-user-plus me-2"></i>Đăng ký tài khoản
+                                    </button>
+                                </div>
+
+                                <div class="divider">
+                                    <span>hoặc đăng ký bằng</span>
+                                </div>
+
+                                <div class="row g-3 mb-4">
+                                    <div class="col-6">
+                                        <a href="/Account/ExternalLogin?provider=Google" class="btn btn-social btn-google w-100 ripple">
+                                            <i class="fab fa-google me-2"></i>Google
+                                        </a>
+                                    </div>
+                                    <div class="col-6">
+                                        <a href="/Account/ExternalLogin?provider=Facebook" class="btn btn-social btn-facebook w-100 ripple">
+                                            <i class="fab fa-facebook-f me-2"></i>Facebook
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="auth-footer">
+                                    <span class="text-muted">Đã có tài khoản? </span>
+                                    <a asp-action="Login" class="link-gradient">Đăng nhập ngay</a>
+                                </div>                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Enhanced register page interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate form elements on load
+            const formElements = document.querySelectorAll('.form-floating-modern');
+            formElements.forEach((element, index) => {
+                element.style.animationDelay = `${0.7 + (index * 0.1)}s`;
+                element.classList.add('fadeInUp');
+            });            // Enhanced focus effects
+            const inputs = document.querySelectorAll('.form-control, .form-select');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.classList.add('focused');
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.classList.remove('focused');
+                });
+
+                // Handle initial state for selects and inputs with values
+                if (input.tagName === 'SELECT') {
+                    if (input.value && input.value !== '') {
+                        input.parentElement.classList.add('has-value');
+                    }
+                    input.addEventListener('change', function() {
+                        if (this.value && this.value !== '') {
+                            this.parentElement.classList.add('has-value');
+                        } else {
+                            this.parentElement.classList.remove('has-value');
+                        }
+                    });
+                } else {
+                    // For input fields
+                    if (input.value && input.value !== '') {
+                        input.parentElement.classList.add('has-value');
+                    }
+                    input.addEventListener('input', function() {
+                        if (this.value && this.value !== '') {
+                            this.parentElement.classList.add('has-value');
+                        } else {
+                            this.parentElement.classList.remove('has-value');
+                        }
+                    });
+                }
+            });
+
+            // Password strength indicator
+            const passwordInput = document.querySelector('input[name="Password"]');
+            const confirmPasswordInput = document.querySelector('input[name="ConfirmPassword"]');
+            
+            if (passwordInput) {
+                passwordInput.addEventListener('input', function() {
+                    checkPasswordStrength(this.value);
+                    if (confirmPasswordInput.value) {
+                        checkPasswordMatch();
+                    }
+                });
+            }
+
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+            }
+
+            // Form submission with loading state
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-auth');
+            
+            form.addEventListener('submit', function() {
+                if (this.checkValidity()) {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo tài khoản...';
+                    submitBtn.disabled = true;
+                }
+            });
+
+            // Add pulse animation to social buttons
+            const socialBtns = document.querySelectorAll('.btn-social');
+            socialBtns.forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    this.style.animation = 'pulse 0.6s ease-in-out';
+                });
+                
+                btn.addEventListener('animationend', function() {
+                    this.style.animation = '';
+                });
+            });
+
+            // Role selection with visual feedback
+            const roleSelect = document.querySelector('select[name="Role"]');
+            if (roleSelect) {
+                roleSelect.addEventListener('change', function() {
+                    const icon = this.parentElement.querySelector('.input-icon');
+                    if (this.value === 'Host') {
+                        icon.className = 'fas fa-home input-icon';
+                        this.style.borderColor = '#28a745';
+                    } else {
+                        icon.className = 'fas fa-user-tag input-icon';
+                        this.style.borderColor = '#667eea';
+                    }
+                });
+            }
+
+            // Floating particles effect
+            createFloatingParticles();
+        });
+
+        // Password strength checker
+        function checkPasswordStrength(password) {
+            const strengthIndicator = getOrCreateStrengthIndicator();
+            let strength = 0;
+            let feedback = [];
+
+            if (password.length >= 8) strength++;
+            else feedback.push('Ít nhất 8 ký tự');
+
+            if (/[a-z]/.test(password)) strength++;
+            else feedback.push('Chữ thường');
+
+            if (/[A-Z]/.test(password)) strength++;
+            else feedback.push('Chữ hoa');
+
+            if (/[0-9]/.test(password)) strength++;
+            else feedback.push('Số');
+
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            else feedback.push('Ký tự đặc biệt');
+
+            updateStrengthIndicator(strengthIndicator, strength, feedback);
+        }
+
+        function getOrCreateStrengthIndicator() {
+            let indicator = document.querySelector('.password-strength');
+            if (!indicator) {
+                const passwordField = document.querySelector('input[name="Password"]').parentElement;
+                indicator = document.createElement('div');
+                indicator.className = 'password-strength mt-2';
+                passwordField.appendChild(indicator);
+            }
+            return indicator;
+        }
+
+        function updateStrengthIndicator(indicator, strength, feedback) {
+            const colors = ['#dc3545', '#fd7e14', '#ffc107', '#20c997', '#28a745'];
+            const texts = ['Rất yếu', 'Yếu', 'Trung bình', 'Mạnh', 'Rất mạnh'];
+            
+            indicator.innerHTML = `
+                <div style="height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                    <div style="height: 100%; width: ${strength * 20}%; background: ${colors[strength - 1] || colors[0]}; transition: all 0.3s ease;"></div>
+                </div>
+                <small style="color: ${colors[strength - 1] || colors[0]};">${texts[strength - 1] || texts[0]}</small>
+                ${feedback.length > 0 ? `<small class="text-muted d-block">Cần: ${feedback.join(', ')}</small>` : ''}
+            `;
+        }
+
+        function checkPasswordMatch() {
+            const password = document.querySelector('input[name="Password"]').value;
+            const confirmPassword = document.querySelector('input[name="ConfirmPassword"]').value;
+            const confirmField = document.querySelector('input[name="ConfirmPassword"]').parentElement;
+            
+            if (confirmPassword && password !== confirmPassword) {
+                confirmField.style.borderColor = '#dc3545';
+                if (!confirmField.querySelector('.password-match-error')) {
+                    const error = document.createElement('small');
+                    error.className = 'text-danger password-match-error';
+                    error.textContent = 'Mật khẩu không khớp';
+                    confirmField.appendChild(error);
+                }
+            } else {
+                confirmField.style.borderColor = '';
+                const error = confirmField.querySelector('.password-match-error');
+                if (error) error.remove();
+            }
+        }
+
+        // Create floating particles
+        function createFloatingParticles() {
+            const particlesContainer = document.querySelector('.floating-shapes');
+            
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const particle = document.createElement('div');
+                    particle.className = 'floating-particle';
+                    particle.style.cssText = `
+                        position: absolute;
+                        width: ${Math.random() * 6 + 3}px;
+                        height: ${Math.random() * 6 + 3}px;
+                        background: rgba(255, 255, 255, 0.2);
+                        border-radius: 50%;
+                        left: ${Math.random() * 100}%;
+                        top: ${Math.random() * 100}%;
+                        animation: float 5s ease-in-out infinite;
+                        animation-delay: ${Math.random() * 5}s;
+                    `;
+                    particlesContainer.appendChild(particle);
+                }, i * 150);
+            }
+        }
+
+        // reCAPTCHA callback for registration
+        function onRegisterRecaptchaSuccess(token) {
+            console.log('Registration reCAPTCHA verified:', token);
+            
+            // Track with Google Analytics
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'recaptcha_success', {
+                    event_category: 'Security',
+                    event_label: 'Registration Form'
+                });
+            }
+            
+            // Track with GTM
+            if (typeof gtmTrack !== 'undefined') {
+                gtmTrack.userEngagement('recaptcha_verified', 'Security', 'Registration Form', 1);
+            }
+        }
+        
+        // Form submission tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form[role="form"]');
+            if (form) {
+                form.addEventListener('submit', function() {
+                    // Track registration attempt
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'registration_attempt', {
+                            event_category: 'User Account',
+                            event_label: 'Registration Form'
+                        });
+                    }
+                    
+                    if (typeof gtmTrack !== 'undefined') {
+                        gtmTrack.formSubmit('registration_form', 'user_account');
+                    }
+                });
+            }
+        });
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @@keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
+            @@keyframes float {
+                0%, 100% { transform: translateY(0px); opacity: 0.2; }
+                50% { transform: translateY(-25px); opacity: 0.6; }
+            }            .focused .input-icon {
+                color: #667eea !important;
+                transform: translateY(-50%) scale(1.1) !important;
+            }
+            
+            .fadeInUp {
+                animation: fadeInUp 0.6s ease-out forwards;
+                opacity: 0;
+            }
+            
+            /* Fix for select dropdown z-index */
+            .form-floating-modern .form-select {
+                position: relative;
+                z-index: 3;
+            }
+            
+            .form-floating-modern .form-select option {
+                background: white;
+                color: #333;
+                padding: 0.5rem;
+            }
+            
+            /* Additional text visibility fixes */
+            .form-floating-modern input[type="text"],
+            .form-floating-modern input[type="email"],
+            .form-floating-modern input[type="tel"],
+            .form-floating-modern input[type="password"] {
+                color: #333 !important;
+                -webkit-text-fill-color: #333 !important;
+            }
+            
+            .form-floating-modern input[type="text"]:focus,
+            .form-floating-modern input[type="email"]:focus,
+            .form-floating-modern input[type="tel"]:focus,
+            .form-floating-modern input[type="password"]:focus {
+                color: #333 !important;
+                -webkit-text-fill-color: #333 !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+}
+
+

@@ -1,0 +1,706 @@
+@* 
+    Booking Address Input Component
+    Supports customer delivery/pickup address input with smart geocoding
+*@
+
+<div class="booking-address-section">
+    <div class="mb-4">
+        <h5 class="text-primary border-bottom pb-2">
+            <i class="fas fa-map-marker-alt me-2"></i>Địa chỉ giao dịch
+        </h5>
+        <p class="text-muted small">
+            Nhập địa chỉ để chúng tôi có thể hỗ trợ pickup/delivery (tùy chọn)
+        </p>
+    </div>
+
+    <!-- Quick Address Selection -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Chọn nhanh địa chỉ phổ biến</label>
+        <div class="row g-2" id="quickAddressButtons">
+            <div class="col-sm-6 col-md-4">
+                <button type="button" class="btn btn-outline-info btn-sm w-100" 
+                        onclick="fillQuickAddress('Phạm Ngũ Lão, Quận 1, TP.HCM')">
+                    📍 Phạm Ngũ Lão, Q1
+                </button>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <button type="button" class="btn btn-outline-info btn-sm w-100" 
+                        onclick="fillQuickAddress('Hàng Bạc, Hoàn Kiếm, Hà Nội')">
+                    📍 Hàng Bạc, HN
+                </button>
+            </div>
+            <div class="col-sm-6 col-md-4">
+                <button type="button" class="btn btn-outline-info btn-sm w-100" 
+                        onclick="fillQuickAddress('Trần Phú, Nha Trang, Khánh Hòa')">
+                    📍 Trần Phú, Nha Trang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Address Input Fields -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Số nhà/Tòa nhà</label>
+                <input type="text" id="bookingHouseNumber" class="form-control" 
+                       placeholder="123, 45A, Tòa B..." 
+                       title="Nhập số nhà, tòa nhà">
+                <small class="form-text text-muted">VD: 123, 45A, Tòa B</small>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="form-group mb-3">
+                <label class="form-label">Tên đường/Khu vực <span class="text-danger">*</span></label>
+                <input type="text" id="bookingStreetName" class="form-control" 
+                       placeholder="Tên đường, phố, khu vực..."
+                       title="Nhập tên đường, phố hoặc khu vực nổi tiếng"
+                       required>
+                <small class="form-text text-muted">VD: Nguyễn Huệ, Lê Lợi, hoặc khu vực như "Phố cổ Hội An"</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Phường/Xã</label>
+                <input type="text" id="bookingWard" class="form-control" 
+                       placeholder="Phường/Xã..."
+                       title="Nhập tên phường, xã">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Quận/Huyện</label>
+                <input type="text" id="bookingDistrict" class="form-control" 
+                       placeholder="Quận/Huyện..."
+                       title="Nhập tên quận, huyện">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group mb-3">
+                <label class="form-label">Tỉnh/Thành phố</label>
+                <input type="text" id="bookingCity" class="form-control" 
+                       placeholder="Tỉnh/Thành phố..."
+                       title="Nhập tên tỉnh, thành phố">
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Controls -->
+    <div class="form-group mb-3">
+        <label class="form-label">📍 Xác định vị trí chính xác</label>
+        <div class="input-group mb-2">
+            <input type="text" id="fullAddressSearch" class="form-control" 
+                   placeholder="Hoặc nhập địa chỉ đầy đủ để tìm kiếm nhanh..."
+                   title="Nhập địa chỉ đầy đủ để tìm kiếm trên bản đồ">
+            <button type="button" class="btn btn-primary" id="searchOnMapBtn">
+                <i class="fas fa-search me-1"></i>Tìm trên bản đồ
+            </button>
+        </div>
+        <div class="mb-2">
+            <button type="button" class="btn btn-outline-warning w-100" id="clearAddressBtn">
+                <i class="fas fa-trash me-1"></i>Xóa địa chỉ
+            </button>
+        </div>
+    </div>
+
+    <!-- Address Status Display -->
+    <div id="addressStatus" class="mb-3" style="display: none;">
+        <!-- Dynamic status messages -->
+    </div>
+
+    <!-- Interactive Map -->
+    <div class="form-group mb-3">
+        <div class="map-container">
+            <div id="bookingMap" style="height: 300px; width: 100%; border-radius: 8px;"></div>
+        </div>
+        <small class="form-text text-muted mt-2">
+            💡 <strong>Cách sử dụng bản đồ:</strong><br>
+            • <strong>Click:</strong> Click vào vị trí trên bản đồ để đặt marker<br>
+            • <strong>Kéo marker:</strong> Kéo thả marker để điều chỉnh vị trí<br>
+            • <strong>Zoom:</strong> Sử dụng scroll hoặc nút +/- để zoom
+        </small>
+    </div>
+
+    <!-- Coordinates Display -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Vĩ độ (Latitude)</label>
+                <input type="number" id="bookingLatitude" class="form-control" 
+                       placeholder="0.000000" step="any" readonly>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group mb-3">
+                <label class="form-label">Kinh độ (Longitude)</label>
+                <input type="number" id="bookingLongitude" class="form-control" 
+                       placeholder="0.000000" step="any" readonly>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Address Summary -->
+    <div id="finalAddressSummary" class="alert alert-info" style="display: none;">
+        <h6><i class="fas fa-map-marker-alt me-2"></i>Địa chỉ đã chọn:</h6>
+        <p id="finalAddressText" class="mb-0"></p>
+        <small class="text-muted">
+            Tọa độ: <span id="finalCoordinatesText">Chưa xác định</span>
+        </small>
+    </div>
+</div>
+
+<!-- Load required CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+.booking-address-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.map-container {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#bookingMap {
+    height: 300px !important;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.btn-group .btn {
+    flex: 1;
+}
+
+#addressStatus {
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 4px solid;
+}
+
+#addressStatus.loading {
+    background-color: #e3f2fd;
+    border-left-color: #2196f3;
+    color: #1976d2;
+}
+
+#addressStatus.success {
+    background-color: #e8f5e8;
+    border-left-color: #4caf50;
+    color: #2e7d32;
+}
+
+#addressStatus.error {
+    background-color: #ffebee;
+    border-left-color: #f44336;
+    color: #c62828;
+}
+
+#addressStatus.warning {
+    background-color: #fff3e0;
+    border-left-color: #ff9800;
+    color: #f57c00;
+}
+
+.quick-address-btn {
+    transition: all 0.2s ease;
+}
+
+.quick-address-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+
+<script>
+class BookingAddressManager {
+    constructor() {
+        this.map = null;
+        this.marker = null;
+        this.apiBase = window.location.origin;
+        this.lastRequestTime = 0;
+        this.minRequestInterval = 1000; // Rate limiting
+        
+        this.initializeMap();
+        this.bindEvents();
+    }
+
+    initializeMap() {
+        // Initialize map centered on Vietnam
+        this.map = L.map('bookingMap').setView([16.0583, 108.2772], 6);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(this.map);
+
+        // Map click handler
+        this.map.on('click', (e) => {
+            this.onMapClick(e.latlng.lat, e.latlng.lng);
+        });
+    }
+
+    bindEvents() {
+        // Search button
+        document.getElementById('searchOnMapBtn').addEventListener('click', () => {
+            this.searchAddressOnMap();
+        });
+
+        // Clear address button
+        document.getElementById('clearAddressBtn').addEventListener('click', () => {
+            this.clearAddress();
+        });
+
+        // Auto-geocoding on address fields change
+        ['bookingStreetName', 'bookingWard', 'bookingDistrict', 'bookingCity'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('blur', () => {
+                    this.debounceGeocode();
+                });
+            }
+        });
+
+        // Full address search on Enter
+        document.getElementById('fullAddressSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.searchAddressOnMap();
+            }
+        });
+    }
+
+    debounceGeocode() {
+        clearTimeout(this.geocodeTimeout);
+        this.geocodeTimeout = setTimeout(() => {
+            this.autoGeocodeFromFields();
+        }, 1000);
+    }
+
+    async searchAddressOnMap() {
+        const fullAddress = document.getElementById('fullAddressSearch').value.trim();
+        if (!fullAddress) {
+            this.showStatus('Vui lòng nhập địa chỉ để tìm kiếm', 'warning');
+            return;
+        }
+
+        this.showStatus('🔍 Đang tìm kiếm địa chỉ...', 'loading');
+
+        try {
+            // Use smart geocoding with fallback
+            const result = await this.smartGeocodingWithFallback(fullAddress);
+            
+            if (result.success && result.latitude && result.longitude) {
+                this.setMapLocation(result.latitude, result.longitude);
+                this.fillAddressFromResult(result);
+                
+                // Show different messages based on fallback level
+                if (result.fallbackLevel === 0) {
+                    this.showStatus(`✅ Đã tìm thấy địa chỉ chính xác: ${result.displayName || fullAddress}`, 'success');
+                } else {
+                    this.showStatus(
+                        `⚠️ Tìm thấy khu vực gần nhất: ${result.fallbackType || 'địa chỉ tương tự'}<br>` +
+                        `📍 Địa chỉ: ${result.searchedAddress || result.displayName}<br>` +
+                        `💡 Vui lòng kiểm tra và điều chỉnh vị trí trên bản đồ`,
+                        'warning'
+                    );
+                }
+            } else {
+                this.showStatus(
+                    '❌ Không tìm thấy địa chỉ nào.<br>' +
+                    '💡 Vui lòng thử:<br>' +
+                    '• Nhập ít chi tiết hơn (chỉ quận/huyện và tỉnh/thành)<br>' +
+                    '• Kiểm tra chính tả<br>' +
+                    '• Click trực tiếp trên bản đồ',
+                    'error'
+                );
+            }
+        } catch (error) {
+            console.error('Search error:', error);
+            this.showStatus('❌ Lỗi tìm kiếm. Vui lòng thử lại hoặc click trên bản đồ.', 'error');
+        }
+    }
+
+    // Smart geocoding with progressive fallback
+    async smartGeocodingWithFallback(fullAddress) {
+        console.log('🎯 Starting smart geocoding with fallback for:', fullAddress);
+        
+        // Try exact address first
+        let result = await this.enhancedGeocode(fullAddress);
+        if (result.success && result.latitude && result.longitude) {
+            console.log('✅ Found exact address match');
+            return { ...result, fallbackLevel: 0, searchedAddress: fullAddress };
+        }
+
+        // Parse address components for fallback
+        const addressComponents = this.parseVietnameseAddress(fullAddress);
+        console.log('📝 Parsed address components:', addressComponents);
+
+        // Generate fallback queries
+        const fallbackQueries = this.generateFallbackQueries(addressComponents);
+        console.log('🔄 Generated fallback queries:', fallbackQueries);
+
+        for (let i = 0; i < fallbackQueries.length; i++) {
+            const query = fallbackQueries[i];
+            console.log(`🔍 Fallback level ${i + 1}: trying "${query}"`);
+            
+            result = await this.enhancedGeocode(query);
+            if (result.success && result.latitude && result.longitude) {
+                console.log(`✅ Found match at fallback level ${i + 1}`);
+                return { 
+                    ...result, 
+                    fallbackLevel: i + 1, 
+                    searchedAddress: query,
+                    originalAddress: fullAddress,
+                    fallbackType: this.getFallbackType(i + 1)
+                };
+            }
+            
+            // Wait between requests to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        console.log('❌ No matches found even with fallback');
+        return { success: false };
+    }
+
+    parseVietnameseAddress(address) {
+        // Clean and normalize address
+        const cleanAddress = address.trim().replace(/\s+/g, ' ');
+        const parts = cleanAddress.split(',').map(p => p.trim()).filter(p => p);
+        
+        const addressPattern = {
+            houseNumber: '',
+            streetName: '',
+            ward: '',
+            district: '',
+            city: '',
+            province: ''
+        };
+
+        if (parts.length >= 1) {
+            // First part usually contains house number and street
+            const firstPart = parts[0];
+            const houseNumberMatch = firstPart.match(/^(\d+[A-Za-z]?(?:\/\d+)?)\s+(.+)$/);
+            
+            if (houseNumberMatch) {
+                addressPattern.houseNumber = houseNumberMatch[1];
+                addressPattern.streetName = houseNumberMatch[2];
+            } else {
+                addressPattern.streetName = firstPart;
+            }
+        }
+
+        if (parts.length >= 2) addressPattern.ward = parts[1];
+        if (parts.length >= 3) addressPattern.district = parts[2];
+        if (parts.length >= 4) addressPattern.city = parts[3];
+        if (parts.length >= 5) addressPattern.province = parts[4];
+
+        return addressPattern;
+    }
+
+    generateFallbackQueries(components) {
+        const queries = [];
+        const { houseNumber, streetName, ward, district, city, province } = components;
+
+        // Level 1: Street + Ward + District + City
+        if (streetName && ward && district && city) {
+            queries.push(`${streetName}, ${ward}, ${district}, ${city}`);
+        }
+
+        // Level 2: Street + District + City  
+        if (streetName && district && city) {
+            queries.push(`${streetName}, ${district}, ${city}`);
+        }
+
+        // Level 3: Ward + District + City
+        if (ward && district && city) {
+            queries.push(`${ward}, ${district}, ${city}`);
+        }
+
+        // Level 4: District + City
+        if (district && city) {
+            queries.push(`${district}, ${city}`);
+        }
+
+        // Level 5: City only
+        if (city) {
+            queries.push(city);
+        }
+
+        // Level 6: Province (if different from city)
+        if (province && province !== city) {
+            queries.push(province);
+        }
+
+        return queries.filter((query, index, self) => self.indexOf(query) === index); // Remove duplicates
+    }
+
+    getFallbackType(level) {
+        const types = {
+            1: 'Không có số nhà',
+            2: 'Chỉ đường và quận/huyện', 
+            3: 'Chỉ phường và quận/huyện',
+            4: 'Chỉ quận/huyện và tỉnh/thành',
+            5: 'Chỉ tỉnh/thành phố',
+            6: 'Khu vực tỉnh'
+        };
+        return types[level] || 'Tìm kiếm tổng quát';
+    }
+
+    async enhancedGeocode(address) {
+        try {
+            const response = await this.makeAPIRequest('/api/enhancedgeocoding/coordinates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ address })
+            });
+
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.error('Enhanced geocoding failed:', error);
+        }
+        return { success: false };
+    }
+
+    async autoGeocodeFromFields() {
+        const address = this.buildFullAddress();
+        if (!address) return;
+
+        try {
+            // Use smart geocoding for auto-geocoding too
+            const result = await this.smartGeocodingWithFallback(address);
+            if (result.success && result.latitude && result.longitude) {
+                this.setMapLocation(result.latitude, result.longitude);
+                if (result.fallbackLevel === 0) {
+                    this.showStatus('✅ Đã tự động xác định vị trí chính xác', 'success');
+                } else {
+                    this.showStatus(`🔍 Tự động tìm thấy khu vực: ${result.fallbackType}`, 'info');
+                }
+            }
+        } catch (error) {
+            console.error('Auto-geocoding failed:', error);
+        }
+    }
+
+    buildFullAddress() {
+        const parts = [];
+        const houseNumber = document.getElementById('bookingHouseNumber').value.trim();
+        const streetName = document.getElementById('bookingStreetName').value.trim();
+        const ward = document.getElementById('bookingWard').value.trim();
+        const district = document.getElementById('bookingDistrict').value.trim();
+        const city = document.getElementById('bookingCity').value.trim();
+
+        if (houseNumber && streetName) {
+            parts.push(`${houseNumber} ${streetName}`);
+        } else if (streetName) {
+            parts.push(streetName);
+        }
+
+        if (ward) parts.push(ward);
+        if (district) parts.push(district);
+        if (city) parts.push(city);
+
+        return parts.join(', ');
+    }
+
+    async onMapClick(lat, lng) {
+        this.setMapLocation(lat, lng);
+        this.showStatus('🔍 Đang xác định địa chỉ từ vị trí...', 'loading');
+
+        try {
+            const result = await this.reverseGeocode(lat, lng);
+            if (result.success && result.address) {
+                this.fillAddressFromResult(result);
+                this.showStatus('✅ Đã xác định địa chỉ từ bản đồ', 'success');
+            } else {
+                this.showStatus('⚠️ Đã đặt vị trí nhưng không thể xác định địa chỉ chính xác', 'warning');
+            }
+        } catch (error) {
+            console.error('Reverse geocoding failed:', error);
+            this.showStatus('⚠️ Đã đặt vị trí. Vui lòng nhập địa chỉ thủ công.', 'warning');
+        }
+    }
+
+    async reverseGeocode(lat, lng) {
+        try {
+            const response = await this.makeAPIRequest('/api/enhancedgeocoding/address', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ latitude: lat, longitude: lng })
+            });
+
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.error('Reverse geocoding failed:', error);
+        }
+        return { success: false };
+    }
+
+    setMapLocation(lat, lng) {
+        // Remove existing marker
+        if (this.marker) {
+            this.map.removeLayer(this.marker);
+        }
+
+        // Add new marker
+        this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
+        
+        // Handle marker drag
+        this.marker.on('dragend', (e) => {
+            const newPos = e.target.getLatLng();
+            this.onMapClick(newPos.lat, newPos.lng);
+        });
+
+        // Center map and zoom
+        this.map.setView([lat, lng], 15);
+
+        // Update coordinate fields
+        document.getElementById('bookingLatitude').value = lat.toFixed(6);
+        document.getElementById('bookingLongitude').value = lng.toFixed(6);
+
+        // Update summary
+        this.updateAddressSummary();
+    }
+
+    fillAddressFromResult(result) {
+        if (result.components) {
+            const components = result.components;
+            
+            document.getElementById('bookingHouseNumber').value = components.houseNumber || '';
+            document.getElementById('bookingStreetName').value = components.streetName || components.road || '';
+            document.getElementById('bookingWard').value = components.ward || components.suburb || '';
+            document.getElementById('bookingDistrict').value = components.district || components.county || '';
+            document.getElementById('bookingCity').value = components.city || components.state || '';
+        } else if (result.displayName) {
+            // Parse display name
+            const parts = result.displayName.split(',').map(p => p.trim());
+            if (parts.length > 0) document.getElementById('bookingStreetName').value = parts[0];
+            if (parts.length > 1) document.getElementById('bookingWard').value = parts[1];
+            if (parts.length > 2) document.getElementById('bookingDistrict').value = parts[2];
+            if (parts.length > 3) document.getElementById('bookingCity').value = parts[3];
+        }
+
+        this.updateAddressSummary();
+    }
+
+    clearAddress() {
+        // Clear all form fields
+        ['bookingHouseNumber', 'bookingStreetName', 'bookingWard', 'bookingDistrict', 'bookingCity', 'fullAddressSearch'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+
+        // Clear coordinates
+        document.getElementById('bookingLatitude').value = '';
+        document.getElementById('bookingLongitude').value = '';
+
+        // Remove marker
+        if (this.marker) {
+            this.map.removeLayer(this.marker);
+            this.marker = null;
+        }
+
+        // Reset map view
+        this.map.setView([16.0583, 108.2772], 6);
+
+        // Hide status and summary
+        this.hideStatus();
+        this.hideAddressSummary();
+
+        this.showStatus('🗑️ Đã xóa địa chỉ', 'success');
+        setTimeout(() => this.hideStatus(), 2000);
+    }
+
+    updateAddressSummary() {
+        const address = this.buildFullAddress();
+        const lat = document.getElementById('bookingLatitude').value;
+        const lng = document.getElementById('bookingLongitude').value;
+
+        if (address || (lat && lng)) {
+            document.getElementById('finalAddressText').textContent = address || 'Địa chỉ chưa hoàn chỉnh';
+            document.getElementById('finalCoordinatesText').textContent = 
+                (lat && lng) ? `${lat}, ${lng}` : 'Chưa xác định';
+            
+            document.getElementById('finalAddressSummary').style.display = 'block';
+        } else {
+            this.hideAddressSummary();
+        }
+    }
+
+    hideAddressSummary() {
+        document.getElementById('finalAddressSummary').style.display = 'none';
+    }
+
+    showStatus(message, type = 'info') {
+        const statusEl = document.getElementById('addressStatus');
+        statusEl.innerHTML = message;
+        statusEl.className = type;
+        statusEl.style.display = 'block';
+    }
+
+    hideStatus() {
+        document.getElementById('addressStatus').style.display = 'none';
+    }
+
+    async makeAPIRequest(url, options = {}) {
+        // Rate limiting
+        const now = Date.now();
+        if (now - this.lastRequestTime < this.minRequestInterval) {
+            const waitTime = this.minRequestInterval - (now - this.lastRequestTime);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+        this.lastRequestTime = Date.now();
+
+        return await fetch(this.apiBase + url, options);
+    }
+
+    // Get final address data for form submission
+    getAddressData() {
+        return {
+            houseNumber: document.getElementById('bookingHouseNumber').value.trim(),
+            streetName: document.getElementById('bookingStreetName').value.trim(),
+            ward: document.getElementById('bookingWard').value.trim(),
+            district: document.getElementById('bookingDistrict').value.trim(),
+            city: document.getElementById('bookingCity').value.trim(),
+            fullAddress: this.buildFullAddress(),
+            latitude: parseFloat(document.getElementById('bookingLatitude').value) || null,
+            longitude: parseFloat(document.getElementById('bookingLongitude').value) || null
+        };
+    }
+}
+
+// Quick address fill function
+function fillQuickAddress(address) {
+    document.getElementById('fullAddressSearch').value = address;
+    bookingAddressManager.searchAddressOnMap();
+}
+
+// Initialize when page loads
+let bookingAddressManager;
+document.addEventListener('DOMContentLoaded', function() {
+    bookingAddressManager = new BookingAddressManager();
+    console.log('📍 Booking Address Manager initialized');
+});
+
+// Export for use in other scripts
+window.getBookingAddressData = function() {
+    return bookingAddressManager ? bookingAddressManager.getAddressData() : null;
+};
+</script>
+

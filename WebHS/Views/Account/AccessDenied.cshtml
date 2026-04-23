@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "Không có quyền truy cập";
+    Layout = "~/Views/Shared/_Layout_New.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-ban text-danger" style="font-size: 4rem;"></i>
+                    </div>
+                    
+                    <h1 class="display-4 text-danger mb-3">403</h1>
+                    <h2 class="h4 mb-4">Không có quyền truy cập</h2>
+                    
+                    <div class="alert alert-warning" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Xin lỗi!</strong> Bạn không có quyền truy cập vào trang này.
+                    </div>
+                    
+                    <p class="text-muted mb-4">
+                        Trang bạn đang cố gắng truy cập yêu cầu quyền đặc biệt mà tài khoản của bạn không có.
+                        Vui lòng liên hệ với quản trị viên nếu bạn cho rằng đây là lỗi.
+                    </p>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg me-md-2">
+                            <i class="fas fa-home me-2"></i>
+                            Về trang chủ
+                        </a>
+                        
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a href="@Url.Action("Profile", "Account")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-user me-2"></i>
+                                Trang cá nhân
+                            </a>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account")" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>
+                                Đăng nhập
+                            </a>
+                        }
+                    </div>
+                    
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="mt-4">
+                            <small class="text-muted">
+                                Bạn đang đăng nhập với tài khoản: <strong>@User.Identity.Name</strong>
+                                <br>
+                                Vai trò hiện tại: 
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <span class="badge bg-danger">Admin</span>
+                                }
+                                else if (User.IsInRole("Host"))
+                                {
+                                    <span class="badge bg-warning">Host</span>
+                                }
+                                else if (User.IsInRole("User"))
+                                {
+                                    <span class="badge bg-info">User</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Không xác định</span>
+                                }
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Thông tin liên hệ -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-info-circle text-info me-2"></i>
+                        Cần hỗ trợ?
+                    </h5>
+                    <p class="card-text">
+                        Nếu bạn cho rằng bạn nên có quyền truy cập vào trang này, vui lòng liên hệ với chúng tôi:
+                    </p>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope text-primary me-2"></i> Email: admin@domdomdream.com</li>
+                        <li><i class="fas fa-phone text-success me-2"></i> Hotline: 1900-xxxx</li>
+                        <li><i class="fas fa-clock text-warning me-2"></i> Thời gian hỗ trợ: 8:00 - 22:00 hàng ngày</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        border: none;
+        border-radius: 15px;
+    }
+    
+    .btn-lg {
+        padding: 12px 30px;
+        font-weight: 500;
+    }
+    
+    .badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+    
+    .alert {
+        border-radius: 10px;
+    }
+    
+    .fas {
+        animation: pulse 2s infinite;
+    }
+    
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>

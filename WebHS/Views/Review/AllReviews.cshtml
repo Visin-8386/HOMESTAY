@@ -1,0 +1,1197 @@
+@model WebHS.ViewModels.ReviewListViewModel
+@{
+    ViewData["Title"] = "Tất Cả Đánh Giá";
+    Layout = "_Layout_New";
+}
+
+<style>
+    /* ===== ALL REVIEWS PAGE STYLES ===== */
+    .reviews-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        position: relative;
+        overflow: hidden;
+        padding: 4rem 0 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .reviews-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="reviewsPattern" width="50" height="50" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="10" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23reviewsPattern)"/></svg>');
+        animation: heroFloat 30s ease-in-out infinite;
+    }
+
+    @@keyframes heroFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .reviews-hero-content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        color: white;
+    }
+
+    .reviews-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        animation: fadeInDown 1s ease-out;
+    }
+
+    .reviews-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+        animation: fadeInUp 1s 0.3s both;
+    }
+
+    .reviews-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        animation: fadeInUp 1s 0.6s both;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    @@keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .filter-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        animation: slideInUp 0.8s ease-out;
+    }
+
+    @@keyframes slideInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .filter-title {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-control-modern, .form-select-modern {
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .form-control-modern:focus, .form-select-modern:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
+        background: rgba(255, 255, 255, 1);
+        transform: translateY(-2px);
+    }
+
+    .btn-filter {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-filter:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-reset {
+        background: transparent;
+        border: 2px solid #6c757d;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        color: #6c757d;
+        transition: all 0.3s ease;
+    }
+
+    .btn-reset:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .reviews-container {
+        display: grid;
+        gap: 1.5rem;
+    }
+
+    .review-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: fadeInLeft 0.6s ease-out;
+        position: relative;
+    }
+
+    .review-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    @@keyframes fadeInLeft {
+        from { opacity: 0; transform: translateX(-30px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+
+    .review-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    }
+
+    .review-content {
+        padding: 1.5rem;
+    }
+
+    .review-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    .homestay-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .homestay-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 1.2rem;
+    }
+
+    .homestay-details h6 {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.25rem;
+    }
+
+    .homestay-location {
+        color: #6c757d;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .rating-display {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stars {
+        display: flex;
+        gap: 0.1rem;
+    }
+
+    .star {
+        color: #ffd700;
+        font-size: 1.1rem;
+    }
+
+    .star.empty {
+        color: #e9ecef;
+    }
+
+    .rating-number {
+        background: linear-gradient(135deg, #ffd700, #ff8c00);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .review-text {
+        color: #495057;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+    }
+
+    .review-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .reviewer-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .reviewer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+
+    .reviewer-details .name {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 0.95rem;
+    }
+
+    .reviewer-details .date {
+        color: #6c757d;
+        font-size: 0.85rem;
+    }
+
+    .review-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-action {
+        background: transparent;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem;
+        color: #6c757d;
+        transition: all 0.3s ease;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-action:hover {
+        border-color: #667eea;
+        color: #667eea;
+        transform: scale(1.1);
+    }
+
+    .pagination-modern {
+        display: flex;
+        justify-content: center;
+        margin-top: 3rem;
+    }
+
+    .pagination-modern .page-link {
+        border: none;
+        border-radius: 12px;
+        margin: 0 0.25rem;
+        padding: 0.75rem 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        color: #6c757d;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .pagination-modern .page-link:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .pagination-modern .active .page-link {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+    }
+
+    /* Mobile Optimizations */
+    @@media (max-width: 768px) {
+        .reviews-title {
+            font-size: 2rem;
+        }
+        
+        .reviews-stats {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .stat-card {
+            width: 100%;
+            max-width: 200px;
+        }
+        
+        .review-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .review-footer {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+    }
+
+    /* Dark mode support */
+    @@media (prefers-color-scheme: dark) {
+        .filter-card, .review-card {
+            background: rgba(30, 30, 30, 0.95);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .form-control-modern, .form-select-modern {
+            background: rgba(50, 50, 50, 0.9);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .review-text, .homestay-details h6 {
+            color: #e9ecef;
+        }
+        
+        .filter-title {
+            color: #e9ecef;
+        }
+    }
+</style>
+
+<div class="reviews-hero">
+    <div class="container">
+        <div class="reviews-hero-content">
+            <h1 class="reviews-title">
+                <i class="fas fa-star me-3"></i>Tất Cả Đánh Giá
+            </h1>
+            <p class="reviews-subtitle">Khám phá trải nghiệm chân thật của khách hàng tại các homestay</p>
+            <div class="reviews-stats">
+                <div class="stat-card">
+                    <span class="stat-number">@Model.TotalCount</span>
+                    <span class="stat-label">Đánh giá</span>
+                </div>                <div class="stat-card">
+                    <span class="stat-number">@((Model.Reviews?.Any() == true ? Model.Reviews.Average(r => r.Rating) : 0).ToString("F1"))</span>
+                    <span class="stat-label">Điểm trung bình</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">@(Model.Reviews?.Count(r => r.Rating >= 4) ?? 0)</span>
+                    <span class="stat-label">Đánh giá tốt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid my-4">    <div class="row">
+        <div class="col-12">
+            <!-- Filter Section -->
+            <div class="filter-card">
+                <div class="card-body p-4">
+                    <div class="filter-title">
+                        <i class="fas fa-filter"></i>
+                        <span>Bộ lọc tìm kiếm</span>
+                    </div>
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="search" class="form-label">
+                                <i class="fas fa-search me-1"></i>Tìm kiếm
+                            </label>
+                            <input type="text" class="form-control form-control-modern" id="search" name="search" 
+                                   value="@Model.SearchTerm" placeholder="Tên homestay, bình luận, khách hàng...">
+                        </div>
+                        <div class="col-md-2">
+                            <label for="rating" class="form-label">
+                                <i class="fas fa-star me-1"></i>Đánh giá
+                            </label>
+                            <select class="form-select form-select-modern" id="rating" name="rating">
+                                @if (Model.FilterRating == null)
+                                {
+                                    <option value="" selected>Tất cả</option>
+                                }
+                                else
+                                {
+                                    <option value="">Tất cả</option>
+                                }
+                                
+                                @if (Model.FilterRating == 5)                                {
+                                    <option value="5" selected>⭐⭐⭐⭐⭐ Xuất sắc</option>
+                                }
+                                else
+                                {
+                                    <option value="5">⭐⭐⭐⭐⭐ Xuất sắc</option>
+                                }
+                                
+                                @if (Model.FilterRating == 4)
+                                {
+                                    <option value="4" selected>⭐⭐⭐⭐ Tốt</option>
+                                }
+                                else
+                                {
+                                    <option value="4">⭐⭐⭐⭐ Tốt</option>
+                                }
+                                
+                                @if (Model.FilterRating == 3)
+                                {
+                                    <option value="3" selected>⭐⭐⭐ Bình thường</option>
+                                }
+                                else
+                                {
+                                    <option value="3">⭐⭐⭐ Bình thường</option>
+                                }
+                                
+                                @if (Model.FilterRating == 2)
+                                {
+                                    <option value="2" selected>⭐⭐ Tệ</option>
+                                }
+                                else
+                                {
+                                    <option value="2">⭐⭐ Tệ</option>
+                                }
+                                
+                                @if (Model.FilterRating == 1)
+                                {
+                                    <option value="1" selected>⭐ Rất tệ</option>
+                                }
+                                else
+                                {
+                                    <option value="1">⭐ Rất tệ</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="sortBy" class="form-label">
+                                <i class="fas fa-sort me-1"></i>Sắp xếp
+                            </label>
+                            <select class="form-select form-select-modern" id="sortBy" name="sortBy">
+                                @if (Model.SortBy == "newest")
+                                {
+                                    <option value="newest" selected>📅 Mới nhất</option>
+                                }
+                                else
+                                {
+                                    <option value="newest">📅 Mới nhất</option>
+                                }
+                                
+                                @if (Model.SortBy == "oldest")
+                                {
+                                    <option value="oldest" selected>📅 Cũ nhất</option>
+                                }
+                                else
+                                {
+                                    <option value="oldest">📅 Cũ nhất</option>
+                                }                                
+                                @if (Model.SortBy == "highest")
+                                {
+                                    <option value="highest" selected>⭐ Đánh giá cao nhất</option>
+                                }
+                                else
+                                {
+                                    <option value="highest">⭐ Đánh giá cao nhất</option>
+                                }
+                                
+                                @if (Model.SortBy == "lowest")
+                                {
+                                    <option value="lowest" selected>⭐ Đánh giá thấp nhất</option>
+                                }
+                                else
+                                {
+                                    <option value="lowest">⭐ Đánh giá thấp nhất</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-filter">
+                                <i class="fas fa-filter me-2"></i>Áp dụng
+                            </button>
+                            <a href="@Url.Action("AllReviews")" class="btn btn-reset">
+                                <i class="fas fa-undo me-2"></i>Đặt lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reviews Container -->
+            @if (Model.Reviews?.Any() == true)
+            {
+                <div class="reviews-container">                    @foreach (var review in Model.Reviews)
+                    {
+                        <div class="review-card" style="animation-delay: @((Model.Reviews.ToList().IndexOf(review) * 0.1))s;">
+                            <div class="review-content">
+                                <div class="review-header">
+                                    <div class="homestay-info">
+                                        <div class="homestay-avatar">
+                                            @review.HomestayName.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div class="homestay-details">
+                                            <h6>
+                                                <a href="@Url.Action("Details", "Homestay", new { id = review.HomestayId })" 
+                                                   class="text-decoration-none">
+                                                    @review.HomestayName
+                                                </a>
+                                            </h6>
+                                            <div class="homestay-location">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <span>@review.HomestayLocation</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="rating-display">
+                                        <div class="stars">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fas fa-star @(i <= review.Rating ? "star" : "star empty")"></i>
+                                            }
+                                        </div>
+                                        <span class="rating-number">@review.Rating</span>
+                                    </div>
+                                </div>
+
+                                <div class="review-text">
+                                    @if (!string.IsNullOrEmpty(review.Comment))
+                                    {
+                                        <p>"@review.Comment"</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="fst-italic text-muted">Khách hàng không để lại bình luận chi tiết</p>
+                                    }
+                                </div>
+
+                                <div class="review-footer">
+                                    <div class="reviewer-info">
+                                        <div class="reviewer-avatar">
+                                            @(review.UserName?.Substring(0, 1).ToUpper() ?? "?")
+                                        </div>
+                                        <div class="reviewer-details">
+                                            <div class="name">@(review.UserName ?? "Khách ẩn danh")</div>
+                                            <div class="date">@review.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                    </div>
+                                    <div class="review-actions">
+                                        <button class="btn-action" title="Thích">
+                                            <i class="fas fa-heart"></i>
+                                        </button>
+                                        <button class="btn-action" title="Chia sẻ">
+                                            <i class="fas fa-share"></i>
+                                        </button>
+                                        <button class="btn-action" title="Báo cáo">
+                                            <i class="fas fa-flag"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Reviews pagination" class="pagination-modern">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("AllReviews", new { 
+                                        page = Model.CurrentPage - 1, 
+                                        search = Model.SearchTerm,
+                                        rating = Model.FilterRating,
+                                        sortBy = Model.SortBy 
+                                    })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("AllReviews", new {
+                                        page = i, 
+                                        search = Model.SearchTerm,
+                                        rating = Model.FilterRating,
+                                        sortBy = Model.SortBy 
+                                    })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("AllReviews", new { 
+                                        page = Model.CurrentPage + 1, 
+                                        search = Model.SearchTerm,
+                                        rating = Model.FilterRating,
+                                        sortBy = Model.SortBy 
+                                    })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+
+                    <div class="text-center mt-2">
+                        <small class="text-muted">
+                            Hiển thị trang @Model.CurrentPage / @Model.TotalPages 
+                            (@Model.TotalCount đánh giá)
+                        </small>
+                    </div>
+                }            }
+            else
+            {
+                <!-- No Reviews Found -->
+                <div class="text-center py-5">
+                    <div class="mb-4">
+                        <i class="fas fa-search fa-5x text-muted opacity-50"></i>
+                    </div>
+                    <h3 class="text-muted mb-3">Không tìm thấy đánh giá nào</h3>
+                    <p class="text-muted mb-4">
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm) || Model.FilterRating.HasValue)
+                        {
+                            <span>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm để khám phá thêm đánh giá.</span>
+                        }
+                        else
+                        {
+                            <span>Chưa có đánh giá nào được chia sẻ. Hãy là người đầu tiên đánh giá homestay!</span>
+                        }
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="@Url.Action("AllReviews")" class="btn btn-filter">
+                            <i class="fas fa-refresh me-2"></i>Xem tất cả
+                        </a>
+                        <a href="@Url.Action("Index", "Homestay")" class="btn btn-reset">
+                            <i class="fas fa-home me-2"></i>Khám phá homestay
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize animations
+            initializeAnimations();
+            
+            // Initialize interactive features
+            initializeInteractiveFeatures();
+            
+            // Initialize filter enhancements
+            initializeFilterEnhancements();
+        });
+
+        function initializeAnimations() {
+            // Animate review cards on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all review cards
+            document.querySelectorAll('.review-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(card);
+            });
+
+            // Animate stats on load
+            animateStats();
+        }
+
+        function animateStats() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(stat => {
+                const finalValue = parseFloat(stat.textContent);
+                let currentValue = 0;
+                const increment = finalValue / 30;
+                
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= finalValue) {
+                        stat.textContent = finalValue % 1 === 0 ? finalValue : finalValue.toFixed(1);
+                        clearInterval(timer);
+                    } else {
+                        stat.textContent = currentValue % 1 === 0 ? Math.floor(currentValue) : currentValue.toFixed(1);
+                    }
+                }, 50);
+            });
+        }
+
+        function initializeInteractiveFeatures() {
+            // Review action buttons
+            $('.btn-action').on('click', function(e) {
+                e.preventDefault();
+                const action = $(this).attr('title');
+                const icon = $(this).find('i');
+                
+                // Add ripple effect
+                createRipple($(this), e);
+                
+                // Handle different actions
+                switch(action) {
+                    case 'Thích':
+                        toggleLike($(this));
+                        break;
+                    case 'Chia sẻ':
+                        shareReview($(this));
+                        break;
+                    case 'Báo cáo':
+                        reportReview($(this));
+                        break;
+                }
+            });
+
+            // Homestay name click tracking
+            $('.homestay-details a').on('click', function() {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'homestay_view_from_review', {
+                        'event_category': 'Navigation',
+                        'event_label': $(this).text()
+                    });
+                }
+            });
+        }
+
+        function initializeFilterEnhancements() {
+            // Real-time search
+            let searchTimeout;
+            $('#search').on('input', function() {
+                clearTimeout(searchTimeout);
+                const searchTerm = $(this).val();
+                
+                searchTimeout = setTimeout(() => {
+                    if (searchTerm.length >= 3 || searchTerm.length === 0) {
+                        // Auto-submit form after 1 second of no typing
+                        // $(this).closest('form').submit();
+                    }
+                }, 1000);
+            });
+
+            // Filter change tracking
+            $('#rating, #sortBy').on('change', function() {
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'filter_change', {
+                        'event_category': 'Reviews',
+                        'event_label': this.name + ':' + this.value
+                    });
+                }
+            });
+
+            // Enhanced form submission
+            $('.btn-filter').on('click', function() {
+                $(this).html('<i class="fas fa-spinner fa-spin me-2"></i>Đang lọc...');
+                $(this).prop('disabled', true);
+            });
+        }
+
+        function toggleLike(button) {
+            const icon = button.find('i');
+            const isLiked = icon.hasClass('fas');
+            
+            if (isLiked) {
+                icon.removeClass('fas text-danger').addClass('far');
+                button.removeClass('liked');
+            } else {
+                icon.removeClass('far').addClass('fas text-danger');
+                button.addClass('liked');
+                
+                // Add heart animation
+                button.addClass('animate__animated animate__heartBeat');
+                setTimeout(() => {
+                    button.removeClass('animate__animated animate__heartBeat');
+                }, 1000);
+            }
+        }
+
+        function shareReview(button) {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Đánh giá homestay',
+                    text: 'Xem đánh giá tuyệt vời này về homestay',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    showToast('Đã sao chép link chia sẻ!', 'success');
+                });
+            }
+        }
+
+        function reportReview(button) {
+            if (confirm('Bạn có chắc chắn muốn báo cáo đánh giá này?')) {
+                showToast('Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét sớm nhất.', 'info');
+                button.prop('disabled', true).addClass('text-muted');
+            }
+        }
+
+        function createRipple(button, event) {
+            const ripple = $('<span class="ripple-effect"></span>');
+            const rect = button[0].getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.css({
+                width: size,
+                height: size,
+                left: x,
+                top: y
+            });
+            
+            button.append(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = $(`
+                <div class="toast-notification ${type}">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle me-2"></i>
+                    ${message}
+                </div>
+            `);
+            
+            $('body').append(toast);
+            
+            setTimeout(() => {
+                toast.addClass('show');
+            }, 100);
+            
+            setTimeout(() => {
+                toast.removeClass('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add additional CSS for ripple effects and toasts
+        const additionalStyles = `
+            <style>
+                .ripple-effect {
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 255, 255, 0.6);
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                }
+                
+                @@keyframes ripple {
+                    to {
+                        transform: scale(4);
+                        opacity: 0;
+                    }
+                }
+                
+                .toast-notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(10px);
+                    padding: 1rem 1.5rem;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                    border-left: 4px solid #667eea;
+                    transform: translateX(100%);
+                    transition: transform 0.3s ease;
+                    z-index: 1050;
+                    font-weight: 500;
+                }
+                
+                .toast-notification.show {
+                    transform: translateX(0);
+                }
+                
+                .toast-notification.success {
+                    border-left-color: #28a745;
+                    color: #28a745;
+                }
+                
+                .toast-notification.error {
+                    border-left-color: #dc3545;
+                    color: #dc3545;
+                }
+                
+                .toast-notification.info {
+                    border-left-color: #17a2b8;
+                    color: #17a2b8;
+                }
+                
+                .btn-action.liked {
+                    background: rgba(220, 53, 69, 0.1);
+                    border-color: #dc3545;
+                }
+            </style>
+        `;
+              // Auto-submit form when filter changes
+            document.getElementById('sortBy').addEventListener('change', function() {
+                this.form.submit();
+            });
+            
+            document.getElementById('rating').addEventListener('change', function() {
+                this.form.submit();
+            });
+
+            // Add loading animation when filtering
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('button[type="submit"]');
+            
+            form.addEventListener('submit', function() {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang lọc...';
+                submitBtn.disabled = true;
+            });
+        
+        $('head').append(additionalStyles);
+    </script>
+}
+
+<style>
+        .review-image {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        .rating-stars {
+            color: #ffc107;
+            font-size: 1.1em;
+            letter-spacing: 1px;
+        }
+        
+        .rating-overlay {
+            backdrop-filter: blur(4px);
+            border-radius: 15px;
+        }
+        
+        .rating-overlay .badge {
+            background-color: rgba(255, 193, 7, 0.95) !important;
+            color: #000 !important;
+            font-weight: bold;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .review-comment {
+            font-size: 0.95em;
+            line-height: 1.4;
+            max-height: 4.2em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+        }
+        
+        .user-avatar .badge {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            background-color: #6c757d !important;
+            color: #fff !important;
+        }
+        
+        .badge.bg-success {
+            background-color: #198754 !important;
+            color: #fff !important;
+        }
+        
+        .badge.bg-primary {
+            background-color: #0d6efd !important;
+            color: #fff !important;
+        }
+        
+        .card-title a {
+            color: inherit;
+        }
+        
+        .card-title a:hover {
+            color: #0d6efd;
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
+        }
+        
+        .fw-bold {
+            font-weight: 600 !important;
+            color: #212529 !important;
+        }
+        
+        .small, small {
+            color: #6c757d !important;
+        }
+        
+        .btn {
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+        
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: #fff;
+        }
+        
+        .page-link {
+            color: #0d6efd;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+        }
+        
+        .page-link:hover {
+            color: #0a58ca;
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+        
+        .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: #fff;
+        }
+        
+        .filter-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+        }
+        
+        .form-label {
+            color: #212529 !important;
+            font-weight: 500;
+        }
+        
+        .form-control, .form-select {
+            border: 1px solid #ced4da;
+            color: #212529 !important;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        @@media (max-width: 768px) {
+            .review-image {
+                height: 150px;
+            }
+            
+            .display-5 {
+                font-size: 1.5rem;
+            }
+            
+            .badge {
+                font-size: 0.75rem !important;
+            }
+            
+            .user-avatar .badge {
+                width: 35px !important;
+                height: 35px !important;
+                font-size: 0.7em !important;
+            }
+        }
+</style>
+
