@@ -1,123 +1,296 @@
-# Homestay App - README
+<div align="center">
 
-## Tổng quan
+# HOMESTAY APP (FLUTTER)
 
-Ứng dụng Homestay là một hệ thống quản lý và đặt phòng homestay với các chức năng cơ bản, CRUD, và nâng cao, phục vụ cả người dùng và quản trị viên. Dưới đây là mô tả chi tiết về cách thức hoạt động của từng nhóm chức năng.
+Ung dung mobile cho he thong Homestay: booking, payment, host management, chat/call realtime, AI support.
 
----
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](pubspec.yaml)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](pubspec.yaml)
+[![Provider](https://img.shields.io/badge/State%20Management-Provider-0A8FDC)](lib/providers)
+[![SignalR](https://img.shields.io/badge/Realtime-SignalR-5C2D91)](lib/services/call_service.dart)
 
-## 1. Chức năng cơ bản
-
-### 1.1 Đăng ký/Đăng nhập
-- Người dùng có thể đăng ký tài khoản mới hoặc đăng nhập bằng tài khoản đã có.
-- Xác thực thông tin qua email hoặc số điện thoại.
-
-### 1.2 Phân quyền trên các ROLE
-- Giao diện và chức năng hiển thị tùy theo vai trò (User, Host, Admin).
-- Admin có thể quản lý người dùng, Host có thể quản lý homestay của mình.
-
-### 1.3 Quản lý người dùng
-- Admin có thể thêm, sửa, xóa người dùng.
-- Host có thể nâng cấp tài khoản từ User lên Host.
-
-### 1.4 Thêm/Xóa/Sửa Homestay
-- Host có thể thêm mới, chỉnh sửa hoặc xóa homestay của mình.
-
-### 1.5 Giỏ hàng
-- Người dùng thêm homestay vào giỏ hàng cá nhân để đặt phòng sau.
-
-### 1.6 Đặt phòng Homestay
-- Người dùng thực hiện booking homestay, chọn ngày, số lượng phòng, thanh toán.
-
-### 1.7 Thanh toán đặt cọc
-- Người dùng thanh toán tiền cọc cho homestay khi đặt phòng.
-
-### 1.8 Đánh giá Homestay
-- Sau khi ở, người dùng có thể đánh giá và nhận xét về homestay.
-
-### 1.9 Tìm kiếm Homestay
-- Người dùng tìm kiếm homestay theo vị trí, giá, tiện nghi, đánh giá...
-
-### 1.10 UI/UX
-- Giao diện thân thiện, dễ sử dụng, tối ưu cho trải nghiệm người dùng.
+</div>
 
 ---
 
-## 2. Chức năng CRUD
+## Muc luc
 
-### 2.1 Homestay
-- Lưu trữ thông tin chi tiết về từng homestay (tên, địa chỉ, mô tả, hình ảnh, giá...)
-
-### 2.2 User
-- Lưu trữ thông tin tài khoản người dùng (họ tên, email, số điện thoại, vai trò...)
-
-### 2.3 Đơn đặt phòng
-- Lưu trữ thông tin các đơn đặt phòng, trạng thái, lịch sử đặt phòng.
-
-### 2.4 Khuyến mãi
-- Lưu trữ và quản lý các chương trình khuyến mãi, mã giảm giá.
-
-### 2.5 Images
-- Lưu trữ hình ảnh homestay, người dùng, hóa đơn...
-
-### 2.6 Tin nhắn
-- Lưu trữ các tin nhắn giữa người dùng với nhau hoặc với chủ homestay.
-
-### 2.7 Cuộc trò chuyện
-- Lưu trữ lịch sử các cuộc trò chuyện, hỗ trợ AI chat.
-
-### 2.8 Thông báo
-- Lưu trữ và gửi thông báo cho người dùng về trạng thái đặt phòng, khuyến mãi...
-
-### 2.9 Tiện nghi
-- Lưu trữ thông tin về các tiện nghi của homestay (wifi, bếp, máy lạnh...)
-
-### 2.10 Ngày đóng cửa
-- Lưu trữ các ngày homestay không nhận khách.
-
-### 2.11 Giá Homestay
-- Lưu trữ giá từng homestay, cập nhật theo mùa, ngày lễ...
-
-### 2.12 Phương thức thanh toán
-- Lưu trữ các phương thức thanh toán (chuyển khoản, ví điện tử, tiền mặt...)
+1. [Gioi thieu](#gioi-thieu)
+2. [Kha nang noi bat](#kha-nang-noi-bat)
+3. [Kien truc app](#kien-truc-app)
+4. [Cau truc thu muc](#cau-truc-thu-muc)
+5. [Yeu cau he thong](#yeu-cau-he-thong)
+6. [Cai dat](#cai-dat)
+7. [Cau hinh bien moi truong](#cau-hinh-bien-moi-truong)
+8. [Run app](#run-app)
+9. [Realtime call flow](#realtime-call-flow)
+10. [Main routes](#main-routes)
+11. [Danh sach package quan trong](#danh-sach-package-quan-trong)
+12. [Testing va quality](#testing-va-quality)
+13. [Troubleshooting](#troubleshooting)
+14. [Security notes](#security-notes)
 
 ---
 
-## 3. Chức năng nâng cao
+## Gioi thieu
 
-### 3.1 Nhúng AI (Chatbot Gemini)
-- Tích hợp chatbot AI để hỗ trợ khách hàng, trả lời câu hỏi, tư vấn đặt phòng.
+`homestay_app` la ung dung Flutter da nen tang cho he thong dat phong homestay.
 
-### 3.2 Lấy thông tin từ CCCD
-- Cho phép quét/chụp CCCD để tự động điền thông tin cá nhân khi đăng ký.
+App phuc vu 3 doi tuong:
 
-### 3.3 Face ID/Vân tay
-- Xác thực sinh trắc học khi đăng nhập hoặc xác nhận thanh toán.
+- User: tim kiem, dat phong, thanh toan, danh gia.
+- Host: quan ly homestay, booking, doanh thu.
+- Admin: dashboard, users, bookings, moderation.
 
-### 3.4 Chuyển đổi ngôn ngữ
-- Hỗ trợ chuyển đổi giao diện và nội dung giữa các ngôn ngữ (Việt/Anh).
-
-### 3.5 Text to Speech/Speech to Text
-- Đọc nội dung bằng giọng nói và nhận diện giọng nói để nhập liệu.
-
-### 3.6 Bảo mật API thời tiết
-- Tích hợp API thời tiết, bảo vệ API key, hiển thị thời tiết tại homestay.
-
-### 3.7 Đặt nhiều lớp
-- Cho phép người dùng đặt nhiều homestay cùng lúc, quản lý nhiều đơn đặt phòng.
-
-### 3.8 Xem video Youtube ngay trên App
-- Tích hợp xem video Youtube giới thiệu homestay trực tiếp trên ứng dụng.
-
-### 3.9 Có tích hợp bản đồ
-- Hiển thị vị trí homestay trên bản đồ, chỉ đường, tìm kiếm lân cận.
+App ket noi backend chinh qua REST API (`Nhom1`) va su dung SignalR cho call/chat realtime.
 
 ---
 
-## 4. Điểm nổi bật
-- Hệ thống phân quyền rõ ràng, bảo mật.
-- Tích hợp AI và các công nghệ mới (Face ID, Speech, Map, Youtube...)
-- Giao diện hiện đại, thân thiện, tối ưu trải nghiệm người dùng.
+## Kha nang noi bat
+
+- Dang nhap/dang ky, social sign-in, OTP flow.
+- Role-based navigation (User/Host/Admin).
+- Homestay listing + filter/search + map.
+- Booking full flow + payment callback.
+- Favorites + comparison + notifications.
+- Chat AI (Gemini) + chat user-to-user.
+- Voice features (TTS/STT), translation, YouTube.
+- Call audio/video qua SignalR + WebRTC.
+
+---
+
+## Kien truc app
+
+```mermaid
+flowchart TD
+  A[UI Screens] --> B[Providers]
+  B --> C[Services]
+  C --> D[REST API]
+  C --> E[SignalR Hub]
+  D --> F[Nhom1 Backend]
+  E --> F
+```
+
+Pattern duoc su dung:
+
+- UI layer: `lib/screens`
+- State layer: `lib/providers`
+- Data/API layer: `lib/services`
+- Domain models: `lib/models`
+- Shared UI components: `lib/widgets`
+
+---
+
+## Cau truc thu muc
+
+```text
+lib/
+|- config/          # app colors/theme/api config
+|- models/          # data models
+|- providers/       # state management
+|- screens/         # feature screens
+|- services/        # api/realtime/business services
+|- utils/           # helper utils
+|- widgets/         # reusable widgets
+|- main.dart        # app bootstrap
+`- routes.dart      # route table + dynamic routes
+```
+
+Mot so module screens lon:
+
+- `screens/auth`
+- `screens/home`
+- `screens/booking`
+- `screens/host`
+- `screens/admin`
+- `screens/chat`
+- `screens/call`
+
+---
+
+## Yeu cau he thong
+
+- Flutter SDK `>=3.0.0 <4.0.0`
+- Dart SDK `>=3.0.0 <4.0.0`
+- Android Studio/Xcode theo platform
+- Backend API dang chay (`Nhom1`)
+
+Kiem tra nhanh:
+
+```bash
+flutter --version
+dart --version
+flutter doctor
+```
+
+---
+
+## Cai dat
+
+```bash
+flutter pub get
+```
+
+Neu can regenerate code (Hive/build runner):
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+---
+
+## Cau hinh bien moi truong
+
+1. Tao file `.env` tu template:
+
+```bash
+copy .env.example .env
+```
+
+2. Cap nhat cac bien quan trong:
+
+```env
+API_BASE_URL=http://10.0.2.2:5189
+GOOGLE_MAPS_API_KEY=YOUR_KEY
+GEMINI_API_KEY=YOUR_KEY
+```
+
+Ghi chu:
+
+- App load `.env` trong `main.dart`.
+- API base URL duoc doc trong `lib/config/api_config.dart`.
+- Neu emulator Android, dung `10.0.2.2` thay `localhost`.
+
+---
+
+## Run app
+
+```bash
+flutter run
+```
+
+Build release:
+
+```bash
+flutter build apk --release
+```
+
+---
+
+## Realtime call flow
+
+```mermaid
+sequenceDiagram
+  participant U as User App
+  participant H as SignalR Hub
+  participant R as Remote App
+
+  U->>H: connect /hubs/call (JWT)
+  U->>H: SendOffer(recipientId, callId, offer)
+  H->>R: ReceiveOffer(callId, offer)
+  R->>H: SendAnswer(recipientId, callId, answer)
+  H->>U: ReceiveAnswer(callId, answer)
+  U->>H: SendIce(...)
+  H->>R: ReceiveIce(...)
+```
+
+File chinh:
+
+- `lib/services/call_service.dart`
+- `lib/screens/call/call_screen.dart`
+
+---
+
+## Main routes
+
+Routes dinh nghia trong `lib/routes.dart`:
+
+- `/` splash
+- `/login`, `/register`, `/forgot-password`
+- `/main`
+- `/host-dashboard`, `/manage-homestays`, `/host-bookings`
+- `/admin`, `/admin/users`, `/admin/bookings`
+- `/chat-list`, `/chat-detail`
+- `/ai-chat`
+
+Dynamic route:
+
+- `/booking` voi arguments (homestayId, checkIn, checkOut, guests)
+
+---
+
+## Danh sach package quan trong
+
+- State: `provider`, `get`
+- Network: `http`, `dio`
+- Realtime: `signalr_netcore`, `flutter_webrtc`
+- Storage: `shared_preferences`, `hive`, `flutter_secure_storage`
+- UI/UX: `cached_network_image`, `flutter_svg`, `lottie`, `fl_chart`
+- Maps: `google_maps_flutter`, `geolocator`, `flutter_map`
+- Voice/AI: `flutter_tts`, `speech_to_text`, `google_mlkit_translation`
+
+Chi tiet xem `pubspec.yaml`.
+
+---
+
+## Testing va quality
+
+Run unit/widget test:
+
+```bash
+flutter test
+```
+
+Static analyze:
+
+```bash
+flutter analyze
+```
+
+Format code:
+
+```bash
+dart format .
+```
+
+---
+
+## Troubleshooting
+
+### Khong goi duoc API
+
+- Kiem tra `API_BASE_URL` trong `.env`.
+- Kiem tra backend co dang chay dung port.
+- Kiem tra CORS va JWT token.
+
+### SignalR khong connect
+
+- Dam bao endpoint backend dung `/hubs/call`.
+- Kiem tra token trong `StorageService`.
+- Kiem tra protocol http/https trung khop.
+
+### Google login fail
+
+- Kiem tra `GOOGLE_SERVER_CLIENT_ID`.
+- Kiem tra SHA1/SHA256 va OAuth config tren Google Console.
+
+---
+
+## Security notes
+
+- Khong commit file `.env` that.
+- Khong hard-code API keys trong code.
+- Rotate keys neu da tung push len remote.
+- Tach config dev/staging/prod ro rang.
+
+---
+
+## Related projects
+
+- Root architecture guide: `../README.md`
+- Mobile API backend: `../Nhom1`
+- Web/Admin backend: `../WebHS`
+
 
 ---
 
